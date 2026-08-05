@@ -1,0 +1,30 @@
+{
+  "name": "@morten-olsen/nova-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false"
+  },
+  "exports": {
+    "./vitest": {
+      "source": "./src/vitest.ts",
+      "types": "./dist/vitest.d.ts",
+      "import": "./dist/vitest.js",
+      "default": "./dist/vitest.js"
+    }
+  },
+  "dependencies": {
+    "@pnpm/find-workspace-packages": "^6.0.9"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.3",
+    "@morten-olsen/nova-config": "workspace:*"
+  }
+}

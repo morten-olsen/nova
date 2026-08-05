@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+canvas {
+  display: block;
+}

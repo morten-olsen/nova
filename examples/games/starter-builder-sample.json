@@ -1,0 +1,959 @@
+{
+  "version": 1,
+  "initialWorld": {
+    "scripts": [],
+    "tiles": [
+      {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 0
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 5,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 4,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 0
+        },
+        "composition": {
+          "ore": 4,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 2,
+          "electronics": 1,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 0
+        },
+        "composition": {
+          "ore": 1,
+          "acid": 0,
+          "water": 0,
+          "radiation": 3
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 1,
+          "water": 3,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 5,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 1
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 5,
+          "electronics": 0,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 1
+        },
+        "composition": {
+          "ore": 4,
+          "acid": 0,
+          "water": 3,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 1
+        },
+        "composition": {
+          "ore": 4,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 5,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 2
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 2
+        },
+        "composition": {
+          "ore": 5,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 2
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 2,
+          "water": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 2
+        },
+        "composition": {
+          "ore": 6,
+          "acid": 2,
+          "water": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 5,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 3
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 3
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 3
+        },
+        "composition": {
+          "ore": 2,
+          "acid": 0,
+          "water": 0,
+          "radiation": 2
+        },
+        "scattered": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 3
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 4
+        },
+        "composition": {
+          "ore": 3,
+          "acid": 0,
+          "water": 0,
+          "radiation": 3
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 4
+        },
+        "composition": {
+          "ore": 4,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 5
+        },
+        "composition": {
+          "ore": 3,
+          "acid": 1,
+          "water": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 5
+        },
+        "composition": {
+          "ore": 5,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 5
+        },
+        "composition": {
+          "ore": 3,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 3,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      }
+    ],
+    "androids": [],
+    "buildings": [],
+    "players": [],
+    "messages": [],
+    "round": 0
+  },
+  "events": [
+    {
+      "type": "user.upload-android-script",
+      "ownerId": "player-1",
+      "name": "starter-builder",
+      "content": "/* eslint-disable complexity */\n/* global androidId, world */\n(() => {\n  const android = world.androids.find((candidate) => candidate.id === androidId);\n\n  if (!android || !android.active) {\n    return { type: 'android.wait' };\n  }\n\n  const amount = (materials = {}) => {\n    return (\n      (materials.metal ?? 0) +\n      (materials.electronics ?? 0) +\n      (materials.polymer ?? 0) +\n      (materials.ore ?? 0) +\n      (materials.water ?? 0) +\n      (materials.acidCanister ?? 0)\n    );\n  };\n\n  const cargo = android.cargo ?? {};\n  const cargoAmount = amount(cargo);\n  const tile = world.tiles.find(\n    (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,\n  );\n  const building = world.buildings.find(\n    (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,\n  );\n\n  if (building?.ownerId === android.ownerId && building.remainingConstruction.ticks > 0) {\n    return { type: 'android.continue-construction' };\n  }\n\n  if (!building && (cargo.metal ?? 0) >= 10) {\n    return { type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } };\n  }\n\n  const hasDepot = world.buildings.some(\n    (candidate) => candidate.ownerId === android.ownerId && candidate.type === 'depot',\n  );\n  if (!building && !hasDepot && (cargo.metal ?? 0) >= 6) {\n    return { type: 'android.start-construction', buildingType: 'depot', resources: { metal: 6 } };\n  }\n\n  if (building?.ownerId === android.ownerId && building.type === 'charger' && android.battery < 90) {\n    return { type: 'android.charge' };\n  }\n\n  if (tile && amount(tile.scattered) > 0 && cargoAmount < 10) {\n    return { type: 'android.collect' };\n  }\n\n  const openScatteredTiles = world.tiles\n    .filter((candidate) => amount(candidate.scattered) > 0)\n    .filter((candidate) => {\n      return !world.buildings.some(\n        (buildingCandidate) =>\n          buildingCandidate.position.x === candidate.position.x &&\n          buildingCandidate.position.y === candidate.position.y,\n      );\n    })\n    .sort((left, right) => {\n      const leftDistance =\n        Math.abs(left.position.x - android.position.x) + Math.abs(left.position.y - android.position.y);\n      const rightDistance =\n        Math.abs(right.position.x - android.position.x) + Math.abs(right.position.y - android.position.y);\n      return leftDistance - rightDistance;\n    });\n\n  const target = openScatteredTiles[0];\n  if (!target) {\n    return { type: 'android.broadcast', content: 'No scattered material targets remain.' };\n  }\n\n  if (android.position.x < target.position.x) {\n    return { type: 'android.move', direction: 'east' };\n  }\n\n  if (android.position.x > target.position.x) {\n    return { type: 'android.move', direction: 'west' };\n  }\n\n  if (android.position.y < target.position.y) {\n    return { type: 'android.move', direction: 'south' };\n  }\n\n  if (android.position.y > target.position.y) {\n    return { type: 'android.move', direction: 'north' };\n  }\n\n  return { type: 'android.wait' };\n})();\n"
+    },
+    {
+      "type": "user.launch-android",
+      "ownerId": "player-1",
+      "scriptId": "script-1"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.start-construction",
+      "buildingType": "charger",
+      "resources": {
+        "metal": 10
+      }
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.start-construction",
+      "buildingType": "depot",
+      "resources": {
+        "metal": 6
+      }
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "west"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "west"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "north"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.move",
+      "direction": "north"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "type": "android.wait"
+    },
+    {
+      "type": "game.round-end"
+    }
+  ]
+}

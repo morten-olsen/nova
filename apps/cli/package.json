@@ -1,0 +1,24 @@
+{
+  "name": "@morten-olsen/nova-cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "bin": {
+    "nova": "./dist/cli.js"
+  },
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false",
+    "start": "pnpm run build && node ./dist/cli.js"
+  },
+  "dependencies": {
+    "@morten-olsen/nova-game": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@types/node": "^24.0.3",
+    "typescript": "^5.9.2"
+  }
+}

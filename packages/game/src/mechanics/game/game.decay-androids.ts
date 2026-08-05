@@ -1,0 +1,21 @@
+import type { Mechanic } from '../mechanics.base.js';
+
+const gameMechanicsDecayAndroids: Mechanic = {
+  name: 'game.decay-androids',
+  apply: ({ world, event }) => {
+    if (event.type !== 'game.round-end') {
+      return;
+    }
+
+    for (const android of world.androids) {
+      const tile = world.tiles.find(
+        (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,
+      );
+      const radiationDamage = tile?.composition.radiation ?? 0;
+
+      android.health -= 0.1 + radiationDamage * 0.25;
+    }
+  },
+};
+
+export { gameMechanicsDecayAndroids };

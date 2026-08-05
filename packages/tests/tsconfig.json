@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "extends": "@morten-olsen/nova-config/tsconfig.json"
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+.task
+.u8.json
+pnpm-lock.yaml
+apps/web/src/routeTree.gen.ts

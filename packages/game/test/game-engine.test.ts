@@ -1,0 +1,464 @@
+import { describe, expect, it } from 'vitest';
+
+import { createBaseRuleset, Loop, Ruleset, type Event, type Mechanic, type World } from '../src/nova-game.js';
+
+const emptyWorld = (): World => ({
+  scripts: [],
+  tiles: [],
+  androids: [],
+  buildings: [],
+});
+
+const createWorld = (overrides: Partial<World> = {}): World => ({
+  ...emptyWorld(),
+  ...overrides,
+});
+
+const createMutationFriendlyMechanic = (): Mechanic => ({
+  name: 'mutation-friendly-test-mechanic',
+  setup: ({ world }): World => {
+    world.tiles.push({
+      position: { x: 0, y: 0 },
+      composition: { acid: 0, metal: 10 },
+    });
+    return world;
+  },
+  apply: ({ world, event }): World => {
+    if (event.type === 'user.upload-android-script') {
+      world.scripts.push({
+        id: `${event.ownerId}-script-${world.scripts.length + 1}`,
+        ownerId: event.ownerId,
+        name: event.name,
+        content: event.content,
+      });
+    }
+
+    return world;
+  },
+});
+
+const createAndroidTurnMechanic = (): Mechanic => ({
+  name: 'android-turn-test-mechanic',
+  apply: ({ world, event }): World => {
+    if (event.type === 'android.move') {
+      const android = world.androids.find((android) => android.id === event.androidId);
+      if (!android) {
+        throw new Error(`Unknown android: ${event.androidId}`);
+      }
+
+      if (event.direction === 'north' && android.position.y === 0) {
+        throw new Error('Cannot move north from the northern edge');
+      }
+
+      if (event.direction === 'east') {
+        android.position.x += 1;
+      }
+
+      if (event.direction === 'west') {
+        android.position.x -= 1;
+      }
+
+      if (event.direction === 'north') {
+        android.position.y -= 1;
+      }
+
+      if (event.direction === 'south') {
+        android.position.y += 1;
+      }
+    }
+
+    if (event.type === 'game.android-failed-turn') {
+      const android = world.androids.find((android) => android.id === event.androidId);
+      if (android) {
+        android.active = false;
+      }
+    }
+
+    return world;
+  },
+});
+
+describe('game engine', () => {
+  it('composes the base mechanics into a playable upload, launch, move, and fail loop', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset({
+        world: {
+          width: 2,
+          height: 1,
+          composition: { acid: 1, metal: 2 },
+        },
+      }),
+    });
+
+    expect(loop.world.tiles).toEqual([
+      { position: { x: 0, y: 0 }, composition: { acid: 1, metal: 2 } },
+      { position: { x: 1, y: 0 }, composition: { acid: 1, metal: 2 } },
+    ]);
+
+    loop.applyEvents([
+      {
+        type: 'user.upload-android-script',
+        ownerId: 'player-1',
+        name: 'go east',
+        content: "({ type: 'android.move', direction: 'east' })",
+      },
+      {
+        type: 'user.launch-android',
+        ownerId: 'player-1',
+        scriptId: 'script-1',
+      },
+    ]);
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({
+        id: 'android-1',
+        ownerId: 'player-1',
+        scriptId: 'script-1',
+        position: { x: 1, y: 0 },
+        battery: 99,
+        active: true,
+      }),
+    ]);
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({
+        id: 'android-1',
+        position: { x: 1, y: 0 },
+        battery: 99,
+        active: false,
+      }),
+    ]);
+    expect(loop.events.map((event) => event.type)).toEqual([
+      'user.upload-android-script',
+      'user.launch-android',
+      'game.round-start',
+      'android.move',
+      'game.round-end',
+      'game.round-start',
+      'game.android-failed-turn',
+      'game.round-end',
+    ]);
+  });
+
+  it('uses base mechanics to charge androids and construct buildings', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset({ world: { width: 2, height: 1 } }),
+      initWorld: createWorld({
+        tiles: [
+          { position: { x: 0, y: 0 }, composition: { acid: 0, metal: 10 } },
+          { position: { x: 1, y: 0 }, composition: { acid: 0, metal: 10 } },
+        ],
+        scripts: [
+          {
+            id: 'charge-script',
+            ownerId: 'player-1',
+            name: 'charge',
+            content: "({ type: 'android.charge' })",
+          },
+          {
+            id: 'build-script',
+            ownerId: 'player-1',
+            name: 'build',
+            content: "({ type: 'android.start-construction', buildingType: 'charger', resources: { metal: 4 } })",
+          },
+        ],
+        androids: [
+          {
+            id: 'charging-android',
+            ownerId: 'player-1',
+            scriptId: 'charge-script',
+            position: { x: 0, y: 0 },
+            battery: 50,
+            health: 100,
+            active: true,
+          },
+          {
+            id: 'building-android',
+            ownerId: 'player-1',
+            scriptId: 'build-script',
+            position: { x: 1, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+        ],
+        buildings: [
+          {
+            id: 'charger-1',
+            ownerId: 'player-1',
+            type: 'charger',
+            position: { x: 0, y: 0 },
+            remainingConstruction: { ticks: 0, resources: { metal: 0 } },
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({ id: 'charging-android', battery: 75, active: true }),
+      expect.objectContaining({ id: 'building-android', active: true }),
+    ]);
+    expect(loop.world.buildings).toEqual([
+      expect.objectContaining({ id: 'charger-1' }),
+      expect.objectContaining({
+        id: 'building-2',
+        ownerId: 'player-1',
+        type: 'charger',
+        position: { x: 1, y: 0 },
+        remainingConstruction: { ticks: 2, resources: { metal: 6 } },
+      }),
+    ]);
+  });
+  it('damages androids standing in acid at round end', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset(),
+      initWorld: createWorld({
+        tiles: [{ position: { x: 0, y: 0 }, composition: { acid: 4 } }],
+        scripts: [
+          {
+            id: 'wait-script',
+            ownerId: 'player-1',
+            name: 'wait',
+            content: "({ type: 'android.wait' })",
+          },
+        ],
+        androids: [
+          {
+            id: 'android-1',
+            ownerId: 'player-1',
+            scriptId: 'wait-script',
+            position: { x: 0, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ health: 97.9 }));
+  });
+
+  it('allows androids to clean adjacent acid when their owner has an acid processing plant', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset(),
+      initWorld: createWorld({
+        tiles: [
+          { position: { x: 0, y: 0 }, composition: { acid: 0 } },
+          { position: { x: 1, y: 0 }, composition: { acid: 2 } },
+        ],
+        scripts: [
+          {
+            id: 'clean-script',
+            ownerId: 'player-1',
+            name: 'clean',
+            content: "({ type: 'android.clean-acid', direction: 'east' })",
+          },
+        ],
+        androids: [
+          {
+            id: 'android-1',
+            ownerId: 'player-1',
+            scriptId: 'clean-script',
+            position: { x: 0, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+        ],
+        buildings: [
+          {
+            id: 'acid-plant-1',
+            ownerId: 'player-1',
+            type: 'acid-processing-plant',
+            position: { x: 0, y: 0 },
+            remainingConstruction: { ticks: 0, resources: { metal: 0 } },
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.world.tiles[1]).toEqual(expect.objectContaining({ composition: { acid: 1 } }));
+    expect(loop.world.buildings[0]).toEqual(
+      expect.objectContaining({ storage: expect.objectContaining({ acidCanister: 1 }) }),
+    );
+  });
+
+  it('applies events through the ruleset while protecting loop state from caller mutations', () => {
+    const initWorld = emptyWorld();
+    const ruleset = new Ruleset({
+      mechanics: [createMutationFriendlyMechanic()],
+    });
+    const loop = new Loop({ ruleset, initWorld });
+
+    initWorld.tiles.push({
+      position: { x: 99, y: 99 },
+      composition: { acid: 99, metal: 99 },
+    });
+
+    const event: Event = {
+      type: 'user.upload-android-script',
+      ownerId: 'player-1',
+      name: 'miner',
+      content: "({ type: 'android.wait' })",
+    };
+
+    loop.applyEvents([event]);
+    event.name = 'mutated-after-apply';
+
+    const worldSnapshot = loop.world;
+    const [scriptSnapshot] = worldSnapshot.scripts;
+    expect(scriptSnapshot).toBeDefined();
+
+    if (scriptSnapshot) {
+      scriptSnapshot.name = 'mutated-snapshot';
+    }
+
+    expect(loop.world).toEqual({
+      tiles: [
+        {
+          position: { x: 0, y: 0 },
+          composition: { acid: 0, metal: 10 },
+        },
+      ],
+      scripts: [
+        {
+          id: 'player-1-script-1',
+          ownerId: 'player-1',
+          name: 'miner',
+          content: "({ type: 'android.wait' })",
+        },
+      ],
+      androids: [],
+      buildings: [],
+    });
+    expect(loop.events).toEqual([
+      {
+        type: 'user.upload-android-script',
+        ownerId: 'player-1',
+        name: 'miner',
+        content: "({ type: 'android.wait' })",
+      },
+    ]);
+  });
+
+  it('runs a round, skips an android turn that produces an invalid move, and continues the round', async () => {
+    const ruleset = new Ruleset({
+      mechanics: [createAndroidTurnMechanic()],
+    });
+    const loop = new Loop({
+      ruleset,
+      initWorld: createWorld({
+        scripts: [
+          {
+            id: 'bad-script',
+            ownerId: 'player-1',
+            name: 'bad move',
+            content: "({ type: 'android.move', direction: 'north' })",
+          },
+          {
+            id: 'good-script',
+            ownerId: 'player-1',
+            name: 'good move',
+            content: "({ type: 'android.move', direction: 'east' })",
+          },
+        ],
+        androids: [
+          {
+            id: 'bad-android',
+            ownerId: 'player-1',
+            scriptId: 'bad-script',
+            position: { x: 0, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+          {
+            id: 'good-android',
+            ownerId: 'player-1',
+            scriptId: 'good-script',
+            position: { x: 0, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({
+        id: 'bad-android',
+        position: { x: 0, y: 0 },
+        active: false,
+      }),
+      expect.objectContaining({
+        id: 'good-android',
+        position: { x: 1, y: 0 },
+        active: true,
+      }),
+    ]);
+    expect(loop.events.map((event) => event.type)).toEqual([
+      'game.round-start',
+      'game.android-failed-turn',
+      'android.move',
+      'game.round-end',
+    ]);
+  });
+
+  it('converts script timeouts into failed turns instead of hanging the round', async () => {
+    const ruleset = new Ruleset({
+      mechanics: [createAndroidTurnMechanic()],
+    });
+    const loop = new Loop({
+      ruleset,
+      initWorld: createWorld({
+        scripts: [
+          {
+            id: 'script-1',
+            ownerId: 'player-1',
+            name: 'infinite loop',
+            content: 'while (true) {}',
+          },
+        ],
+        androids: [
+          {
+            id: 'android-1',
+            ownerId: 'player-1',
+            scriptId: 'script-1',
+            position: { x: 0, y: 0 },
+            battery: 100,
+            health: 100,
+            active: true,
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).toEqual([
+      'game.round-start',
+      'game.android-failed-turn',
+      'game.round-end',
+    ]);
+    expect(loop.world.androids[0]).toEqual(
+      expect.objectContaining({
+        id: 'android-1',
+        active: false,
+      }),
+    );
+  });
+});

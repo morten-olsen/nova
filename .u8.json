@@ -1,0 +1,41 @@
+{
+  "values": {
+    "monoRepo": true,
+    "packagePrefix": "@morten-olsen/nova-",
+    "packageVersion": "1.0.0"
+  },
+  "entries": [
+    {
+      "timestamp": "2026-08-05T14:43:23.057Z",
+      "template": "monorepo",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/nova-",
+        "packageVersion": "1.0.0"
+      }
+    },
+    {
+      "timestamp": "2026-08-05T14:43:30.268Z",
+      "template": "eslint",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/nova-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/nova-repo",
+          "dir": "/Users/alice/Projects/games/projectnova"
+        }
+      }
+    },
+    {
+      "timestamp": "2026-08-05T14:43:39.276Z",
+      "template": "pkg",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/nova-",
+        "packageVersion": "1.0.0",
+        "packageName": "game"
+      }
+    }
+  ]
+}
