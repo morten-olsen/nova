@@ -1,0 +1,7 @@
+{
+  "name": "@morten-olsen/nova-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared tabletop renderer and 3D assets for Project Nova"
+}

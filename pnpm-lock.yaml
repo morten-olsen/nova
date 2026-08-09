@@ -155,6 +155,8 @@ importers:
         specifier: ^3.2.3
         version: 3.2.7(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)
 
+  packages/renderer: {}
+
   packages/tests:
     dependencies:
       '@pnpm/find-workspace-packages':
