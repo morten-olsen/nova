@@ -133,7 +133,7 @@ The current local ruleset already supports a playable automation loop:
 - take damage from acid and radiation
 - clean adjacent acid tiles after building an acid processing plant
 
-The full player-facing rules live in [`RULEBOOK.md`](./RULEBOOK.md).
+The full player-facing rules live in [`RULEBOOK.md`](./docs/RULEBOOK.md).
 
 ## Try it locally
 

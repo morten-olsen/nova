@@ -1,4 +1,4 @@
-name: Publish npm package
+name: Publish npm packages
 
 on:
   release:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish @morten-olsen/nova-game
+    name: Publish public packages
     runs-on: ubuntu-latest
     environment: npm
     env:
@@ -41,13 +41,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build package
-        run: pnpm --filter @morten-olsen/nova-game build
+      - name: Match public package versions to release tag
+        run: node scripts/set-public-package-versions.mjs "$RELEASE_TAG"
 
-      - name: Match package version to release tag
-        run: pnpm --filter @morten-olsen/nova-game exec npm version "${RELEASE_TAG#v}" --no-git-tag-version --allow-same-version
+      - name: Build packages
+        run: pnpm -r --if-present build
 
-      - name: Publish to npm
-        run: pnpm --filter @morten-olsen/nova-game publish --access public --no-git-checks
+      - name: Publish public packages to npm
+        run: pnpm -r publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

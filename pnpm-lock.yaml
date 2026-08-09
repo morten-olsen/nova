@@ -14,6 +14,9 @@ importers:
       '@eslint/js':
         specifier: ^9
         version: 9.39.5
+      '@pnpm/find-workspace-packages':
+        specifier: ^6.0.9
+        version: 6.0.9(@pnpm/logger@5.2.0)
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)
