@@ -1,4 +1,4 @@
-import { Mechanic } from '../mechanics.base.js';
+import type { Mechanic } from '../mechanics.base.js';
 
 const gameMechanicsDestroyAndroids: Mechanic = {
   name: 'game.destroy-androids',

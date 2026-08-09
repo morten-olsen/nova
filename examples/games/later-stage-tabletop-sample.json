@@ -1,0 +1,3025 @@
+{
+  "version": 1,
+  "initialWorld": {
+    "scripts": [
+      {
+        "id": "script-1",
+        "ownerId": "player-aurora",
+        "name": "aurora-logistics",
+        "content": "({ type: 'android.wait' })"
+      },
+      {
+        "id": "script-2",
+        "ownerId": "player-borealis",
+        "name": "borealis-miner",
+        "content": "({ type: 'android.wait' })"
+      }
+    ],
+    "tiles": [
+      {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "composition": {
+          "ore": 2,
+          "water": 1,
+          "acid": 1,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 2,
+          "electronics": 0,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 0
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 0
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 0
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 0
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 0
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 1,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 1
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 1
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 1
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 0,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 1
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 2
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 2
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 1,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 2
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 2
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 2
+        },
+        "composition": {
+          "ore": 3,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 3
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 0,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 3
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 3
+        },
+        "composition": {
+          "ore": 4,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "electronics": 3,
+          "metal": 1
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 3
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 3
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 4
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 4
+        },
+        "composition": {
+          "ore": 5,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 4
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 4,
+          "electronics": 0,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 4
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 4
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 5
+        },
+        "composition": {
+          "ore": 2,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 5
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "ore": 5,
+          "metal": 2
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 4,
+          "electronics": 1,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 5
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 5
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 5
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 5
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 6
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 4,
+          "electronics": 0,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 6
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 6
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 6
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 6
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 6
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 7
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 7
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 7
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 2,
+          "electronics": 0,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 7
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 8
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "acidCanister": 3,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 8
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 8
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 2,
+          "electronics": 1,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 8
+        },
+        "composition": {
+          "ore": 4,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 8
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 8
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 9
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 9
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 2,
+          "electronics": 0,
+          "polymer": 2
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 9
+        },
+        "composition": {
+          "ore": 5,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 1,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 9
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 9
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 9
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 10
+        },
+        "composition": {
+          "ore": 2,
+          "water": 1,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 10
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 10
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 10
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 1
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 0,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 10
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 2,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 1,
+          "y": 11
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 2,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 11
+        },
+        "composition": {
+          "ore": 5,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 2,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 6,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 7,
+          "y": 11
+        },
+        "composition": {
+          "ore": 2,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 8,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 3,
+          "electronics": 1,
+          "polymer": 1
+        }
+      },
+      {
+        "position": {
+          "x": 9,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 10,
+          "y": 11
+        },
+        "composition": {
+          "ore": 3,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 11,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 0,
+          "acid": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 12,
+          "y": 11
+        },
+        "composition": {
+          "ore": 0,
+          "water": 3,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 13,
+          "y": 11
+        },
+        "composition": {
+          "ore": 4,
+          "water": 0,
+          "acid": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      }
+    ],
+    "androids": [
+      {
+        "id": "android-1",
+        "ownerId": "player-aurora",
+        "scriptId": "script-1",
+        "position": {
+          "x": 4,
+          "y": 2
+        },
+        "battery": 85,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "id": "android-2",
+        "ownerId": "player-aurora",
+        "scriptId": "script-1",
+        "position": {
+          "x": 5,
+          "y": 5
+        },
+        "battery": 63,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "id": "android-3",
+        "ownerId": "player-aurora",
+        "scriptId": "script-1",
+        "position": {
+          "x": 8,
+          "y": 6
+        },
+        "battery": 72,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "id": "android-4",
+        "ownerId": "player-borealis",
+        "scriptId": "script-2",
+        "position": {
+          "x": 9,
+          "y": 9
+        },
+        "battery": 76,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "id": "android-5",
+        "ownerId": "player-borealis",
+        "scriptId": "script-2",
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "battery": 58,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "id": "android-6",
+        "ownerId": "player-borealis",
+        "scriptId": "script-2",
+        "position": {
+          "x": 11,
+          "y": 5
+        },
+        "battery": 89,
+        "health": 92,
+        "active": true,
+        "cargo": {
+          "metal": 1,
+          "electronics": 0,
+          "polymer": 0
+        }
+      }
+    ],
+    "buildings": [
+      {
+        "id": "building-1",
+        "ownerId": "player-aurora",
+        "type": "charger",
+        "position": {
+          "x": 2,
+          "y": 2
+        },
+        "health": 100,
+        "initial": true,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-2",
+        "ownerId": "player-aurora",
+        "type": "depot",
+        "position": {
+          "x": 4,
+          "y": 2
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "metal": 18,
+          "electronics": 5,
+          "polymer": 4,
+          "ore": 6
+        }
+      },
+      {
+        "id": "building-3",
+        "ownerId": "player-aurora",
+        "type": "charger",
+        "position": {
+          "x": 5,
+          "y": 3
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-4",
+        "ownerId": "player-aurora",
+        "type": "scanner",
+        "position": {
+          "x": 6,
+          "y": 2
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-5",
+        "ownerId": "player-aurora",
+        "type": "extractor",
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "ore": 8,
+          "water": 2
+        }
+      },
+      {
+        "id": "building-6",
+        "ownerId": "player-aurora",
+        "type": "processor",
+        "position": {
+          "x": 7,
+          "y": 4
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "ore": 5,
+          "metal": 4
+        }
+      },
+      {
+        "id": "building-7",
+        "ownerId": "player-aurora",
+        "type": "acid-processing-plant",
+        "position": {
+          "x": 3,
+          "y": 7
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "acidCanister": 5
+        }
+      },
+      {
+        "id": "building-8",
+        "ownerId": "player-aurora",
+        "type": "relay-tower",
+        "position": {
+          "x": 9,
+          "y": 3
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-9",
+        "ownerId": "player-aurora",
+        "type": "colony-module",
+        "position": {
+          "x": 8,
+          "y": 7
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 4,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-10",
+        "ownerId": "player-borealis",
+        "type": "charger",
+        "position": {
+          "x": 11,
+          "y": 9
+        },
+        "health": 100,
+        "initial": true,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-11",
+        "ownerId": "player-borealis",
+        "type": "depot",
+        "position": {
+          "x": 9,
+          "y": 9
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "metal": 12,
+          "electronics": 4,
+          "polymer": 2
+        }
+      },
+      {
+        "id": "building-12",
+        "ownerId": "player-borealis",
+        "type": "charger",
+        "position": {
+          "x": 10,
+          "y": 7
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        }
+      },
+      {
+        "id": "building-13",
+        "ownerId": "player-borealis",
+        "type": "extractor",
+        "position": {
+          "x": 10,
+          "y": 5
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "ore": 7,
+          "water": 1
+        }
+      },
+      {
+        "id": "building-14",
+        "ownerId": "player-borealis",
+        "type": "processor",
+        "position": {
+          "x": 11,
+          "y": 5
+        },
+        "health": 100,
+        "initial": false,
+        "remainingConstruction": {
+          "ticks": 0,
+          "resources": {}
+        },
+        "storage": {
+          "ore": 3,
+          "metal": 5
+        }
+      }
+    ],
+    "players": [
+      {
+        "id": "player-aurora",
+        "name": "Aurora Combine"
+      },
+      {
+        "id": "player-borealis",
+        "name": "Borealis Works"
+      }
+    ],
+    "messages": [
+      {
+        "id": "message-1",
+        "ownerId": "player-aurora",
+        "senderAndroidId": "android-3",
+        "position": {
+          "x": 8,
+          "y": 6
+        },
+        "content": "Colony module construction entering final phase.",
+        "round": 82
+      },
+      {
+        "id": "message-2",
+        "ownerId": "player-borealis",
+        "senderAndroidId": "android-5",
+        "position": {
+          "x": 10,
+          "y": 3
+        },
+        "content": "Electronics cache located near the northern relay.",
+        "round": 82
+      }
+    ],
+    "round": 82
+  },
+  "events": [
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-1",
+      "direction": "east"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-2",
+      "direction": "north"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-3",
+      "direction": "east"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-4",
+      "direction": "north"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-5",
+      "direction": "west"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-6",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-1",
+      "direction": "south"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-2",
+      "direction": "east"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-3",
+      "direction": "north"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-4",
+      "direction": "west"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-5",
+      "direction": "south"
+    },
+    {
+      "type": "android.move",
+      "androidId": "android-6",
+      "direction": "west"
+    },
+    {
+      "type": "game.round-end"
+    }
+  ]
+}

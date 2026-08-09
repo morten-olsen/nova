@@ -2,7 +2,7 @@
 
 ## Design intent
 
-Project Nova is a **premium physical tabletop game brought to life digitally**: sturdy, readable low-poly game pieces on a hostile alien board. The presentation must make one-tile actions, ownership, hazards, and infrastructure roles legible at a glance—not simulate realistic machinery.
+Project Nova is a **premium physical tabletop game brought to life digitally**: sturdy, readable low-poly frontier sci-fi pieces on a hostile alien board. The visual direction is **frontier NASA-punk**—ceramic pressure hulls, powder-coated graphite machinery, exposed energy hardware, and optimistic colony technology—not generic military hardware or photorealistic machinery. The presentation must make one-tile actions, ownership, hazards, and infrastructure roles legible at a glance.
 
 The visual hierarchy is always:
 
@@ -24,26 +24,28 @@ The visual hierarchy is always:
 All pieces share these traits:
 
 - low-poly, flat or lightly faceted surfaces; no photorealism
-- a dark graphite plinth or feet grounding the piece to its tile
-- desaturated alloy body panels, with one strong functional or faction accent
-- broad bevels and chunky, toy-like proportions
+- a dark, double-tier graphite plinth or feet grounding the piece to its tile
+- warm off-white ceramic pressure hulls over desaturated alloy chassis panels
+- one strong functional or faction accent, plus a small exposed core, ring, or monitor
+- broad bevels and chunky, collectible-miniature proportions
 - purposeful asymmetry only where it indicates direction or function
 
 The canonical Blender materials are `StructureDark`, `StructureLight`, `FactionAccent`, `Energy`, `HazardAcid`, `ResourceOre`, and `Warning`. `FactionAccent` is replaced or tinted per owner by the renderer; do not export a distinct model for each player.
 
 ## Gameplay silhouettes
 
-| Game entity | Silhouette and key read | Accent |
-| --- | --- | --- |
-| Android | Compact two-legged worker with a sensor head and rear pack | faction stripe/sensor |
-| Charger | U-shaped charging gantry over a circular pad | energy + faction |
-| Depot | Low rectangular storage crate stack | faction panel |
-| Extractor | Ground drill and angled support arms | ore |
-| Processor | Squared plant with twin exhaust stacks | energy |
-| Acid processing plant | Contained cylindrical tank and external pipes | acid hazard |
-| Relay tower | Thin mast with a directional dish | faction/signal |
-| Scanner | Low pedestal with a wide sensor dish | cyan scan light |
-| Colony module | Largest piece: habitat dome with a beacon | faction + warm colony light |
+| Game entity           | Silhouette and key read                                    | Accent                      |
+| --------------------- | ---------------------------------------------------------- | --------------------------- |
+| Android               | Compact two-legged worker with a sensor head and rear pack | faction stripe/sensor       |
+| Charger               | U-shaped charging gantry over a circular pad               | energy + faction            |
+| Depot                 | Low rectangular storage crate stack                        | faction panel               |
+| Extractor             | Ground drill and angled support arms                       | ore                         |
+| Processor             | Squared plant with twin exhaust stacks                     | energy                      |
+| Acid processing plant | Contained cylindrical tank and external pipes              | acid hazard                 |
+| Relay tower           | Thin mast with a directional dish                          | faction/signal              |
+| Scanner               | Low pedestal with a wide sensor dish                       | cyan scan light             |
+| Colony module         | Largest piece: habitat dome with a beacon                  | faction + warm colony light |
+| Loose material cache  | Low cargo tray, crate, canister, and mineral sample        | material-specific signal    |
 
 Construction sites are not separate finished models: render a low plinth, visible structural frame, and a striped warning marker. Destroyed/salvaged buildings become scattered resource markers, not wrecked full models.
 
@@ -51,17 +53,17 @@ Construction sites are not separate finished models: render a low plinth, visibl
 
 Use these as a starting palette. UI text and status must still meet contrast requirements against `Void`.
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| Void | `#050816` | page and deep-space background |
-| Board | `#1F2937` | neutral terrain and panels |
-| Structure dark | `#334155` | plinths, seams, inactive hardware |
-| Structure light | `#94A3B8` | exposed panels and readable edges |
-| Faction cyan | `#38BDF8` | default player/accent example |
-| Energy amber | `#FBBF24` | chargers and active processing |
-| Acid lime | `#A3E635` | acid and cleanup systems |
-| Ore orange | `#FB923C` | ore/extraction |
-| Warning coral | `#FB7185` | danger, damage, and invalid actions |
+| Token           | Hex       | Use                                 |
+| --------------- | --------- | ----------------------------------- |
+| Void            | `#050816` | page and deep-space background      |
+| Board           | `#1F2937` | neutral terrain and panels          |
+| Structure dark  | `#334155` | plinths, seams, inactive hardware   |
+| Structure light | `#94A3B8` | exposed panels and readable edges   |
+| Faction cyan    | `#38BDF8` | default player/accent example       |
+| Energy amber    | `#FBBF24` | chargers and active processing      |
+| Acid lime       | `#A3E635` | acid and cleanup systems            |
+| Ore orange      | `#FB923C` | ore/extraction                      |
+| Warning coral   | `#FB7185` | danger, damage, and invalid actions |
 
 Never convey owner, active/inactive state, or hazard solely with colour. Pair it with a silhouette, icon, material treatment, or motion/light change.
 

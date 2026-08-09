@@ -1,6 +1,20 @@
 # Nova renderer
 
-This workspace will own Project Nova's tabletop renderer. It is intentionally asset-only until the renderer is moved out of `apps/web`.
+This workspace owns Project Nova's Three.js tabletop renderer and its low-poly assets.
+
+## Renderer
+
+The renderer is a deep module with one browser-facing interface:
+
+```ts
+const renderer = createTabletopRenderer(hostElement);
+renderer.setWorld(world);
+renderer.dispose();
+```
+
+`setWorld` diffs game-world snapshots, loads the matching GLB pieces, and animates movement, placement, removal, construction scale, and co-occupied tiles. Pieces intentionally occupy 78% of a tile while alone; shared tiles shrink pieces to 56% (or 45% for three or more) and pack them farther apart. It uses deterministic per-tile packing rather than a physics engine: this keeps replay animation reproducible while still moving a building aside when one or more androids share its tile, then returning it to centre when the tile clears.
+
+Tiles intentionally use one neutral material for this first renderer milestone. Terrain, resources, hazards, and selection treatment are a later rendering pass.
 
 ## Asset pipeline
 

@@ -1,4 +1,4 @@
-import { createBaseRuleset, eventSchema, type Event, type World, worldSchema } from '@morten-olsen/nova-game/browser';
+import { createBaseRuleset, eventSchema, type World, worldSchema } from '@morten-olsen/nova-game/browser';
 import { z } from 'zod';
 
 const recordingSchema = z.object({
@@ -15,39 +15,17 @@ type TimelineFrame = {
   world: World;
 };
 
-const getEventLabel = (event: Event): string => {
-  if ('androidId' in event) {
-    return `${event.type} · ${event.androidId}`;
-  }
-
-  if ('ownerId' in event) {
-    return `${event.type} · ${event.ownerId}`;
-  }
-
-  return event.type;
-};
-
-const createWorldAtEvent = (recording: Recording, eventCount: number): World => {
-  const ruleset = createBaseRuleset();
-  return ruleset.applyEvents(recording.initialWorld, recording.events.slice(0, eventCount));
-};
-
 const createTimeline = (recording: Recording): TimelineFrame[] => {
-  const initialFrame: TimelineFrame = {
-    index: 0,
-    label: 'Initial world',
-    world: structuredClone(recording.initialWorld),
-  };
-  const eventFrames = recording.events.map((event, index): TimelineFrame => {
-    const eventCount = index + 1;
-    return {
-      index: eventCount,
-      label: getEventLabel(event),
-      world: createWorldAtEvent(recording, eventCount),
-    };
-  });
-
-  return [initialFrame, ...eventFrames];
+  const ruleset = createBaseRuleset();
+  let world = structuredClone(recording.initialWorld);
+  const frames: TimelineFrame[] = [{ index: 0, label: `Round ${world.round ?? 0}`, world }];
+  for (const [index, event] of recording.events.entries()) {
+    world = ruleset.applyEvents(world, [event]);
+    if (event.type === 'game.round-end') {
+      frames.push({ index: index + 1, label: `Round ${world.round ?? frames.length}`, world });
+    }
+  }
+  return frames;
 };
 
 const parseRecording = (content: string): Recording => recordingSchema.parse(JSON.parse(content));

@@ -26,3 +26,14 @@ pnpm nova status --file examples/games/starter-builder-sample.json
 ```
 
 The committed sample game has run 35 rounds on a 6x6 world.
+
+## Later-stage tabletop scenario
+
+`examples/games/later-stage-tabletop-sample.json` is a deterministic 14x12 visualizer scenario that begins in round 82 with two established colony programs. It includes 6 active androids, 14 buildings across both players, active construction, extractors/processors, chargers, scanners, a relay, loose material caches, and a short movement sequence for testing renderer animations.
+
+Regenerate it with:
+
+```sh
+python3 examples/games/generate-later-stage-sample.py
+pnpm nova status --file examples/games/later-stage-tabletop-sample.json
+```

@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-renderer": "workspace:*",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.140.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "three": "^0.183.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -26,7 +26,6 @@
     "@types/node": "^24.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.183.0",
     "@vitejs/plugin-react": "^5.1.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

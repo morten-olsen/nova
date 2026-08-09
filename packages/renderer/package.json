@@ -3,5 +3,30 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared tabletop renderer and 3D assets for Project Nova"
+  "description": "Shared tabletop renderer and 3D assets for Project Nova",
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/nova-renderer.ts",
+      "types": "./dist/nova-renderer.d.ts",
+      "import": "./dist/nova-renderer.js",
+      "default": "./dist/nova-renderer.js"
+    }
+  },
+  "dependencies": {
+    "@morten-olsen/nova-game": "workspace:*",
+    "three": "^0.183.0"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@types/three": "^0.183.0",
+    "typescript": "^5.9.2"
+  }
 }

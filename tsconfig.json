@@ -8,6 +8,9 @@
       "path": "./packages/tests"
     },
     {
+      "path": "./packages/renderer"
+    },
+    {
       "path": "./apps/cli"
     },
     {
