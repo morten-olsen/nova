@@ -1,0 +1,41 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+template: |
+  ## Changes
+
+  $CHANGES
+
+categories:
+  - title: '⚠ Breaking changes'
+    labels: ['breaking']
+  - title: '✨ Features'
+    labels: ['feature']
+  - title: '🐛 Fixes'
+    labels: ['fix']
+  - title: '🧹 Maintenance'
+    labels: ['maintenance']
+
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels: ['breaking']
+  minor:
+    labels: ['feature']
+  patch:
+    labels: ['fix']
+  default: patch
+
+autolabeler:
+  - label: 'breaking'
+    title: '/^[a-z]+(?:\(.+\))?!:/'
+  - label: 'feature'
+    title: '/^feat(?:\(.+\))?:/'
+  - label: 'fix'
+    title: '/^(?:fix|perf)(?:\(.+\))?:/'
+  - label: 'maintenance'
+    title: '/^(?:build|chore|ci|docs|refactor|style|test)(?:\(.+\))?:/'
+
+exclude-labels:
+  - 'skip-release'
