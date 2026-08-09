@@ -1,6 +1,6 @@
 import type { Building, World } from '@morten-olsen/nova-game/browser';
 
-type PieceKind = 'android' | 'material-cache' | Building['type'];
+type PieceKind = 'android' | 'material-cache' | 'unknown-structure' | Building['type'];
 
 type PieceLayout = {
   id: string;

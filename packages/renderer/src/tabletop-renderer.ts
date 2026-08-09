@@ -6,6 +6,7 @@ import { createBoardUpdater } from './tabletop-board.js';
 import { createPlaceholder, getBuildingKind, loadPieceModel, setOwnerColor } from './tabletop-assets.js';
 import { createPieceLayouts, getTileKey, type PieceKind, type PieceLayout } from './tabletop-layout.js';
 import { createTilePicker, type TileClickEvent } from './tabletop-picking.js';
+import { createConstructionParticles, type ParticleEmitter, type ParticleSystem } from './tabletop-particles.js';
 import { createTabletopPostProcess, type TabletopPostProcess } from './tabletop-post-process.js';
 
 type TabletopRendererOptions = {
@@ -25,6 +26,7 @@ type RenderPiece = {
 };
 
 type Actor = {
+  construction: boolean;
   kind: PieceKind;
   root: THREE.Group;
   visual: THREE.Group;
@@ -42,6 +44,7 @@ type SceneObjects = {
   camera: THREE.PerspectiveCamera;
   controls: OrbitControls;
   keyLight: THREE.DirectionalLight;
+  particles: ParticleSystem;
   pieces: THREE.Group;
   postProcess: TabletopPostProcess;
   renderer: THREE.WebGLRenderer;
@@ -151,6 +154,9 @@ const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
   const visual = createPlaceholder(piece.kind);
   root.add(visual);
   void loadPieceModel(piece.kind).then((model) => {
+    if (!model) {
+      return;
+    }
     const instance = model.clone(true);
     setOwnerColor(instance, piece.accentColor);
     setShadowFlags(instance);
@@ -159,6 +165,7 @@ const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
   });
 
   return {
+    construction: piece.constructionTicks > 0,
     kind: piece.kind,
     root,
     visual,
@@ -200,6 +207,7 @@ const createScene = (host: HTMLElement): SceneObjects => {
   controls.maxPolarAngle = Math.PI / 2.15;
 
   const postProcess = createTabletopPostProcess(renderer, scene, camera);
+  const particles = createConstructionParticles(scene);
 
   const board = new THREE.Group();
   const pieces = new THREE.Group();
@@ -218,7 +226,7 @@ const createScene = (host: HTMLElement): SceneObjects => {
   const rimLight = new THREE.DirectionalLight(0x4da3ff, 1.3);
   rimLight.position.set(-5, 5, -4);
   scene.add(rimLight);
-  return { board, camera, controls, keyLight, pieces, postProcess, renderer, scene };
+  return { board, camera, controls, keyLight, particles, pieces, postProcess, renderer, scene };
 };
 
 const updateActors = (world: World, pieces: THREE.Group, actors: Map<string, Actor>): void => {
@@ -237,6 +245,7 @@ const updateActors = (world: World, pieces: THREE.Group, actors: Map<string, Act
       pieces.add(created.root);
       continue;
     }
+    actor.construction = piece.constructionTicks > 0;
     actor.leaving = false;
     actor.targetOpacity = 1;
     actor.target.set(layout.x, 0.105, layout.z);
@@ -255,6 +264,27 @@ const updateActors = (world: World, pieces: THREE.Group, actors: Map<string, Act
       actor.targetScale = 0.01;
     }
   }
+};
+
+const getConstructionEmitters = (actors: Map<string, Actor>): ParticleEmitter[] => {
+  const color = new THREE.Color(0xffb347);
+  return [...actors.entries()].flatMap(([id, actor]): ParticleEmitter[] => {
+    if (!actor.construction || actor.leaving) {
+      return [];
+    }
+    return [
+      {
+        id,
+        color,
+        rate: 18,
+        position: new THREE.Vector3(
+          actor.root.position.x,
+          actor.root.position.y + 0.24 + actor.root.scale.y * 0.34,
+          actor.root.position.z,
+        ),
+      },
+    ];
+  });
 };
 
 const frameCamera = (world: World, objects: SceneObjects): void => {
@@ -286,7 +316,11 @@ const frameCamera = (world: World, objects: SceneObjects): void => {
   shadowCamera.updateProjectionMatrix();
 };
 
-const createAnimationLoop = (objects: SceneObjects, actors: Map<string, Actor>): (() => void) => {
+const createAnimationLoop = (
+  objects: SceneObjects,
+  actors: Map<string, Actor>,
+  animateBoard: (elapsed: number) => void,
+): (() => void) => {
   const timer = new THREE.Timer();
   let animationFrame = 0;
   let elapsed = 0;
@@ -299,6 +333,8 @@ const createAnimationLoop = (objects: SceneObjects, actors: Map<string, Actor>):
     timer.update(timestamp);
     const delta = Math.min(timer.getDelta(), 0.05);
     elapsed += delta;
+    animateBoard(elapsed);
+    objects.particles.update(delta, getConstructionEmitters(actors));
     const positionAlpha = 1 - Math.exp(-10 * delta);
     const scaleAlpha = 1 - Math.exp(-12 * delta);
     for (const [id, actor] of actors) {
@@ -329,7 +365,7 @@ const createTabletopRenderer = (host: HTMLElement, options: TabletopRendererOpti
   const objects = createScene(host);
   const actors = new Map<string, Actor>();
   const boardUpdater = createBoardUpdater(objects.board);
-  const stopAnimation = createAnimationLoop(objects, actors);
+  const stopAnimation = createAnimationLoop(objects, actors, boardUpdater.animate);
   const removeTilePicker = createTilePicker({
     board: objects.board,
     camera: objects.camera,
@@ -370,6 +406,7 @@ const createTabletopRenderer = (host: HTMLElement, options: TabletopRendererOpti
       removeTilePicker();
       resizeObserver.disconnect();
       objects.controls.dispose();
+      objects.particles.dispose();
       objects.postProcess.dispose();
       objects.renderer.dispose();
       host.replaceChildren();

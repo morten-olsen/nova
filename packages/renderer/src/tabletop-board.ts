@@ -4,6 +4,7 @@ import * as THREE from 'three';
 type TilePosition = { x: number; y: number };
 
 type BoardUpdater = {
+  animate: (elapsed: number) => void;
   pickTile: (point: THREE.Vector3) => TilePosition | undefined;
   update: (world: World) => void;
 };
@@ -84,7 +85,7 @@ const drawRoundedPuddlePath = (context: CanvasRenderingContext2D, rectangle: Rou
   context.closePath();
 };
 
-const drawAcid = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds): void => {
+const drawAcid = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds, elapsed: number): void => {
   const amount = tile.composition.acid ?? 0;
   if (amount <= 0) {
     return;
@@ -92,8 +93,12 @@ const drawAcid = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBo
   const position = getPixelPosition(tile.position, bounds);
   const width = pixelsPerTile * (0.58 + getNoise(tile.position.x, tile.position.y, 91) * 0.14);
   const height = pixelsPerTile * (0.58 + getNoise(tile.position.x, tile.position.y, 97) * 0.14);
-  const offsetX = (getNoise(tile.position.x, tile.position.y, 101) - 0.5) * pixelsPerTile * 0.14;
-  const offsetY = (getNoise(tile.position.x, tile.position.y, 103) - 0.5) * pixelsPerTile * 0.14;
+  const offsetX =
+    (getNoise(tile.position.x, tile.position.y, 101) - 0.5) * pixelsPerTile * 0.14 +
+    Math.sin(elapsed * 0.7 + tile.position.x) * 1.4;
+  const offsetY =
+    (getNoise(tile.position.x, tile.position.y, 103) - 0.5) * pixelsPerTile * 0.14 +
+    Math.cos(elapsed * 0.6 + tile.position.y) * 1.2;
   const x = position.x + offsetX - width / 2;
   const y = position.y + offsetY - height / 2;
   drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
@@ -115,6 +120,36 @@ const drawAcid = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBo
   });
   context.fillStyle = sheen;
   context.fill();
+  context.save();
+  drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
+  context.clip();
+  context.strokeStyle = 'rgb(192 204 94 / 0.16)';
+  context.lineWidth = 1;
+  for (let index = 0; index < 3; index += 1) {
+    const rippleY = y + height * (0.22 + index * 0.22) + Math.sin(elapsed * 2.4 + index + tile.position.x) * 3;
+    context.beginPath();
+    context.moveTo(x + width * 0.16, rippleY);
+    context.quadraticCurveTo(x + width * 0.5, rippleY - 4, x + width * 0.84, rippleY);
+    context.stroke();
+  }
+  context.restore();
+  context.save();
+  drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
+  context.clip();
+  for (let index = 0; index < 4; index += 1) {
+    const bubbleX = x + width * (0.2 + getNoise(tile.position.x, tile.position.y, index + 131) * 0.6);
+    const bubbleY = y + ((elapsed * 12 + index * 17) % Math.max(1, height * 0.6)) + height * 0.18;
+    const pulse = (Math.sin(elapsed * 3.2 + index * 2 + tile.position.x) + 1) / 2;
+    const radius = 1.2 + pulse * 2.1;
+    context.fillStyle = `rgb(186 204 98 / ${0.08 + pulse * 0.16})`;
+    context.beginPath();
+    context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = 'rgb(34 49 12 / 0.5)';
+    context.lineWidth = 0.8;
+    context.stroke();
+  }
+  context.restore();
 };
 
 const drawAcidConnections = (context: CanvasRenderingContext2D, world: World, bounds: BoardBounds): void => {
@@ -154,16 +189,22 @@ const drawAcidConnections = (context: CanvasRenderingContext2D, world: World, bo
   }
 };
 
-const drawRadiation = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds): void => {
+const drawRadiation = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds, elapsed: number): void => {
   const amount = tile.composition.radiation ?? 0;
   if (amount <= 0) {
     return;
   }
   const position = getPixelPosition(tile.position, bounds);
   for (let index = 0; index < 3; index += 1) {
-    const offsetX = (getNoise(tile.position.x, tile.position.y, index + 14) - 0.5) * pixelsPerTile * 0.4;
-    const offsetY = (getNoise(tile.position.x, tile.position.y, index + 19) - 0.5) * pixelsPerTile * 0.4;
-    const radius = pixelsPerTile * (0.2 + getNoise(tile.position.x, tile.position.y, index + 27) * 0.14);
+    const offsetX =
+      (getNoise(tile.position.x, tile.position.y, index + 14) - 0.5) * pixelsPerTile * 0.4 +
+      Math.sin(elapsed * 0.45 + index * 3) * 4;
+    const offsetY =
+      (getNoise(tile.position.x, tile.position.y, index + 19) - 0.5) * pixelsPerTile * 0.4 +
+      Math.cos(elapsed * 0.35 + index * 2) * 3;
+    const radius =
+      pixelsPerTile * (0.2 + getNoise(tile.position.x, tile.position.y, index + 27) * 0.14) +
+      Math.sin(elapsed + index) * 2;
     const gradient = context.createRadialGradient(
       position.x + offsetX,
       position.y + offsetY,
@@ -172,9 +213,9 @@ const drawRadiation = (context: CanvasRenderingContext2D, tile: Tile, bounds: Bo
       position.y + offsetY,
       radius,
     );
-    gradient.addColorStop(0, `rgb(125 211 252 / ${0.12 + amount * 0.04})`);
-    gradient.addColorStop(0.55, `rgb(192 132 252 / ${0.06 + amount * 0.03})`);
-    gradient.addColorStop(1, 'rgb(125 211 252 / 0)');
+    gradient.addColorStop(0, `rgb(164 151 181 / ${0.07 + amount * 0.018})`);
+    gradient.addColorStop(0.55, `rgb(111 105 125 / ${0.035 + amount * 0.012})`);
+    gradient.addColorStop(1, 'rgb(111 105 125 / 0)');
     context.fillStyle = gradient;
     context.beginPath();
     context.arc(position.x + offsetX, position.y + offsetY, radius, 0, Math.PI * 2);
@@ -197,6 +238,32 @@ const drawGrid = (context: CanvasRenderingContext2D, bounds: BoardBounds): void 
     context.lineTo(bounds.width * pixelsPerTile, y * pixelsPerTile);
     context.stroke();
   }
+};
+
+type BoardPaintOptions = {
+  bounds: BoardBounds;
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  elapsed: number;
+  texture: THREE.CanvasTexture;
+  world: World;
+};
+
+const paintBoard = ({ bounds, canvas, context, elapsed, texture, world }: BoardPaintOptions): void => {
+  context.fillStyle = '#17110d';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  for (const tile of world.tiles) {
+    drawBaseTile(context, tile, bounds);
+  }
+  drawAcidConnections(context, world, bounds);
+  for (const tile of world.tiles) {
+    drawAcid(context, tile, bounds, elapsed);
+  }
+  for (const tile of world.tiles) {
+    drawRadiation(context, tile, bounds, elapsed);
+  }
+  drawGrid(context, bounds);
+  texture.needsUpdate = true;
 };
 
 const createTerrainGeometry = (bounds: BoardBounds): THREE.PlaneGeometry => {
@@ -235,6 +302,8 @@ const createBoardUpdater = (board: THREE.Group): BoardUpdater => {
   let base: THREE.Mesh | undefined;
   let terrain: THREE.Mesh | undefined;
   let bounds: BoardBounds | undefined;
+  let currentWorld: World | undefined;
+  let lastEffectUpdate = Number.NEGATIVE_INFINITY;
   let tileKeys = new Set<string>();
 
   const update = (world: World): void => {
@@ -264,26 +333,21 @@ const createBoardUpdater = (board: THREE.Group): BoardUpdater => {
       terrain.receiveShadow = true;
       board.add(base, terrain);
     }
-    if (!bounds) {
+    currentWorld = world;
+    if (bounds) {
+      paintBoard({ bounds, canvas, context, elapsed: 0, texture, world });
+    }
+    tileKeys = new Set(world.tiles.map((tile) => `${tile.position.x}:${tile.position.y}`));
+  };
+
+  const animate = (elapsed: number): void => {
+    if (!currentWorld || elapsed - lastEffectUpdate < 1 / 12) {
       return;
     }
-    context.fillStyle = '#17110d';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    for (const tile of world.tiles) {
-      drawBaseTile(context, tile, bounds);
+    lastEffectUpdate = elapsed;
+    if (bounds) {
+      paintBoard({ bounds, canvas, context, elapsed, texture, world: currentWorld });
     }
-    drawAcidConnections(context, world, bounds);
-    for (const tile of world.tiles) {
-      drawAcid(context, tile, bounds);
-    }
-    context.globalCompositeOperation = 'screen';
-    for (const tile of world.tiles) {
-      drawRadiation(context, tile, bounds);
-    }
-    context.globalCompositeOperation = 'source-over';
-    drawGrid(context, bounds);
-    texture.needsUpdate = true;
-    tileKeys = new Set(world.tiles.map((tile) => `${tile.position.x}:${tile.position.y}`));
   };
 
   const pickTile = (point: THREE.Vector3): TilePosition | undefined => {
@@ -297,7 +361,7 @@ const createBoardUpdater = (board: THREE.Group): BoardUpdater => {
     return tileKeys.has(`${position.x}:${position.y}`) ? position : undefined;
   };
 
-  return { pickTile, update };
+  return { animate, pickTile, update };
 };
 
 export type { BoardUpdater, TilePosition };
