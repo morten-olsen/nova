@@ -144,6 +144,42 @@ describe('game engine', () => {
     ]);
   });
 
+  it('persists an android memory and recording alongside its action', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset({ world: { width: 1, height: 1 } }),
+    });
+
+    loop.applyEvents([
+      {
+        type: 'user.upload-android-script',
+        ownerId: 'player-1',
+        name: 'remember',
+        content: `
+          const android = world.androids.find((candidate) => candidate.id === androidId);
+          ({
+            type: 'android.wait',
+            memory: 'seek-depot',
+            recording: \`${'${android?.recording ?? \'\'}'}waited\\n\`,
+          })
+        `,
+      },
+      {
+        type: 'user.launch-android',
+        ownerId: 'player-1',
+        scriptId: 'script-1',
+      },
+    ]);
+
+    await loop.run();
+
+    expect(loop.world.androids[0]).toEqual(
+      expect.objectContaining({ memory: 'seek-depot', recording: 'waited\n' }),
+    );
+    expect(loop.events).toContainEqual(
+      expect.objectContaining({ type: 'android.wait', memory: 'seek-depot', recording: 'waited\n' }),
+    );
+  });
+
   it('uses base mechanics to charge androids and construct buildings', async () => {
     const loop = new Loop({
       ruleset: createBaseRuleset({ world: { width: 2, height: 1 } }),

@@ -96,6 +96,8 @@ Current android fields include:
 - `health`
 - `active`
 - optional `cargo`
+- `memory` — private persistent working state, limited to 4,096 characters
+- `recording` — player-facing persistent log, limited to 16,384 characters
 
 Androids can currently:
 
@@ -147,7 +149,15 @@ Dismantling is voluntary. It destroys the android and frees charger capacity. It
 
 ## 8. Android Action API
 
-An android script must return one android event. The engine adds `androidId` automatically.
+An android script must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
+
+```js
+({
+  type: 'android.wait',
+  memory: 'return-to-depot',
+  recording: 'No safe route found this round.',
+})
+```
 
 ### Wait
 

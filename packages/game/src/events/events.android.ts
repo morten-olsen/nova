@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
 import { directionSchema, idSchema } from '../schemas/schemas.base.js';
+import { androidMemoryLimit, androidRecordingLimit } from '../schemas/schemas.android.js';
 import { buildingResourcesSchema, buildingTypeSchema } from '../schemas/schemas.building.js';
 
 const androidSchema = z.object({
   androidId: idSchema,
+  memory: z.string().max(androidMemoryLimit).optional(),
+  recording: z.string().max(androidRecordingLimit).optional(),
 });
 
 const androidWaitEventSchema = androidSchema.extend({

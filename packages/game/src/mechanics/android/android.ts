@@ -7,8 +7,11 @@ import { androidMechanicsDeposit } from './android.deposit.js';
 import { androidMechanicsDismantle } from './android.dismantle.js';
 import { androidMechanicsMove } from './android.move.js';
 import { androidMechanicsWithdraw } from './android.withdraw.js';
+import { androidMechanicsUpdateState } from './android.update-state.js';
 
 const androidMechanics = [
+  // State is updated alongside the action, rather than consuming a separate turn.
+  androidMechanicsUpdateState,
   androidMechanicsMove,
   androidMechanicsCharge,
   androidMechanicsCleanAcid,

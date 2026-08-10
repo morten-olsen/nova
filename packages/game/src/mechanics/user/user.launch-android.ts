@@ -43,6 +43,8 @@ const userMechanicsLaunchAndroid: Mechanic = {
       health: 100,
       active: true,
       cargo: { metal: 0, electronics: 0, polymer: 0 },
+      memory: '',
+      recording: '',
     });
   },
 };

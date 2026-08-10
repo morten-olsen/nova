@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { idSchema, positionSchema } from './schemas.base.js';
 import { materialBundleSchema } from './schemas.resources.js';
 
+const androidMemoryLimit = 4_096;
+const androidRecordingLimit = 16_384;
+
 const androidSchema = z.object({
   id: idSchema,
   ownerId: idSchema,
@@ -12,9 +15,11 @@ const androidSchema = z.object({
   health: z.number(),
   active: z.boolean(),
   cargo: materialBundleSchema.optional(),
+  memory: z.string().max(androidMemoryLimit).default(''),
+  recording: z.string().max(androidRecordingLimit).default(''),
 });
 
 type Android = z.infer<typeof androidSchema>;
 
 export type { Android };
-export { androidSchema };
+export { androidMemoryLimit, androidRecordingLimit, androidSchema };
