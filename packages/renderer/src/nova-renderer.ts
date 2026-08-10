@@ -1,3 +1,4 @@
+export { preloadPieceModels } from './tabletop-assets.js';
 export { createTabletopRenderer } from './tabletop-renderer.js';
 export type {
   CameraFraming,

@@ -1,6 +1,7 @@
 node_modules
 dist
 coverage
+out
 .task
 .u8.json
 pnpm-lock.yaml
