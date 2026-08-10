@@ -1,48 +1,80 @@
-import type { MaterialBundle, World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game/browser';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+import { novaPalette, toColorValue } from './nova-palette.js';
 import { createBoardUpdater } from './tabletop-board.js';
-import { createPlaceholder, getBuildingKind, loadPieceModel, setOwnerColor } from './tabletop-assets.js';
-import { createPieceLayouts, getTileKey, type PieceKind, type PieceLayout } from './tabletop-layout.js';
+import { animateActors, getConstructionEmitters, updateActors, type Actor } from './tabletop-actors.js';
+import { createCameraController, type CameraController, type CameraMove } from './tabletop-camera.js';
+import { createTileHighlights, type TileHighlights } from './tabletop-highlight.js';
 import { createTilePicker, type TileClickEvent } from './tabletop-picking.js';
-import { createConstructionParticles, type ParticleEmitter, type ParticleSystem } from './tabletop-particles.js';
+import { createConstructionParticles, type ParticleSystem } from './tabletop-particles.js';
 import { createTabletopPostProcess, type TabletopPostProcess } from './tabletop-post-process.js';
+import type { TilePosition } from './tabletop-bounds.js';
 
 type TabletopRendererOptions = {
+  /**
+   * Drive the animation from an internal requestAnimationFrame loop. Defaults to
+   * true for interactive viewing. Set false for frame-accurate offline capture
+   * (Remotion and friends) and call `advance` once per output frame instead.
+   */
+  autoPlay?: boolean;
+  /**
+   * Whether this recording uses fog of war. Decide it from the whole recording:
+   * a single frame cannot distinguish "nothing explored yet" from "no fog data".
+   */
+  fogOfWar?: boolean;
   onTileClick?: (event: TileClickEvent) => void;
+  /** Seed for particle motion. Fixed by default so stepped renders reproduce. */
+  particleSeed?: number;
+};
+
+type TabletopSelection = {
+  /** Entity whose model should read as picked up, if any. */
+  pieceId?: string;
+  position?: TilePosition;
+};
+
+type CameraFraming = {
+  /** Distance that frames the whole board, in tile units. */
+  boardDistance: number;
+  maximumDistance: number;
+  minimumDistance: number;
 };
 
 type TabletopRenderer = {
-  setWorld: (world: World) => void;
+  /**
+   * Advances every animation by `deltaSeconds` and renders exactly one frame.
+   *
+   * Intended for offline capture: call it once per output frame with `1 / fps`.
+   * Safe to call while `autoPlay` is on, though the two will compete.
+   */
+  advance: (deltaSeconds: number) => void;
   dispose: () => void;
+  /** Current distance from the camera to its target, in tile units. */
+  getCameraDistance: () => number;
+  /** Distance limits and the whole-board distance, for building zoom controls. */
+  getCameraFraming: () => CameraFraming;
+  /** Eases the camera to centre a tile and/or change zoom. */
+  moveCamera: (move: CameraMove) => void;
+  /** Eases back to framing the whole board. */
+  resetCamera: (duration?: number) => void;
+  /** Drives the on-board reticle and the raised selected piece. */
+  setSelection: (selection: TabletopSelection) => void;
+  setWorld: (world: World) => void;
 };
 
-type RenderPiece = {
-  accentColor: THREE.Color;
-  constructionTicks: number;
-  id: string;
-  kind: PieceKind;
-};
-
-type Actor = {
-  construction: boolean;
-  kind: PieceKind;
-  root: THREE.Group;
-  visual: THREE.Group;
-  target: THREE.Vector3;
-  targetScale: number;
-  targetYaw: number;
-  leaving: boolean;
-  opacity: number;
-  phase: number;
-  targetOpacity: number;
+type AnimationLoop = {
+  step: (delta: number) => void;
+  stop: () => void;
 };
 
 type SceneObjects = {
   board: THREE.Group;
   camera: THREE.PerspectiveCamera;
+  cameraController: CameraController;
   controls: OrbitControls;
+  highlights: TileHighlights;
   keyLight: THREE.DirectionalLight;
   particles: ParticleSystem;
   pieces: THREE.Group;
@@ -51,145 +83,50 @@ type SceneObjects = {
   scene: THREE.Scene;
 };
 
-const getPlayerColor = (ownerId: string): THREE.Color => {
-  let value = 0;
-  for (const character of ownerId) {
-    value = (value * 31 + character.charCodeAt(0)) >>> 0;
-  }
-  const palette = [0x38bdf8, 0xf97316, 0xa3e635, 0xe879f9, 0xfacc15, 0x2dd4bf];
-  return new THREE.Color(palette[value % palette.length] ?? 0x38bdf8);
-};
-
-const getLooseMaterialColor = (materials: MaterialBundle): THREE.Color => {
-  if ((materials.acidCanister ?? 0) > 0) {
-    return new THREE.Color(0xa3e635);
-  }
-  if ((materials.electronics ?? 0) > 0) {
-    return new THREE.Color(0x38bdf8);
-  }
-  if ((materials.ore ?? 0) > 0) {
-    return new THREE.Color(0xfb923c);
-  }
-  if ((materials.polymer ?? 0) > 0) {
-    return new THREE.Color(0xe879f9);
-  }
-  return new THREE.Color(0x94a3b8);
-};
-
-const getRenderPieces = (world: World): RenderPiece[] => {
-  const buildingTiles = new Set(
-    world.buildings.map((building) => getTileKey(building.position.x, building.position.y)),
-  );
-  const looseMaterials = world.tiles.flatMap((tile): RenderPiece[] => {
-    const materials = tile.scattered ?? {};
-    if (
-      buildingTiles.has(getTileKey(tile.position.x, tile.position.y)) ||
-      !Object.values(materials).some((quantity) => quantity > 0)
-    ) {
-      return [];
-    }
-    return [
-      {
-        accentColor: getLooseMaterialColor(materials),
-        constructionTicks: 0,
-        id: `material:${getTileKey(tile.position.x, tile.position.y)}`,
-        kind: 'material-cache',
-      },
-    ];
-  });
-  return [
-    ...world.androids.map((android) => ({
-      accentColor: getPlayerColor(android.ownerId),
-      constructionTicks: 0,
-      id: android.id,
-      kind: 'android' as const,
-    })),
-    ...world.buildings.map((building) => ({
-      accentColor: getPlayerColor(building.ownerId),
-      constructionTicks: building.remainingConstruction.ticks,
-      id: building.id,
-      kind: getBuildingKind(building),
-    })),
-    ...looseMaterials,
-  ];
-};
-
 const getWorldBounds = (world: World): { centerX: number; centerZ: number; span: number } => {
   const positions = world.tiles.map((tile) => tile.position);
   const minX = Math.min(0, ...positions.map((position) => position.x));
   const maxX = Math.max(0, ...positions.map((position) => position.x));
   const minZ = Math.min(0, ...positions.map((position) => position.y));
   const maxZ = Math.max(0, ...positions.map((position) => position.y));
-  return { centerX: (minX + maxX) / 2, centerZ: (minZ + maxZ) / 2, span: Math.max(maxX - minX + 1, maxZ - minZ + 1) };
-};
-
-const setShadowFlags = (object: THREE.Object3D): void => {
-  object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-};
-
-const setObjectOpacity = (object: THREE.Object3D, opacity: number): void => {
-  object.traverse((child) => {
-    if (!(child instanceof THREE.Mesh)) {
-      return;
-    }
-    const materials = Array.isArray(child.material) ? child.material : [child.material];
-    for (const material of materials) {
-      material.opacity = opacity;
-      material.transparent = opacity < 0.999;
-      material.depthWrite = opacity > 0.95;
-    }
-  });
-};
-
-const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
-  const root = new THREE.Group();
-  root.position.set(layout.x, 0.8, layout.z);
-  root.scale.setScalar(0.05);
-
-  const visual = createPlaceholder(piece.kind);
-  root.add(visual);
-  void loadPieceModel(piece.kind).then((model) => {
-    if (!model) {
-      return;
-    }
-    const instance = model.clone(true);
-    setOwnerColor(instance, piece.accentColor);
-    setShadowFlags(instance);
-    visual.clear();
-    visual.add(instance);
-  });
-
   return {
-    construction: piece.constructionTicks > 0,
-    kind: piece.kind,
-    root,
-    visual,
-    target: new THREE.Vector3(layout.x, 0.105, layout.z),
-    targetScale: (piece.constructionTicks > 0 ? 0.72 : 1) * layout.scale,
-    targetYaw: 0,
-    leaving: false,
-    opacity: 0,
-    phase: (piece.id.length * 0.73) % (Math.PI * 2),
-    targetOpacity: 1,
+    centerX: (minX + maxX) / 2,
+    centerZ: (minZ + maxZ) / 2,
+    span: Math.max(maxX - minX + 1, maxZ - minZ + 1),
   };
+};
+
+const createLighting = (scene: THREE.Scene): THREE.DirectionalLight => {
+  scene.add(new THREE.HemisphereLight(0xbcd0e0, 0x3a2e22, 2.1));
+  const keyLight = new THREE.DirectionalLight(0xfff2dc, 4.2);
+  keyLight.position.set(5, 10, 4);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(2048, 2048);
+  keyLight.shadow.bias = -0.0002;
+  keyLight.shadow.normalBias = 0.018;
+  scene.add(keyLight, keyLight.target);
+  // Cool rim from behind separates the warm ceramic hulls from the void.
+  const rimLight = new THREE.DirectionalLight(0x5aa9ff, 1.5);
+  rimLight.position.set(-5, 4.5, -4.5);
+  scene.add(rimLight);
+  // Faint bounce from the ground so plinths never read as pure black.
+  const bounce = new THREE.DirectionalLight(0xffbe86, 0.35);
+  bounce.position.set(0, -3, 1.5);
+  scene.add(bounce);
+  return keyLight;
 };
 
 const createScene = (host: HTMLElement): SceneObjects => {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050816);
-  scene.fog = new THREE.Fog(0x050816, 10, 28);
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  scene.background = new THREE.Color(toColorValue(novaPalette.void));
+  scene.fog = new THREE.Fog(toColorValue(novaPalette.void), 10, 28);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.domElement.style.display = 'block';
   renderer.domElement.style.height = '100%';
   renderer.domElement.style.width = '100%';
@@ -197,195 +134,190 @@ const createScene = (host: HTMLElement): SceneObjects => {
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  // Rotation stays off: this is a tabletop read from one side, and free orbit
+  // makes the fixed piece fronts read as wrong.
   controls.enableRotate = false;
   controls.enablePan = true;
   controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
   controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
   controls.touches.ONE = THREE.TOUCH.PAN;
   controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
-  controls.minPolarAngle = 0.35;
-  controls.maxPolarAngle = Math.PI / 2.15;
 
   const postProcess = createTabletopPostProcess(renderer, scene, camera);
   const particles = createConstructionParticles(scene);
-
   const board = new THREE.Group();
   const pieces = new THREE.Group();
-  scene.add(board, pieces, new THREE.HemisphereLight(0xc9d7df, 0x241c17, 1.35));
-  const keyLight = new THREE.DirectionalLight(0xfff1d6, 3.9);
-  keyLight.position.set(5, 10, 4);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(2048, 2048);
-  keyLight.shadow.bias = -0.0002;
-  keyLight.shadow.normalBias = 0.018;
-  keyLight.shadow.camera.left = -8;
-  keyLight.shadow.camera.right = 8;
-  keyLight.shadow.camera.top = 8;
-  keyLight.shadow.camera.bottom = -8;
-  scene.add(keyLight, keyLight.target);
-  const rimLight = new THREE.DirectionalLight(0x4da3ff, 1.3);
-  rimLight.position.set(-5, 5, -4);
-  scene.add(rimLight);
-  return { board, camera, controls, keyLight, particles, pieces, postProcess, renderer, scene };
+  scene.add(board, pieces);
+  const highlights = createTileHighlights(board);
+  const keyLight = createLighting(scene);
+  const cameraController = createCameraController(camera, controls);
+  return {
+    board,
+    camera,
+    cameraController,
+    controls,
+    highlights,
+    keyLight,
+    particles,
+    pieces,
+    postProcess,
+    renderer,
+    scene,
+  };
 };
 
-const updateActors = (world: World, pieces: THREE.Group, actors: Map<string, Actor>): void => {
-  const layouts = createPieceLayouts(world);
-  const nextPieces = new Set<string>();
-  for (const piece of getRenderPieces(world)) {
-    const layout = layouts.get(piece.id);
-    if (!layout) {
-      continue;
-    }
-    nextPieces.add(piece.id);
-    const actor = actors.get(piece.id);
-    if (!actor) {
-      const created = createActor(piece, layout);
-      actors.set(piece.id, created);
-      pieces.add(created.root);
-      continue;
-    }
-    actor.construction = piece.constructionTicks > 0;
-    actor.leaving = false;
-    actor.targetOpacity = 1;
-    actor.target.set(layout.x, 0.105, layout.z);
-    actor.targetScale = (piece.constructionTicks > 0 ? 0.72 : 1) * layout.scale;
-    const directionX = layout.x - actor.root.position.x;
-    const directionZ = layout.z - actor.root.position.z;
-    if (actor.kind === 'android' && directionX * directionX + directionZ * directionZ > 0.0025) {
-      actor.targetYaw = Math.atan2(directionX, directionZ);
-    }
-  }
-  for (const [id, actor] of actors) {
-    if (!nextPieces.has(id)) {
-      actor.leaving = true;
-      actor.target.y = -0.35;
-      actor.targetOpacity = 0;
-      actor.targetScale = 0.01;
-    }
-  }
-};
-
-const getConstructionEmitters = (actors: Map<string, Actor>): ParticleEmitter[] => {
-  const color = new THREE.Color(0xffb347);
-  return [...actors.entries()].flatMap(([id, actor]): ParticleEmitter[] => {
-    if (!actor.construction || actor.leaving) {
-      return [];
-    }
-    return [
-      {
-        id,
-        color,
-        rate: 18,
-        position: new THREE.Vector3(
-          actor.root.position.x,
-          actor.root.position.y + 0.24 + actor.root.scale.y * 0.34,
-          actor.root.position.z,
-        ),
-      },
-    ];
-  });
-};
-
-const frameCamera = (world: World, objects: SceneObjects): void => {
+/**
+ * Frames the board so it fills the viewport with a small margin, and aims the
+ * shadow camera at the same extent.
+ */
+const frameCamera = (world: World, objects: SceneObjects): CameraFraming => {
   const bounds = getWorldBounds(world);
   const focus = new THREE.Vector3(bounds.centerX, 0, bounds.centerZ);
-  objects.camera.position.set(bounds.centerX, bounds.span * 0.78 + 1.5, bounds.centerZ + bounds.span * 1.02 + 2.5);
+  objects.camera.position.set(bounds.centerX, bounds.span * 0.72 + 1.2, bounds.centerZ + bounds.span * 0.84 + 1.6);
   objects.controls.target.copy(focus);
-  objects.controls.minDistance = Math.max(3, bounds.span * 0.75);
+  // Close enough to fill the frame with a couple of tiles, far enough to see the
+  // whole board with margin.
+  objects.controls.minDistance = Math.max(1.6, bounds.span * 0.14);
   objects.controls.maxDistance = Math.max(16, bounds.span * 3);
   if (objects.scene.fog instanceof THREE.Fog) {
-    objects.scene.fog.near = bounds.span * 1.4;
-    objects.scene.fog.far = bounds.span * 3.6 + 2;
+    // Kept well beyond the board so the frame's far corners stay legible; the
+    // fog is for depth against the void, not for dimming the play area.
+    objects.scene.fog.near = bounds.span * 2.4;
+    objects.scene.fog.far = bounds.span * 5 + 6;
   }
   objects.controls.update();
   objects.keyLight.position.set(
-    bounds.centerX - bounds.span * 0.8,
-    bounds.span * 0.8 + 4,
-    bounds.centerZ + bounds.span * 0.9,
+    bounds.centerX - bounds.span * 0.75,
+    bounds.span * 0.85 + 4,
+    bounds.centerZ + bounds.span * 0.85,
   );
   objects.keyLight.target.position.set(bounds.centerX, 0, bounds.centerZ);
   const shadowCamera = objects.keyLight.shadow.camera;
-  const shadowSize = Math.max(6, bounds.span * 0.85);
+  const shadowSize = Math.max(6, bounds.span * 0.9);
   shadowCamera.left = -shadowSize;
   shadowCamera.right = shadowSize;
   shadowCamera.top = shadowSize;
   shadowCamera.bottom = -shadowSize;
   shadowCamera.near = 0.5;
-  shadowCamera.far = bounds.span * 4;
+  shadowCamera.far = bounds.span * 4.5;
   shadowCamera.updateProjectionMatrix();
+  return {
+    boardDistance: objects.camera.position.distanceTo(focus),
+    maximumDistance: objects.controls.maxDistance,
+    minimumDistance: objects.controls.minDistance,
+  };
 };
 
-const createAnimationLoop = (
-  objects: SceneObjects,
-  actors: Map<string, Actor>,
-  animateBoard: (elapsed: number) => void,
-): (() => void) => {
+/** Longest step the easings stay stable over; also caps catch-up after a stall. */
+const maximumDelta = 0.05;
+
+type AnimationLoopOptions = {
+  actors: Map<string, Actor>;
+  animateBoard: (elapsed: number, delta: number) => void;
+  autoPlay: boolean;
+  objects: SceneObjects;
+  selection: { pieceId: string | undefined };
+};
+
+const createAnimationLoop = ({
+  actors,
+  animateBoard,
+  autoPlay,
+  objects,
+  selection,
+}: AnimationLoopOptions): AnimationLoop => {
   const timer = new THREE.Timer();
   let animationFrame = 0;
   let elapsed = 0;
   let disposed = false;
+
+  const step = (delta: number): void => {
+    elapsed += delta;
+    animateBoard(elapsed, delta);
+    animateActors({
+      actors,
+      delta,
+      elapsed,
+      pieces: objects.pieces,
+      selectedId: selection.pieceId,
+      onPuff: ({ color, position }) => objects.particles.burst(position, color),
+    });
+    objects.particles.update(delta, getConstructionEmitters(actors));
+    objects.highlights.animate(elapsed, delta);
+    objects.cameraController.animate(delta);
+    objects.controls.update();
+    objects.postProcess.render(elapsed);
+  };
+
   const animate = (timestamp?: number): void => {
     if (disposed) {
       return;
     }
     animationFrame = requestAnimationFrame(animate);
     timer.update(timestamp);
-    const delta = Math.min(timer.getDelta(), 0.05);
-    elapsed += delta;
-    animateBoard(elapsed);
-    objects.particles.update(delta, getConstructionEmitters(actors));
-    const positionAlpha = 1 - Math.exp(-10 * delta);
-    const scaleAlpha = 1 - Math.exp(-12 * delta);
-    for (const [id, actor] of actors) {
-      actor.root.position.lerp(actor.target, positionAlpha);
-      const nextScale = THREE.MathUtils.lerp(actor.root.scale.x, actor.targetScale, scaleAlpha);
-      actor.root.scale.setScalar(nextScale);
-      actor.opacity = THREE.MathUtils.lerp(actor.opacity, actor.targetOpacity, scaleAlpha);
-      setObjectOpacity(actor.root, actor.opacity);
-      actor.root.rotation.y = THREE.MathUtils.lerp(actor.root.rotation.y, actor.targetYaw, positionAlpha);
-      actor.visual.position.y = actor.kind === 'android' ? Math.sin(elapsed * 5 + actor.phase) * 0.012 : 0;
-      if (actor.leaving && nextScale < 0.025 && actor.opacity < 0.025) {
-        objects.pieces.remove(actor.root);
-        actors.delete(id);
-      }
-    }
-    objects.controls.update();
-    objects.postProcess.render(elapsed);
+    // Clamped at both ends. The first frame seeds the timer from
+    // performance.now() while later frames carry rAF timestamps measured from
+    // navigation start, so an unclamped delta can be large and negative — which
+    // inverts every `1 - exp(-k * delta)` easing and drives transforms to NaN.
+    step(THREE.MathUtils.clamp(timer.getDelta(), 0, maximumDelta));
   };
-  animate();
-  return (): void => {
-    disposed = true;
-    cancelAnimationFrame(animationFrame);
-    timer.dispose();
+
+  if (autoPlay) {
+    animate();
+  } else {
+    // Produce one frame so a manually driven renderer is never blank.
+    step(0);
+  }
+
+  return {
+    step,
+    stop: (): void => {
+      disposed = true;
+      cancelAnimationFrame(animationFrame);
+      timer.dispose();
+    },
   };
+};
+
+const resizeToHost = (host: HTMLElement, objects: SceneObjects): void => {
+  if (!host.clientWidth || !host.clientHeight) {
+    return;
+  }
+  objects.camera.aspect = host.clientWidth / host.clientHeight;
+  objects.camera.updateProjectionMatrix();
+  const pixelRatio = Math.min(window.devicePixelRatio, 2);
+  objects.renderer.setPixelRatio(pixelRatio);
+  objects.renderer.setSize(host.clientWidth, host.clientHeight, false);
+  objects.postProcess.resize(host.clientWidth, host.clientHeight, pixelRatio);
 };
 
 const createTabletopRenderer = (host: HTMLElement, options: TabletopRendererOptions = {}): TabletopRenderer => {
   const objects = createScene(host);
   const actors = new Map<string, Actor>();
-  const boardUpdater = createBoardUpdater(objects.board);
-  const stopAnimation = createAnimationLoop(objects, actors, boardUpdater.animate);
+  const selection: { pieceId: string | undefined } = { pieceId: undefined };
+  const boardUpdater = createBoardUpdater(objects.board, { fogOfWar: options.fogOfWar });
+  const loop = createAnimationLoop({
+    actors,
+    animateBoard: boardUpdater.animate,
+    autoPlay: options.autoPlay ?? true,
+    objects,
+    selection,
+  });
   const removeTilePicker = createTilePicker({
     board: objects.board,
     camera: objects.camera,
     canvas: objects.renderer.domElement,
-    onTileClick: options.onTileClick,
+    onTileClick: (event) => options.onTileClick?.(event),
+    onTileHover: (position) => objects.highlights.setHover(position),
+    pieces: objects.pieces,
     resolveTile: boardUpdater.pickTile,
   });
-  const resize = (): void => {
-    if (!host.clientWidth || !host.clientHeight) {
-      return;
-    }
-    objects.camera.aspect = host.clientWidth / host.clientHeight;
-    objects.camera.updateProjectionMatrix();
-    const pixelRatio = Math.min(window.devicePixelRatio, 2);
-    objects.renderer.setPixelRatio(pixelRatio);
-    objects.renderer.setSize(host.clientWidth, host.clientHeight, false);
-    objects.postProcess.resize(host.clientWidth, host.clientHeight, pixelRatio);
-  };
+  const resize = (): void => resizeToHost(host, objects);
   let hasWorld = false;
   let boardDefinition = '';
+  let currentWorld: World | undefined;
+  let framing: CameraFraming = { boardDistance: 12, maximumDistance: 24, minimumDistance: 3 };
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
   resize();
@@ -393,18 +325,39 @@ const createTabletopRenderer = (host: HTMLElement, options: TabletopRendererOpti
   return {
     setWorld: (world: World): void => {
       boardUpdater.update(world);
-      updateActors(world, objects.pieces, actors);
+      updateActors({ actors, pieces: objects.pieces, world });
+      currentWorld = world;
       const nextBoardDefinition = world.tiles.map((tile) => `${tile.position.x}:${tile.position.y}`).join('|');
       if (!hasWorld || nextBoardDefinition !== boardDefinition) {
-        frameCamera(world, objects);
+        framing = frameCamera(world, objects);
         boardDefinition = nextBoardDefinition;
         hasWorld = true;
       }
     },
+    advance: (deltaSeconds: number): void => loop.step(Math.max(0, deltaSeconds)),
+    getCameraDistance: (): number => objects.cameraController.getDistance(),
+    getCameraFraming: (): CameraFraming => framing,
+    moveCamera: (move: CameraMove): void => objects.cameraController.move(move),
+    resetCamera: (duration?: number): void => {
+      if (!currentWorld) {
+        return;
+      }
+      const bounds = getWorldBounds(currentWorld);
+      objects.cameraController.move({
+        distance: framing.boardDistance,
+        duration,
+        position: { x: bounds.centerX, y: bounds.centerZ },
+      });
+    },
+    setSelection: (next: TabletopSelection): void => {
+      selection.pieceId = next.pieceId;
+      objects.highlights.setSelection(next.position);
+    },
     dispose: (): void => {
-      stopAnimation();
+      loop.stop();
       removeTilePicker();
       resizeObserver.disconnect();
+      objects.highlights.dispose();
       objects.controls.dispose();
       objects.particles.dispose();
       objects.postProcess.dispose();
@@ -414,5 +367,13 @@ const createTabletopRenderer = (host: HTMLElement, options: TabletopRendererOpti
   };
 };
 
-export type { TabletopRenderer, TabletopRendererOptions, TileClickEvent };
+export type {
+  CameraFraming,
+  CameraMove,
+  TabletopRenderer,
+  TabletopRendererOptions,
+  TabletopSelection,
+  TileClickEvent,
+  TilePosition,
+};
 export { createTabletopRenderer };

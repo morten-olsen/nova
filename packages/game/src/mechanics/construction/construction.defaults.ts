@@ -9,6 +9,7 @@ const buildingCosts: Record<BuildingType, MaterialBundle> = {
   processor: { metal: 15, electronics: 4, polymer: 2 },
   'acid-processing-plant': { metal: 12, electronics: 3, polymer: 2 },
   scanner: { metal: 8, electronics: 6 },
+  radar: { metal: 14, electronics: 10, polymer: 2 },
   'colony-module': { metal: 50, electronics: 20, polymer: 20 },
 };
 
@@ -20,6 +21,7 @@ const buildingTicks: Record<BuildingType, number> = {
   processor: 6,
   'acid-processing-plant': 5,
   scanner: 4,
+  radar: 7,
   'colony-module': 12,
 };
 

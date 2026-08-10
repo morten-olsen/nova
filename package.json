@@ -9,7 +9,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "tsc -b --pretty false",
-    "build": "tsc -b --pretty false",
+    "build": "pnpm run -r build",
     "test": "vitest run",
     "nova": "pnpm --filter @morten-olsen/nova-cli start",
     "dev:web": "pnpm --filter @morten-olsen/nova-web dev",

@@ -52,7 +52,7 @@ Each tile has:
 - `position`: `{ x, y }`
 - `composition`: materials and hazards in the ground
 - `scattered`: loose earth-launched material on the surface
-- optional `revealedBy`: player ids that have revealed the tile
+- optional `revealedBy`: player ids that can **currently** see the tile
 
 Tile composition is generated randomly when a new map is created. Composition is not the same as loose material. Composition represents things in the ground or environmental conditions.
 
@@ -294,6 +294,7 @@ Current building types:
 | `acid-processing-plant` | 12 metal, 3 electronics, 2 polymer   |                  5 | Enables androids to clean adjacent acid           |
 | `relay-tower`           | 8 metal, 4 electronics               |                  3 | Planned communication infrastructure              |
 | `scanner`               | 8 metal, 6 electronics               |                  4 | Reveals nearby tiles at longer range              |
+| `radar`                 | 14 metal, 10 electronics, 2 polymer  |                  7 | Reveals a radius-5 disc of tiles around itself    |
 | `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Planned victory/readiness infrastructure          |
 
 A building under construction occupies its tile immediately.
@@ -353,12 +354,22 @@ There is no private radio by default. Relay towers are planned to expand communi
 
 ## 14. Visibility and Information
 
-Androids reveal nearby tiles at round end. Current reveal defaults:
+Visibility is recomputed from scratch at the end of every round: a tile is visible only while something of yours is in range of it, and goes dark again once nothing is. Current sight defaults:
 
 - active androids reveal tiles within range 2
 - completed scanners reveal tiles within range 4
+- completed radars reveal tiles within radius 5
 
-Each script receives a fogged world projection for its Android's owner. It includes tiles that owner has revealed, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted. Revealed tiles remain known after the Android that discovered them moves away, so scripts can use the explored map as persistent information.
+Sight range is measured two different ways, and the difference is deliberate:
+
+- **Androids and scanners** count orthogonal steps (`|dx| + |dy|`), so their footprint is a diamond. It is the range the piece could actually walk, which makes short-range sight read as the piece looking around itself.
+- **Radars** use true distance (`dx² + dy² <= radius²`), so their footprint is a disc. A radar sweeps rather than walks, and at radius 5 a diamond would read as an obvious lozenge on the board instead of a sweep.
+
+A radar therefore sees roughly twice the ground a scanner does — about 81 tiles against 41 — for roughly twice the cost and almost twice the construction time. It is the mid-game answer to mapping a region, where the scanner is the early-game answer to seeing past your own Androids.
+
+Each script receives a fogged world projection for its Android's owner. It includes the tiles that owner can currently see, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted.
+
+Sight is not memory: once your Androids move out of range, or a scanner or radar is salvaged, a tile drops out of the projection again. Scripts that need to remember the map must persist it themselves in Android `memory` or share it through broadcasts.
 
 ## 15. Conflict
 
@@ -378,7 +389,7 @@ Direct android combat is not implemented.
 
 The readiness score answers: **which player has prepared the most viable colony right now?** It is calculated from the current `World` and reported per player with a contributor breakdown in `nova status` and the replay UI.
 
-Only completed, functioning colony assets and materials secured in completed buildings count. Construction sites, loose material, Android cargo, scripts, messages, Android count, map discovery, scanners, and relay towers earn no points. Scanners and exploration remain strategically useful because they help Androids locate viable resources and building sites.
+Only completed, functioning colony assets and materials secured in completed buildings count. Construction sites, loose material, Android cargo, scripts, messages, Android count, map discovery, scanners, radars, and relay towers earn no points. Sight infrastructure and exploration remain strategically useful because they help Androids locate viable resources and building sites.
 
 | Contributor                   |     Points |
 | ----------------------------- | ---------: |

@@ -240,7 +240,7 @@ describe('game engine', () => {
           ({
             type: 'android.wait',
             memory: 'seek-depot',
-            recording: \`${'${android?.recording ?? \'\'}'}waited\\n\`,
+            recording: \`${"${android?.recording ?? ''}"}waited\\n\`,
           })
         `,
       },
@@ -253,9 +253,7 @@ describe('game engine', () => {
 
     await loop.run();
 
-    expect(loop.world.androids[0]).toEqual(
-      expect.objectContaining({ memory: 'seek-depot', recording: 'waited\n' }),
-    );
+    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ memory: 'seek-depot', recording: 'waited\n' }));
     expect(loop.events).toContainEqual(
       expect.objectContaining({ type: 'android.wait', memory: 'seek-depot', recording: 'waited\n' }),
     );
@@ -409,6 +407,49 @@ describe('game engine', () => {
     expect(loop.world.buildings[0]).toEqual(
       expect.objectContaining({ storage: expect.objectContaining({ acidCanister: 1 }) }),
     );
+  });
+
+  it('reveals a radius-5 disc around a completed radar and nothing around an unfinished one', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset({ world: { width: 13, height: 13, composition: { acid: 0 } } }),
+      initWorld: createWorld({
+        buildings: [
+          {
+            id: 'radar-1',
+            ownerId: 'player-1',
+            type: 'radar',
+            position: { x: 6, y: 6 },
+            remainingConstruction: { ticks: 0, resources: {} },
+          },
+          {
+            id: 'radar-2',
+            ownerId: 'player-2',
+            type: 'radar',
+            position: { x: 0, y: 0 },
+            remainingConstruction: { ticks: 3, resources: { metal: 4 } },
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    const revealed = (x: number, y: number): boolean =>
+      loop.world.tiles
+        .find((tile) => tile.position.x === x && tile.position.y === y)
+        ?.revealedBy?.includes('player-1') ?? false;
+
+    expect(revealed(6, 6)).toBe(true);
+    expect(revealed(11, 6)).toBe(true);
+    expect(revealed(12, 6)).toBe(false);
+    // The radar's footprint is a disc, not the walked-steps diamond the Androids
+    // and scanners use: (9,9) is 6 orthogonal steps out but well inside radius 5.
+    expect(revealed(9, 9)).toBe(true);
+    expect(revealed(10, 9)).toBe(true);
+    expect(revealed(10, 10)).toBe(false);
+
+    // The unfinished radar sees nothing, including the tile it stands on.
+    expect(loop.world.tiles.filter((tile) => tile.revealedBy?.includes('player-2'))).toEqual([]);
   });
 
   it('applies events through the ruleset while protecting loop state from caller mutations', () => {

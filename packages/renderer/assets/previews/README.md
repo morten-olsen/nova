@@ -18,6 +18,6 @@ blender --background --python packages/renderer/blender/scripts/generate-nova-pi
 | --------------------------------- | ------------------------- | ------------------------------------- |
 | ![Relay tower](./relay-tower.png) | ![Scanner](./scanner.png) | ![Colony module](./colony-module.png) |
 
-| Loose material cache                          |
-| --------------------------------------------- |
-| ![Loose material cache](./material-cache.png) |
+| Radar                 | Loose material cache                          |
+| --------------------- | --------------------------------------------- |
+| ![Radar](./radar.png) | ![Loose material cache](./material-cache.png) |

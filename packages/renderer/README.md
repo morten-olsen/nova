@@ -38,4 +38,4 @@ Generate the starter pieces from the repository root:
 blender --background --python packages/renderer/blender/scripts/generate-nova-pieces.py
 ```
 
-The canonical art direction lives in [`docs/visual-design.md`](../../docs/visual-design.md).
+The canonical art direction lives in [`docs/visual-design.md`](../../docs/visual-design.md). For the full path from a new game rule to a piece on the board, see [`docs/ADDING-BUILDINGS.md`](../../docs/ADDING-BUILDINGS.md).

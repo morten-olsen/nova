@@ -1,272 +1,73 @@
-import type { Tile, World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game/browser';
 import * as THREE from 'three';
 
-type TilePosition = { x: number; y: number };
+import { novaPalette, toColorValue } from './nova-palette.js';
+import { fbm } from './tabletop-noise.js';
+import { createFogPainter, hasFogData } from './tabletop-fog.js';
+import { paintHazards } from './tabletop-hazards.js';
+import { paintTerrain } from './tabletop-terrain.js';
+import { getBounds, isSameBounds, pixelsPerTile, type BoardBounds, type TilePosition } from './tabletop-bounds.js';
+
+type BoardUpdaterOptions = {
+  /**
+   * Whether this recording uses fog of war. Left undefined, the board falls back
+   * to inspecting the current world, which cannot tell "nothing explored yet"
+   * apart from "this recording has no fog data".
+   */
+  fogOfWar?: boolean;
+};
 
 type BoardUpdater = {
-  animate: (elapsed: number) => void;
+  animate: (elapsed: number, delta: number) => void;
   pickTile: (point: THREE.Vector3) => TilePosition | undefined;
   update: (world: World) => void;
 };
 
-type BoardBounds = {
-  height: number;
-  maxX: number;
-  maxY: number;
-  minX: number;
-  minY: number;
-  width: number;
-};
+/** Width of the graphite frame around the play area, in tile units. */
+const rimWidth = 0.34;
+const rimHeight = 0.085;
+/**
+ * Ground plane, and the layers stacked on it. All three share the same displaced
+ * geometry so hazards and fog follow the terrain's relief instead of being
+ * clipped by it.
+ */
+const terrainHeight = 0.038;
+const hazardOffset = 0.008;
+const fogOffset = 0.016;
+const bodyThickness = 0.2;
+/** Where a piece's plinth rests. Sits on the terrain rather than floating over it. */
+const terrainSurfaceHeight = terrainHeight + 0.002;
+/** Hazards animate; the terrain beneath them does not. 20Hz is plenty for liquid. */
+const hazardFrameInterval = 1 / 20;
 
-const pixelsPerTile = 96;
-
-const getBounds = (tiles: Tile[]): BoardBounds => {
-  const positions = tiles.map((tile) => tile.position);
-  const minX = Math.min(0, ...positions.map((position) => position.x));
-  const maxX = Math.max(0, ...positions.map((position) => position.x));
-  const minY = Math.min(0, ...positions.map((position) => position.y));
-  const maxY = Math.max(0, ...positions.map((position) => position.y));
-  return { minX, maxX, minY, maxY, width: maxX - minX + 1, height: maxY - minY + 1 };
-};
-
-const getNoise = (x: number, y: number, seed: number): number => {
-  const value = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
-  return value - Math.floor(value);
-};
-
-const getPixelPosition = (position: TilePosition, bounds: BoardBounds): TilePosition => ({
-  x: (position.x - bounds.minX) * pixelsPerTile + pixelsPerTile / 2,
-  y: (position.y - bounds.minY) * pixelsPerTile + pixelsPerTile / 2,
-});
-
-const drawBaseTile = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds): void => {
-  const x = (tile.position.x - bounds.minX) * pixelsPerTile;
-  const y = (tile.position.y - bounds.minY) * pixelsPerTile;
-  const noise = getNoise(tile.position.x, tile.position.y, 1);
-  const hue = 23 + Math.round(noise * 16);
-  const lightness = Math.round(19 + noise * 9);
-  context.fillStyle = `hsl(${hue} ${22 + Math.round(noise * 12)}% ${lightness}%)`;
-  context.fillRect(x, y, pixelsPerTile, pixelsPerTile);
-  for (let index = 0; index < 18; index += 1) {
-    const offsetX = getNoise(tile.position.x, tile.position.y, index + 3) * pixelsPerTile;
-    const offsetY = getNoise(tile.position.x, tile.position.y, index + 23) * pixelsPerTile;
-    const size = 1 + getNoise(tile.position.x, tile.position.y, index + 41) * 4;
-    const shade = 16 + Math.round(getNoise(tile.position.x, tile.position.y, index + 59) * 20);
-    context.fillStyle = `hsl(${hue + 4} 18% ${shade}% / 0.24)`;
-    context.beginPath();
-    context.moveTo(x + offsetX, y + offsetY - size);
-    context.lineTo(x + offsetX + size, y + offsetY + size * 0.6);
-    context.lineTo(x + offsetX - size * 0.8, y + offsetY + size);
-    context.closePath();
-    context.fill();
-  }
-  context.strokeStyle = `hsl(${hue - 5} 24% ${Math.max(9, lightness - 9)}% / 0.2)`;
-  context.lineWidth = 1;
-  context.beginPath();
-  context.moveTo(x, y + pixelsPerTile * (0.2 + noise * 0.2));
-  context.lineTo(x + pixelsPerTile, y + pixelsPerTile * (0.32 + noise * 0.18));
-  context.stroke();
-};
-
-type RoundedPuddle = { height: number; radius: number; width: number; x: number; y: number };
-
-const drawRoundedPuddlePath = (context: CanvasRenderingContext2D, rectangle: RoundedPuddle): void => {
-  const { x, y, width, height, radius } = rectangle;
-  context.beginPath();
-  context.moveTo(x + radius, y);
-  context.lineTo(x + width - radius, y);
-  context.quadraticCurveTo(x + width, y, x + width, y + radius);
-  context.lineTo(x + width, y + height - radius);
-  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  context.lineTo(x + radius, y + height);
-  context.quadraticCurveTo(x, y + height, x, y + height - radius);
-  context.lineTo(x, y + radius);
-  context.quadraticCurveTo(x, y, x + radius, y);
-  context.closePath();
-};
-
-const drawAcid = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds, elapsed: number): void => {
-  const amount = tile.composition.acid ?? 0;
-  if (amount <= 0) {
-    return;
-  }
-  const position = getPixelPosition(tile.position, bounds);
-  const width = pixelsPerTile * (0.58 + getNoise(tile.position.x, tile.position.y, 91) * 0.14);
-  const height = pixelsPerTile * (0.58 + getNoise(tile.position.x, tile.position.y, 97) * 0.14);
-  const offsetX =
-    (getNoise(tile.position.x, tile.position.y, 101) - 0.5) * pixelsPerTile * 0.14 +
-    Math.sin(elapsed * 0.7 + tile.position.x) * 1.4;
-  const offsetY =
-    (getNoise(tile.position.x, tile.position.y, 103) - 0.5) * pixelsPerTile * 0.14 +
-    Math.cos(elapsed * 0.6 + tile.position.y) * 1.2;
-  const x = position.x + offsetX - width / 2;
-  const y = position.y + offsetY - height / 2;
-  drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
-  context.fillStyle = `rgb(69 88 25 / ${0.62 + amount * 0.05})`;
-  context.fill();
-  context.strokeStyle = 'rgb(32 47 12 / 0.58)';
-  context.lineWidth = 1.5;
-  context.stroke();
-  const sheen = context.createLinearGradient(x, y, x + width, y + height);
-  sheen.addColorStop(0, 'rgb(148 163 66 / 0.2)');
-  sheen.addColorStop(0.45, 'rgb(109 128 38 / 0.04)');
-  sheen.addColorStop(1, 'rgb(33 48 11 / 0.16)');
-  drawRoundedPuddlePath(context, {
-    x: x + 3,
-    y: y + 3,
-    width: width - 6,
-    height: height - 6,
-    radius: Math.min(width, height) * 0.18,
-  });
-  context.fillStyle = sheen;
-  context.fill();
-  context.save();
-  drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
-  context.clip();
-  context.strokeStyle = 'rgb(192 204 94 / 0.16)';
-  context.lineWidth = 1;
-  for (let index = 0; index < 3; index += 1) {
-    const rippleY = y + height * (0.22 + index * 0.22) + Math.sin(elapsed * 2.4 + index + tile.position.x) * 3;
-    context.beginPath();
-    context.moveTo(x + width * 0.16, rippleY);
-    context.quadraticCurveTo(x + width * 0.5, rippleY - 4, x + width * 0.84, rippleY);
-    context.stroke();
-  }
-  context.restore();
-  context.save();
-  drawRoundedPuddlePath(context, { x, y, width, height, radius: Math.min(width, height) * 0.22 });
-  context.clip();
-  for (let index = 0; index < 4; index += 1) {
-    const bubbleX = x + width * (0.2 + getNoise(tile.position.x, tile.position.y, index + 131) * 0.6);
-    const bubbleY = y + ((elapsed * 12 + index * 17) % Math.max(1, height * 0.6)) + height * 0.18;
-    const pulse = (Math.sin(elapsed * 3.2 + index * 2 + tile.position.x) + 1) / 2;
-    const radius = 1.2 + pulse * 2.1;
-    context.fillStyle = `rgb(186 204 98 / ${0.08 + pulse * 0.16})`;
-    context.beginPath();
-    context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
-    context.fill();
-    context.strokeStyle = 'rgb(34 49 12 / 0.5)';
-    context.lineWidth = 0.8;
-    context.stroke();
-  }
-  context.restore();
-};
-
-const drawAcidConnections = (context: CanvasRenderingContext2D, world: World, bounds: BoardBounds): void => {
-  const acidTiles = new Map(world.tiles.map((tile) => [`${tile.position.x}:${tile.position.y}`, tile]));
-  for (const tile of world.tiles) {
-    if ((tile.composition.acid ?? 0) <= 0) {
-      continue;
-    }
-    const position = getPixelPosition(tile.position, bounds);
-    for (const [x, y, horizontal] of [
-      [tile.position.x + 1, tile.position.y, true],
-      [tile.position.x, tile.position.y + 1, false],
-    ]) {
-      if ((acidTiles.get(`${x}:${y}`)?.composition.acid ?? 0) <= 0) {
-        continue;
-      }
-      context.fillStyle = 'rgb(60 77 20 / 0.68)';
-      if (horizontal) {
-        drawRoundedPuddlePath(context, {
-          x: position.x + pixelsPerTile * 0.28,
-          y: position.y - 13,
-          width: pixelsPerTile * 0.44,
-          height: 26,
-          radius: 8,
-        });
-      } else {
-        drawRoundedPuddlePath(context, {
-          x: position.x - 13,
-          y: position.y + pixelsPerTile * 0.28,
-          width: 26,
-          height: pixelsPerTile * 0.44,
-          radius: 8,
-        });
-      }
-      context.fill();
-    }
-  }
-};
-
-const drawRadiation = (context: CanvasRenderingContext2D, tile: Tile, bounds: BoardBounds, elapsed: number): void => {
-  const amount = tile.composition.radiation ?? 0;
-  if (amount <= 0) {
-    return;
-  }
-  const position = getPixelPosition(tile.position, bounds);
-  for (let index = 0; index < 3; index += 1) {
-    const offsetX =
-      (getNoise(tile.position.x, tile.position.y, index + 14) - 0.5) * pixelsPerTile * 0.4 +
-      Math.sin(elapsed * 0.45 + index * 3) * 4;
-    const offsetY =
-      (getNoise(tile.position.x, tile.position.y, index + 19) - 0.5) * pixelsPerTile * 0.4 +
-      Math.cos(elapsed * 0.35 + index * 2) * 3;
-    const radius =
-      pixelsPerTile * (0.2 + getNoise(tile.position.x, tile.position.y, index + 27) * 0.14) +
-      Math.sin(elapsed + index) * 2;
-    const gradient = context.createRadialGradient(
-      position.x + offsetX,
-      position.y + offsetY,
-      radius * 0.1,
-      position.x + offsetX,
-      position.y + offsetY,
-      radius,
-    );
-    gradient.addColorStop(0, `rgb(164 151 181 / ${0.07 + amount * 0.018})`);
-    gradient.addColorStop(0.55, `rgb(111 105 125 / ${0.035 + amount * 0.012})`);
-    gradient.addColorStop(1, 'rgb(111 105 125 / 0)');
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(position.x + offsetX, position.y + offsetY, radius, 0, Math.PI * 2);
-    context.fill();
-  }
-};
-
-const drawGrid = (context: CanvasRenderingContext2D, bounds: BoardBounds): void => {
-  context.strokeStyle = 'rgb(214 151 87 / 0.16)';
-  context.lineWidth = 1;
-  for (let x = 0; x <= bounds.width; x += 1) {
-    context.beginPath();
-    context.moveTo(x * pixelsPerTile, 0);
-    context.lineTo(x * pixelsPerTile, bounds.height * pixelsPerTile);
-    context.stroke();
-  }
-  for (let y = 0; y <= bounds.height; y += 1) {
-    context.beginPath();
-    context.moveTo(0, y * pixelsPerTile);
-    context.lineTo(bounds.width * pixelsPerTile, y * pixelsPerTile);
-    context.stroke();
-  }
-};
-
-type BoardPaintOptions = {
-  bounds: BoardBounds;
+type LayerCanvas = {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
-  elapsed: number;
   texture: THREE.CanvasTexture;
-  world: World;
 };
 
-const paintBoard = ({ bounds, canvas, context, elapsed, texture, world }: BoardPaintOptions): void => {
-  context.fillStyle = '#17110d';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  for (const tile of world.tiles) {
-    drawBaseTile(context, tile, bounds);
+const createLayerCanvas = (): LayerCanvas => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('Unable to create a board layer canvas');
   }
-  drawAcidConnections(context, world, bounds);
-  for (const tile of world.tiles) {
-    drawAcid(context, tile, bounds, elapsed);
-  }
-  for (const tile of world.tiles) {
-    drawRadiation(context, tile, bounds, elapsed);
-  }
-  drawGrid(context, bounds);
-  texture.needsUpdate = true;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  return { canvas, context, texture };
 };
 
-const createTerrainGeometry = (bounds: BoardBounds): THREE.PlaneGeometry => {
+const resizeLayer = (layer: LayerCanvas, bounds: BoardBounds): void => {
+  layer.canvas.width = bounds.width * pixelsPerTile;
+  layer.canvas.height = bounds.height * pixelsPerTile;
+};
+
+/**
+ * Gentle coherent relief. The previous per-vertex hash produced white noise,
+ * which computeVertexNormals turned into a permanently agitated surface.
+ */
+const createGroundGeometry = (bounds: BoardBounds): THREE.PlaneGeometry => {
   const segmentsPerTile = 6;
   const geometry = new THREE.PlaneGeometry(
     bounds.width,
@@ -276,78 +77,242 @@ const createTerrainGeometry = (bounds: BoardBounds): THREE.PlaneGeometry => {
   );
   const positions = geometry.getAttribute('position');
   if (!positions) {
-    throw new Error('Terrain geometry is missing positions');
+    throw new Error('Ground geometry is missing positions');
   }
+  const centreX = (bounds.minX + bounds.maxX) / 2;
+  const centreY = (bounds.minY + bounds.maxY) / 2;
   for (let index = 0; index < positions.count; index += 1) {
-    const worldX = positions.getX(index) + (bounds.minX + bounds.maxX) / 2;
-    const worldY = -positions.getY(index) + (bounds.minY + bounds.maxY) / 2;
-    const rollingHeight = (getNoise(worldX, worldY, 41) - 0.5) * 0.022;
-    const fineHeight = (getNoise(worldX * 3, worldY * 3, 73) - 0.5) * 0.006;
-    positions.setZ(index, rollingHeight + fineHeight);
+    const worldX = positions.getX(index) + centreX;
+    const worldY = -positions.getY(index) + centreY;
+    const relief = (fbm(worldX * 0.5, worldY * 0.5, 11, 3) - 0.5) * 0.044;
+    const detail = (fbm(worldX * 2.4, worldY * 2.4, 37, 2) - 0.5) * 0.011;
+    positions.setZ(index, relief + detail);
   }
   geometry.computeVertexNormals();
   return geometry;
 };
 
-const createBoardUpdater = (board: THREE.Group): BoardUpdater => {
+/**
+ * The frame, as a single bevelled extrusion. The chamfer is what makes the board
+ * read as a machined object rather than a plane floating in the void.
+ */
+const createRimGeometry = (bounds: BoardBounds): THREE.ExtrudeGeometry => {
+  const halfWidth = bounds.width / 2;
+  const halfHeight = bounds.height / 2;
+  const outerX = halfWidth + rimWidth;
+  const outerY = halfHeight + rimWidth;
+  const shape = new THREE.Shape();
+  shape.moveTo(-outerX, -outerY);
+  shape.lineTo(outerX, -outerY);
+  shape.lineTo(outerX, outerY);
+  shape.lineTo(-outerX, outerY);
+  shape.closePath();
+  const hole = new THREE.Path();
+  hole.moveTo(-halfWidth, -halfHeight);
+  hole.lineTo(-halfWidth, halfHeight);
+  hole.lineTo(halfWidth, halfHeight);
+  hole.lineTo(halfWidth, -halfHeight);
+  hole.closePath();
+  shape.holes.push(hole);
+  return new THREE.ExtrudeGeometry(shape, {
+    depth: rimHeight,
+    bevelEnabled: true,
+    bevelThickness: 0.014,
+    bevelSize: 0.014,
+    bevelSegments: 1,
+    curveSegments: 1,
+  });
+};
+
+/** A soft contact shadow so the board sits on something instead of hovering. */
+const createContactShadow = (bounds: BoardBounds): THREE.Mesh => {
+  const size = 256;
   const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
   const context = canvas.getContext('2d');
-  if (!context) {
-    throw new Error('Unable to create board texture canvas');
+  if (context) {
+    const gradient = context.createRadialGradient(size / 2, size / 2, size * 0.18, size / 2, size / 2, size * 0.5);
+    gradient.addColorStop(0, 'rgb(0 0 0 / 0.55)');
+    gradient.addColorStop(0.6, 'rgb(0 0 0 / 0.22)');
+    gradient.addColorStop(1, 'rgb(0 0 0 / 0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, size, size);
   }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.88, metalness: 0.16 });
-  const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 0.84, metalness: 0.18 });
-  let base: THREE.Mesh | undefined;
-  let terrain: THREE.Mesh | undefined;
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry((bounds.width + rimWidth * 2) * 1.9, (bounds.height + rimWidth * 2) * 1.9),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(canvas),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = -bodyThickness - 0.01;
+  return mesh;
+};
+
+type BoardMaterials = {
+  body: THREE.Material;
+  fog: THREE.Material;
+  hazard: THREE.Material;
+  rim: THREE.Material;
+  terrain: THREE.Material;
+};
+
+const createBoardMaterials = (terrain: THREE.Texture, hazard: THREE.Texture, fog: THREE.Texture): BoardMaterials => ({
+  terrain: new THREE.MeshStandardMaterial({ map: terrain, roughness: 0.93, metalness: 0.05 }),
+  hazard: new THREE.MeshStandardMaterial({
+    map: hazard,
+    transparent: true,
+    roughness: 0.35,
+    metalness: 0.1,
+    depthWrite: false,
+  }),
+  // Unlit: fog is an absence of information, not a lit surface.
+  fog: new THREE.MeshBasicMaterial({ map: fog, transparent: true, depthWrite: false, toneMapped: false }),
+  body: new THREE.MeshStandardMaterial({ color: toColorValue(novaPalette.void), roughness: 0.7, metalness: 0.35 }),
+  rim: new THREE.MeshStandardMaterial({
+    color: toColorValue(novaPalette.structureDark),
+    roughness: 0.48,
+    metalness: 0.65,
+  }),
+});
+
+type BoardMeshes = {
+  ground: THREE.PlaneGeometry;
+  meshes: THREE.Mesh[];
+};
+
+const addGroundLayer = (
+  ground: THREE.PlaneGeometry,
+  material: THREE.Material,
+  centre: TilePosition,
+  height: number,
+): THREE.Mesh => {
+  const mesh = new THREE.Mesh(ground, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(centre.x, height, centre.y);
+  return mesh;
+};
+
+/**
+ * Builds the board as a recessed graphite tray: a solid body, the displaced
+ * ground with its hazard and fog layers stacked on the same geometry, and a
+ * bevelled rim standing proud of them.
+ */
+const buildBoardMeshes = (bounds: BoardBounds, materials: BoardMaterials): BoardMeshes => {
+  const centre = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+  const ground = createGroundGeometry(bounds);
+
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(bounds.width + rimWidth * 2, bodyThickness, bounds.height + rimWidth * 2),
+    materials.body,
+  );
+  body.position.set(centre.x, -bodyThickness / 2, centre.y);
+  body.receiveShadow = true;
+
+  const terrain = addGroundLayer(ground, materials.terrain, centre, terrainHeight);
+  terrain.receiveShadow = true;
+  const hazard = addGroundLayer(ground, materials.hazard, centre, terrainHeight + hazardOffset);
+  const fog = addGroundLayer(ground, materials.fog, centre, terrainHeight + fogOffset);
+
+  const rim = new THREE.Mesh(createRimGeometry(bounds), materials.rim);
+  rim.rotation.x = -Math.PI / 2;
+  rim.position.set(centre.x, rimHeight, centre.y);
+  rim.castShadow = true;
+  rim.receiveShadow = true;
+
+  const shadow = createContactShadow(bounds);
+  shadow.position.x = centre.x;
+  shadow.position.z = centre.y;
+
+  return { ground, meshes: [shadow, body, terrain, hazard, fog, rim] };
+};
+
+/** The ground geometry is shared across three meshes, so it is disposed once. */
+const disposeBoardMeshes = (built: BoardMeshes | undefined): void => {
+  if (!built) {
+    return;
+  }
+  for (const mesh of built.meshes) {
+    mesh.removeFromParent();
+    if (mesh.geometry !== built.ground) {
+      mesh.geometry.dispose();
+    }
+  }
+  built.ground.dispose();
+};
+
+const createBoardUpdater = (board: THREE.Group, options: BoardUpdaterOptions = {}): BoardUpdater => {
+  const terrainLayer = createLayerCanvas();
+  const hazardLayer = createLayerCanvas();
+  const hazardScratch = createLayerCanvas();
+  const fogLayer = createLayerCanvas();
+  const materials = createBoardMaterials(terrainLayer.texture, hazardLayer.texture, fogLayer.texture);
+  const fogPainter = createFogPainter();
+  let built: BoardMeshes | undefined;
   let bounds: BoardBounds | undefined;
   let currentWorld: World | undefined;
-  let lastEffectUpdate = Number.NEGATIVE_INFINITY;
+  let lastHazardFrame = Number.NEGATIVE_INFINITY;
   let tileKeys = new Set<string>();
+
+  const rebuild = (nextBounds: BoardBounds): void => {
+    disposeBoardMeshes(built);
+    built = buildBoardMeshes(nextBounds, materials);
+    board.add(...built.meshes);
+  };
+
+  const repaintHazards = (world: World, elapsed: number): void => {
+    if (!bounds) {
+      return;
+    }
+    paintHazards({ bounds, context: hazardLayer.context, elapsed, scratch: hazardScratch.context, world });
+    hazardLayer.texture.needsUpdate = true;
+  };
+
+  const repaintFog = (world: World): void => {
+    if (!bounds) {
+      return;
+    }
+    fogPainter.paint({ bounds, context: fogLayer.context, world });
+    fogLayer.texture.needsUpdate = true;
+  };
 
   const update = (world: World): void => {
     const nextBounds = getBounds(world.tiles);
-    const sizeChanged =
-      !bounds ||
-      bounds.width !== nextBounds.width ||
-      bounds.height !== nextBounds.height ||
-      bounds.minX !== nextBounds.minX ||
-      bounds.minY !== nextBounds.minY;
-    if (sizeChanged) {
+    if (!isSameBounds(bounds, nextBounds)) {
       bounds = nextBounds;
-      canvas.width = bounds.width * pixelsPerTile;
-      canvas.height = bounds.height * pixelsPerTile;
-      const centerX = (bounds.minX + bounds.maxX) / 2;
-      const centerY = (bounds.minY + bounds.maxY) / 2;
-      base?.removeFromParent();
-      base?.geometry.dispose();
-      terrain?.removeFromParent();
-      terrain?.geometry.dispose();
-      base = new THREE.Mesh(new THREE.BoxGeometry(bounds.width, 0.08, bounds.height), baseMaterial);
-      base.position.set(centerX, -0.04, centerY);
-      base.receiveShadow = true;
-      terrain = new THREE.Mesh(createTerrainGeometry(bounds), material);
-      terrain.rotation.x = -Math.PI / 2;
-      terrain.position.set(centerX, 0.04, centerY);
-      terrain.receiveShadow = true;
-      board.add(base, terrain);
+      for (const layer of [terrainLayer, hazardLayer, hazardScratch, fogLayer]) {
+        resizeLayer(layer, nextBounds);
+      }
+      fogPainter.reset();
+      rebuild(nextBounds);
     }
     currentWorld = world;
-    if (bounds) {
-      paintBoard({ bounds, canvas, context, elapsed: 0, texture, world });
-    }
+    // Terrain only changes with the board's shape, so it is painted here rather
+    // than in the animation loop.
+    paintTerrain({ bounds: nextBounds, context: terrainLayer.context, world });
+    terrainLayer.texture.needsUpdate = true;
+    fogPainter.setWorld(world, options.fogOfWar ?? hasFogData(world));
+    repaintFog(world);
+    repaintHazards(world, 0);
     tileKeys = new Set(world.tiles.map((tile) => `${tile.position.x}:${tile.position.y}`));
   };
 
-  const animate = (elapsed: number): void => {
-    if (!currentWorld || elapsed - lastEffectUpdate < 1 / 12) {
+  const animate = (elapsed: number, delta: number): void => {
+    if (!currentWorld) {
       return;
     }
-    lastEffectUpdate = elapsed;
-    if (bounds) {
-      paintBoard({ bounds, canvas, context, elapsed, texture, world: currentWorld });
+    if (fogPainter.advance(delta)) {
+      repaintFog(currentWorld);
     }
+    if (elapsed - lastHazardFrame < hazardFrameInterval) {
+      return;
+    }
+    lastHazardFrame = elapsed;
+    repaintHazards(currentWorld, elapsed);
   };
 
   const pickTile = (point: THREE.Vector3): TilePosition | undefined => {
@@ -364,5 +329,5 @@ const createBoardUpdater = (board: THREE.Group): BoardUpdater => {
   return { animate, pickTile, update };
 };
 
-export type { BoardUpdater, TilePosition };
-export { createBoardUpdater };
+export type { BoardUpdater, BoardUpdaterOptions, TilePosition };
+export { createBoardUpdater, terrainSurfaceHeight };

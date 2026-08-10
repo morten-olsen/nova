@@ -5,7 +5,10 @@ import { join } from 'node:path';
 const [releaseTag] = process.argv.slice(2);
 const version = releaseTag?.replace(/^v/, '');
 
-if (!version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(version)) {
+if (
+  !version ||
+  !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(version)
+) {
   throw new Error(`Expected a semantic-version release tag, received: ${releaseTag ?? '<none>'}`);
 }
 

@@ -11,6 +11,7 @@ const buildingTypeSchema = z.enum([
   'processor',
   'acid-processing-plant',
   'scanner',
+  'radar',
   'colony-module',
 ]);
 

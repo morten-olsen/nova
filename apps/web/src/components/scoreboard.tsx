@@ -1,58 +1,113 @@
 import { calculateColonyScores, type PlayerScore, type World } from '@morten-olsen/nova-game/browser';
+import { getFaction } from '@morten-olsen/nova-renderer';
+import { useState } from 'react';
 
 type ScoreboardProps = {
   world: World;
 };
 
-type PlayerScoreCardProps = {
+type PlayerRowProps = {
+  accent: string;
+  expanded: boolean;
+  glyph: string;
+  leading: boolean;
+  onToggle: () => void;
   score: PlayerScore;
+  share: number;
 };
 
-const PlayerScoreCard = ({ score }: PlayerScoreCardProps): React.ReactNode => {
+const PlayerRow = ({ accent, expanded, glyph, leading, onToggle, score, share }: PlayerRowProps): React.ReactNode => {
   return (
-    <li className="border-l-2 border-cyan-500/60 bg-slate-950/60 px-3 py-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="font-medium text-slate-100">{score.playerName}</span>
-        <span className="text-lg font-bold text-cyan-200">{score.total}</span>
-      </div>
-      <p className="mt-1 text-xs text-slate-500">{score.playerId}</p>
-      {score.contributors.length ? (
-        <ul className="mt-3 space-y-1 border-t border-slate-800 pt-2 text-xs text-slate-300">
-          {score.contributors.map((contributor) => (
-            <li key={contributor.id} className="flex justify-between gap-3">
-              <span>{contributor.label}</span>
-              <span className="shrink-0 text-slate-400">
-                {contributor.quantity} · {contributor.points}
-              </span>
-            </li>
-          ))}
+    <li>
+      <button
+        aria-expanded={expanded}
+        className="group w-full cursor-pointer rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-white/5"
+        type="button"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-2.5">
+          {/* Colour never carries ownership alone: the glyph is always with it. */}
+          <span aria-hidden className="text-[0.7rem] leading-none" style={{ color: accent }}>
+            {glyph}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{score.playerName}</span>
+          {leading ? <span className="label !text-[0.6rem] !tracking-wider text-energy">Lead</span> : null}
+          <span className="num text-base font-semibold tabular-nums text-ink">{score.total}</span>
+          <svg
+            aria-hidden
+            className={`size-3 shrink-0 text-ink-faint transition-transform ${expanded ? 'rotate-90' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-hairline">
+          <div
+            className="h-full rounded-full transition-[width] duration-500"
+            style={{ background: accent, width: `${Math.max(2, share * 100)}%` }}
+          />
+        </div>
+      </button>
+      {expanded ? (
+        <ul className="rise mt-1 mb-1 space-y-1 border-l-2 pl-3 text-xs" style={{ borderColor: accent }}>
+          {score.contributors.length ? (
+            score.contributors.map((contributor) => (
+              <li key={contributor.id} className="flex items-baseline justify-between gap-3">
+                <span className="min-w-0 truncate text-ink-dim">{contributor.label}</span>
+                <span className="num shrink-0 text-ink-faint">
+                  <span className="text-ink-dim">{contributor.quantity}</span> · {contributor.points}
+                </span>
+              </li>
+            ))
+          ) : (
+            <li className="text-ink-faint">No viable colony assets yet.</li>
+          )}
         </ul>
-      ) : (
-        <p className="mt-3 border-t border-slate-800 pt-2 text-xs text-slate-500">No viable colony assets yet.</p>
-      )}
+      ) : null}
     </li>
   );
 };
 
+/**
+ * Collapsed by default: the score is the headline, and the breakdown is a detail
+ * you ask for. Showing every contributor at once crowded out the board.
+ */
 const Scoreboard = ({ world }: ScoreboardProps): React.ReactNode => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const scores = calculateColonyScores(world);
+  const best = Math.max(1, ...scores.map((score) => score.total));
+
   return (
-    <aside className="command-panel max-h-80 shrink-0 overflow-y-auto p-4 xl:max-h-[45%]">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="command-label text-cyan-300">Colony readiness</p>
-        <span className="text-xs text-slate-500">score</span>
+    <section className="hud w-64 p-2.5">
+      <div className="flex items-baseline justify-between gap-3 px-1 pb-1.5">
+        <h2 className="label">Colony readiness</h2>
+        <span className="num text-[0.65rem] text-ink-faint">{scores.length} players</span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-slate-400">Completed infrastructure and secured materials only.</p>
       {scores.length ? (
-        <ol className="mt-3 space-y-2">
-          {scores.map((score) => (
-            <PlayerScoreCard key={score.playerId} score={score} />
-          ))}
+        <ol>
+          {scores.map((score) => {
+            const faction = getFaction(world, score.playerId);
+            return (
+              <PlayerRow
+                key={score.playerId}
+                accent={faction.accent}
+                expanded={expandedId === score.playerId}
+                glyph={faction.glyph}
+                leading={score.total === best && scores.length > 1}
+                score={score}
+                share={score.total / best}
+                onToggle={() => setExpandedId((current) => (current === score.playerId ? null : score.playerId))}
+              />
+            );
+          })}
         </ol>
       ) : (
-        <p className="mt-3 text-sm text-slate-500">No players have entered this world.</p>
+        <p className="px-1 pb-1 text-xs text-ink-faint">No players have entered this world.</p>
       )}
-    </aside>
+    </section>
   );
 };
 

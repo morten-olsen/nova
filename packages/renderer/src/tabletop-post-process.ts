@@ -33,9 +33,9 @@ const frontierShader = {
     void main() {
       vec4 sampled = texture2D(tDiffuse, vUv);
       float distanceFromCenter = distance(vUv, vec2(0.5));
-      float vignette = smoothstep(0.22, 0.72, distanceFromCenter);
+      float vignette = smoothstep(0.34, 0.86, distanceFromCenter);
       float grain = random(vUv * 900.0 + time * 17.0) - 0.5;
-      vec3 color = sampled.rgb * (1.0 - vignette * 0.2);
+      vec3 color = sampled.rgb * (1.0 - vignette * 0.12);
       color += grain * 0.01;
       gl_FragColor = vec4(color, sampled.a);
     }

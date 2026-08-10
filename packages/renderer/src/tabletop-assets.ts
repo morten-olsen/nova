@@ -14,6 +14,7 @@ const assetUrls: Record<string, string> = {
   'acid-processing-plant': new URL('../assets/models/acid-processing-plant.glb', import.meta.url).href,
   'relay-tower': new URL('../assets/models/relay-tower.glb', import.meta.url).href,
   scanner: new URL('../assets/models/scanner.glb', import.meta.url).href,
+  radar: new URL('../assets/models/radar.glb', import.meta.url).href,
   'colony-module': new URL('../assets/models/colony-module.glb', import.meta.url).href,
 };
 
@@ -53,7 +54,13 @@ const createPlaceholder = (kind: PieceKind): THREE.Group => {
   return group;
 };
 
-const setOwnerColor = (object: THREE.Object3D, color: THREE.Color): void => {
+/**
+ * Tints the shared `FactionAccent` material to the owner's colour and returns
+ * the cloned accent materials, so callers can drive status reads (low battery,
+ * activity pulse) through the same surfaces that carry ownership.
+ */
+const setOwnerColor = (object: THREE.Object3D, color: THREE.Color): THREE.MeshStandardMaterial[] => {
+  const accents: THREE.MeshStandardMaterial[] = [];
   object.traverse((child) => {
     if (!(child instanceof THREE.Mesh)) {
       return;
@@ -64,8 +71,9 @@ const setOwnerColor = (object: THREE.Object3D, color: THREE.Color): void => {
       const tinted = material.clone();
       if (tinted.name === 'FactionAccent') {
         tinted.color.copy(color);
-        if ('emissive' in tinted) {
+        if (tinted instanceof THREE.MeshStandardMaterial) {
           tinted.emissive.copy(color);
+          accents.push(tinted);
         }
       }
       return tinted;
@@ -74,6 +82,7 @@ const setOwnerColor = (object: THREE.Object3D, color: THREE.Color): void => {
     child.castShadow = true;
     child.receiveShadow = true;
   });
+  return accents;
 };
 
 const getBuildingKind = (building: Building): PieceKind =>

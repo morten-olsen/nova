@@ -124,7 +124,7 @@ The current local ruleset already supports a playable automation loop:
 - explore a randomized tile world
 - collect scattered earth-launched material
 - carry limited cargo
-- build chargers, depots, extractors, processors, scanners, acid processing plants, and colony modules
+- build chargers, depots, extractors, processors, scanners, radars, acid processing plants, and colony modules
 - use chargers to increase android capacity and restore battery
 - extract natural resources from tile composition
 - process ore into metal
@@ -133,7 +133,7 @@ The current local ruleset already supports a playable automation loop:
 - take damage from acid and radiation
 - clean adjacent acid tiles after building an acid processing plant
 
-The full player-facing rules live in [`RULEBOOK.md`](./docs/RULEBOOK.md). Android builders should also read the [CLI guide](./docs/CLI-GUIDE.md) and [Android builder manual](./docs/ANDROID-BUILDER-MANUAL.md).
+The full player-facing rules live in [`RULEBOOK.md`](./docs/RULEBOOK.md). Android builders should also read the [CLI guide](./docs/CLI-GUIDE.md) and [Android builder manual](./docs/ANDROID-BUILDER-MANUAL.md). Contributors extending the game itself should start from the [visual design language](./docs/visual-design.md) and the [guide to adding a building](./docs/ADDING-BUILDINGS.md).
 
 ## Getting started: build your first Android
 
