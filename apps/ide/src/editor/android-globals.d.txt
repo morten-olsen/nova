@@ -112,7 +112,19 @@ type Action = ActionState &
     | { type: 'android.start-construction'; buildingType: BuildingType; resources?: MaterialBundle }
     | { type: 'android.continue-construction'; resources?: MaterialBundle }
     | { type: 'android.salvage' }
-    | { type: 'android.dismantle' }
+    /**
+     * Launch another android on the same charger, from one of your scripts in
+     * `world.scripts`. Needs spare charger capacity, exactly as a launch from
+     * the lab does: your active androids must number fewer than your completed
+     * chargers.
+     */
+    | { type: 'android.launch'; scriptId: string }
+    /**
+     * Destroy this android, or — standing on one of your own completed chargers —
+     * one of your other androids named by `targetAndroidId`. An android cannot
+     * name itself as the target.
+     */
+    | { type: 'android.dismantle'; targetAndroidId?: string }
     | { type: 'android.broadcast'; content: string }
     | { type: 'android.clean-acid'; direction: Direction }
   );

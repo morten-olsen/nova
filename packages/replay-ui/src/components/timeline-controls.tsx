@@ -25,6 +25,7 @@ const actionVerbs: Record<string, string> = {
   'android.continue-construction': 'construct',
   'android.salvage': 'salvage',
   'android.dismantle': 'dismantle',
+  'android.launch': 'launch',
   'android.broadcast': 'broadcast',
   'android.clean-acid': 'clean acid',
   'user.launch-android': 'launch',

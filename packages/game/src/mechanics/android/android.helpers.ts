@@ -47,6 +47,95 @@ const takeFromAndroidCargo = (android: Android, resources: Partial<MaterialBundl
   return normalizeMaterials(resources);
 };
 
+/** Chargers that count towards their owner's android capacity. */
+const completedChargersForOwner = (world: World, ownerId: string): Building[] => {
+  return world.buildings.filter(
+    (building) =>
+      building.ownerId === ownerId &&
+      building.type === 'charger' &&
+      building.remainingConstruction.ticks === 0 &&
+      materialAmount(building.remainingConstruction.resources) === 0,
+  );
+};
+
+/**
+ * The charger an android has to stand on to operate its owner's deployment bay —
+ * launching a new android or dismantling one of its siblings.
+ */
+const requireOperatingCharger = (world: World, android: Android): Building => {
+  const charger = getBuildingAt(world, android.position);
+  if (
+    !charger ||
+    charger.ownerId !== android.ownerId ||
+    charger.type !== 'charger' ||
+    !completedChargersForOwner(world, android.ownerId).some((candidate) => candidate.id === charger.id)
+  ) {
+    throw new Error('Android must be on an owned completed charger');
+  }
+
+  return charger;
+};
+
+/**
+ * Ids stay stable across a replay because they are derived from the world, but
+ * destroyed androids leave the array, so the count alone would reissue an id
+ * that is still in use.
+ */
+const nextAndroidId = (world: World): string => {
+  const taken = new Set(world.androids.map((android) => android.id));
+  let index = world.androids.length + 1;
+  while (taken.has(`android-${index}`)) {
+    index += 1;
+  }
+
+  return `android-${index}`;
+};
+
+type LaunchAndroidOptions = {
+  world: World;
+  ownerId: string;
+  scriptId: string;
+  /** Defaults to the owner's first completed charger. */
+  position?: Position;
+};
+
+/**
+ * Deploys an android against its owner's charger capacity.
+ *
+ * Shared by `user.launch-android` and `android.launch` so that an android
+ * launching a sibling is held to the same capacity limit as its player.
+ */
+const launchAndroid = (options: LaunchAndroidOptions): Android => {
+  const { world, ownerId, scriptId, position } = options;
+
+  const script = world.scripts.find((candidate) => candidate.id === scriptId && candidate.ownerId === ownerId);
+  if (!script) {
+    throw new Error(`Unknown script for owner: ${scriptId}`);
+  }
+
+  const chargers = completedChargersForOwner(world, ownerId);
+  const activeAndroids = world.androids.filter((android) => android.ownerId === ownerId && android.active).length;
+  if (activeAndroids >= chargers.length) {
+    throw new Error(`Android capacity reached for owner: ${ownerId}`);
+  }
+
+  const spawnPosition = position ?? chargers[0]?.position ?? world.tiles[0]?.position ?? { x: 0, y: 0 };
+  const android: Android = {
+    id: nextAndroidId(world),
+    ownerId,
+    scriptId,
+    position: { ...spawnPosition },
+    battery: 100,
+    health: 100,
+    active: true,
+    cargo: { metal: 0, electronics: 0, polymer: 0 },
+    memory: '',
+    recording: '',
+  };
+  world.androids.push(android);
+  return android;
+};
+
 const addToAndroidCargo = (android: Android, resources: Partial<MaterialBundle>): void => {
   android.cargo = normalizeMaterials(android.cargo);
   if (materialAmount(android.cargo) + materialAmount(resources) > androidCargoCapacity) {
@@ -59,10 +148,14 @@ const addToAndroidCargo = (android: Android, resources: Partial<MaterialBundle>)
 export {
   addToAndroidCargo,
   androidCargoCapacity,
+  completedChargersForOwner,
   getAndroid,
   getBuildingAt,
   getTileAt,
+  launchAndroid,
   materialAmount,
+  nextAndroidId,
+  requireOperatingCharger,
   samePosition,
   takeFromAndroidCargo,
 };

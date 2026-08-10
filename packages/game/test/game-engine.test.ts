@@ -497,6 +497,230 @@ describe('game engine', () => {
     );
   });
 
+  /**
+   * An android launching a sibling spends the same charger capacity a player
+   * launch does, so a fleet cannot grow past the cap by launching itself.
+   */
+  const createLaunchWorld = (
+    chargerPositions: { x: number; y: number }[],
+    androidPosition = { x: 0, y: 0 },
+    androidId = 'android-1',
+  ): World =>
+    createWorld({
+      tiles: [
+        { position: { x: 0, y: 0 }, composition: { acid: 0 } },
+        { position: { x: 1, y: 0 }, composition: { acid: 0 } },
+        { position: { x: 2, y: 0 }, composition: { acid: 0 } },
+      ],
+      scripts: [
+        {
+          id: 'launch-script',
+          ownerId: 'player-1',
+          name: 'launch',
+          content: "({ type: 'android.launch', scriptId: 'wait-script' })",
+        },
+        { id: 'wait-script', ownerId: 'player-1', name: 'wait', content: "({ type: 'android.wait' })" },
+      ],
+      androids: [
+        {
+          id: androidId,
+          ownerId: 'player-1',
+          scriptId: 'launch-script',
+          position: androidPosition,
+          battery: 100,
+          health: 100,
+          active: true,
+        },
+      ],
+      buildings: chargerPositions.map((position, index) => ({
+        id: `charger-${index + 1}`,
+        ownerId: 'player-1',
+        type: 'charger' as const,
+        position,
+        remainingConstruction: { ticks: 0, resources: { metal: 0 } },
+      })),
+    });
+
+  it('lets an android on a charger launch a sibling into spare capacity', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createLaunchWorld([
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+      ]),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({ id: 'android-1', active: true }),
+      expect.objectContaining({
+        id: 'android-2',
+        ownerId: 'player-1',
+        scriptId: 'wait-script',
+        position: { x: 0, y: 0 },
+        health: 99.9,
+        active: true,
+      }),
+    ]);
+    // The launched android takes its first turn in the following round.
+    expect(loop.events.map((event) => event.type)).toEqual(['game.round-start', 'android.launch', 'game.round-end']);
+  });
+
+  it('refuses an android launch that would exceed its owner charger capacity', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createLaunchWorld([{ x: 0, y: 0 }]),
+    });
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
+    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: false })]);
+  });
+
+  it('refuses an android launch away from an owned charger', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createLaunchWorld(
+        [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+        ],
+        { x: 2, y: 0 },
+      ),
+    });
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
+    expect(loop.world.androids).toHaveLength(1);
+  });
+
+  /** Destroyed androids leave the world, so the count alone would reissue a live id. */
+  it('does not reuse the id of an android that has been destroyed', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      // As the world looks after `android-1` was destroyed and removed.
+      initWorld: createLaunchWorld(
+        [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+        ],
+        { x: 0, y: 0 },
+        'android-2',
+      ),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids.map((android) => android.id)).toEqual(['android-2', 'android-3']);
+  });
+
+  const createDismantleWorld = (targetAndroidId: string, targetOwnerId = 'player-1'): World =>
+    createWorld({
+      tiles: [
+        { position: { x: 0, y: 0 }, composition: { acid: 0 } },
+        { position: { x: 1, y: 0 }, composition: { acid: 0 } },
+      ],
+      scripts: [
+        {
+          id: 'dismantle-script',
+          ownerId: 'player-1',
+          name: 'dismantle',
+          content: `({ type: 'android.dismantle', targetAndroidId: '${targetAndroidId}' })`,
+        },
+        { id: 'wait-script', ownerId: targetOwnerId, name: 'wait', content: "({ type: 'android.wait' })" },
+      ],
+      androids: [
+        {
+          id: 'android-1',
+          ownerId: 'player-1',
+          scriptId: 'dismantle-script',
+          position: { x: 0, y: 0 },
+          battery: 100,
+          health: 100,
+          active: true,
+        },
+        {
+          id: 'android-2',
+          ownerId: targetOwnerId,
+          scriptId: 'wait-script',
+          position: { x: 1, y: 0 },
+          battery: 100,
+          health: 100,
+          active: true,
+        },
+      ],
+      buildings: [
+        {
+          id: 'charger-1',
+          ownerId: 'player-1',
+          type: 'charger',
+          position: { x: 0, y: 0 },
+          remainingConstruction: { ticks: 0, resources: { metal: 0 } },
+        },
+        {
+          id: 'charger-2',
+          ownerId: 'player-1',
+          type: 'charger',
+          position: { x: 1, y: 0 },
+          remainingConstruction: { ticks: 0, resources: { metal: 0 } },
+        },
+      ],
+    });
+
+  it('lets an android on a charger dismantle a sibling of the same owner', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createDismantleWorld('android-2'),
+    });
+
+    await loop.run();
+
+    // The dismantled android is destroyed at round end, freeing its capacity.
+    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: true })]);
+    expect(loop.events.map((event) => event.type)).toEqual(['game.round-start', 'android.dismantle', 'game.round-end']);
+  });
+
+  it('refuses an android dismantling another player android', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createDismantleWorld('android-2', 'player-2'),
+    });
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
+    expect(loop.world.androids).toContainEqual(expect.objectContaining({ id: 'android-2', active: true }));
+  });
+
+  /** Self-destruction is the untargeted form, so naming yourself is a mistake worth reporting. */
+  it('refuses an android naming itself as a dismantle target', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createDismantleWorld('android-1'),
+    });
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).not.toContain('android.dismantle');
+    expect(loop.events).toContainEqual(
+      expect.objectContaining({
+        type: 'game.android-failed-turn',
+        androidId: 'android-1',
+        error: { message: expect.stringContaining('cannot target itself') },
+      }),
+    );
+  });
+
   it('reveals a radius-5 disc around a completed radar and nothing around an unfinished one', async () => {
     const loop = new Loop({
       scriptRunner: createTestScriptRunner(),

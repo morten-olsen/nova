@@ -110,7 +110,8 @@ Androids can currently:
 - salvage buildings
 - broadcast public messages
 - clean acid from adjacent tiles if their owner has an acid processing plant
-- dismantle themselves
+- launch another android of the same owner while standing on an owned completed charger
+- dismantle themselves, or another android of the same owner while standing on an owned completed charger
 
 Androids have health. They lose a small amount of health over time. Environmental hazards can damage them faster.
 
@@ -139,6 +140,8 @@ If a non-initial charger is destroyed or salvaged, the player's deployment cap i
 
 Launching is currently immediate if capacity is available. Launch delay is planned but not implemented yet.
 
+A player is not the only one who can spend that capacity. An android standing on one of its owner's completed chargers can launch a sibling itself with `android.launch`, and it is held to the same cap: the launch is refused unless the owner's active android count is below their completed charger count. Because the launching android is itself active, a player with a single charger can never have their android launch another.
+
 ## 7. Scripts, Launching, and Dismantling
 
 Players may upload improved script versions during the game. Existing androids do not automatically update to a new script.
@@ -146,6 +149,8 @@ Players may upload improved script versions during the game. Existing androids d
 To use a new script version, a player must launch a new android with that script id, or dismantle/free capacity and launch a replacement.
 
 Dismantling is voluntary. It destroys the android and frees charger capacity. It currently returns no material.
+
+An android on one of its owner's completed chargers can also dismantle another android of the same owner, so a fleet can retire and replace its own members without the player intervening. An android can never dismantle another player's android, and can never name itself as the target — self-destruction is the untargeted form of the same action.
 
 ## 8. Android Action API
 
@@ -257,12 +262,26 @@ Clean 1 acid from an adjacent tile. The android's owner must have a completed ac
 ({ type: 'android.clean-acid', direction: 'north' });
 ```
 
+### Launch
+
+Launch another android of the same owner on the current tile, which must hold one of the owner's completed chargers. `scriptId` must be one of the owner's scripts, as listed in `world.scripts`. The launch is refused unless the owner has spare charger capacity, exactly as a player launch is (see [Chargers and Android Capacity](#6-chargers-and-android-capacity)). The new android starts at full battery and health and takes its first turn in the following round.
+
+```js
+({ type: 'android.launch', scriptId: 'script-2' });
+```
+
 ### Dismantle
 
 Destroy this android voluntarily.
 
 ```js
 ({ type: 'android.dismantle' });
+```
+
+With `targetAndroidId`, destroy another android of the same owner instead. The acting android must be on one of its owner's completed chargers, the target must be one of the owner's active androids, and an android cannot name itself as the target.
+
+```js
+({ type: 'android.dismantle', targetAndroidId: 'android-3' });
 ```
 
 ## 9. Resources and Progression
