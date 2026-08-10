@@ -51,8 +51,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The trailing `...` selects the IDE *and its workspace dependencies*, in
+      # topological order. The IDE's node-side tsconfig resolves
+      # @morten-olsen/nova-tests through its `types` condition (dist), not the
+      # `source` one the app config uses, so those packages must be built first
+      # — on a fresh checkout there is no dist to fall back on.
       - name: Build IDE
-        run: pnpm --filter @morten-olsen/nova-ide build
+        run: pnpm --filter "@morten-olsen/nova-ide..." --if-present build
         env:
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
