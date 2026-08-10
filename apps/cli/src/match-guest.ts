@@ -2,36 +2,36 @@ import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 
-import { writeGameFile } from './game-file.js';
-import { writeRecordingFile } from './match-files.js';
 import {
-  hostMessageSchema,
+  guestPlayerId,
   normalizeInviteCode,
   peerIdForCode,
-  protocolVersion,
-  guestPlayerId,
+  runGuestMatch,
   type FinalScore,
   type OfferMessage,
-} from './match-protocol.js';
+} from '@morten-olsen/nova-match';
+
+import { writeGameFile } from './game-file.js';
+import { writeRecordingFile } from './match-files.js';
 import { joinMatch } from './match-transport.js';
 
 type JoinMatchOptions = {
-  code: string;
-  scriptPath: string;
-  scriptName: string;
-  playerName: string;
-  /** An explicit `--out`; when absent the default depends on the host's disclosure mode. */
-  outputPath?: string;
-  resolveDefaultOutputPath: (disclosure: OfferMessage['disclosure']) => string;
   /** Skips the confirmation prompt, for non-interactive use. */
   assumeYes: boolean;
+  code: string;
+  /** An explicit `--out`; when absent the default depends on the host's disclosure mode. */
+  outputPath?: string;
+  playerName: string;
   report: (message: string) => void;
+  resolveDefaultOutputPath: (disclosure: OfferMessage['disclosure']) => string;
+  scriptName: string;
+  scriptPath: string;
 };
 
 type JoinMatchResult = {
+  disclosure: OfferMessage['disclosure'];
   outputPath: string;
   scores: FinalScore[];
-  disclosure: OfferMessage['disclosure'];
 };
 
 const describeDisclosure = (disclosure: OfferMessage['disclosure']): string =>
@@ -90,63 +90,29 @@ const joinGame = async (options: JoinMatchOptions): Promise<JoinMatchResult> => 
   const connection = await joinMatch(peerIdForCode(code));
 
   try {
-    connection.send({ type: 'hello', protocol: protocolVersion, playerName: options.playerName });
+    const outcome = await runGuestMatch({
+      confirm: (offer) => (options.assumeYes ? Promise.resolve(true) : confirmOffer(offer, report)),
+      connection,
+      playerName: options.playerName,
+      report,
+      script,
+      scriptName: options.scriptName,
+    });
 
-    const offer = hostMessageSchema.parse(await connection.receive());
-    if (offer.type === 'failed') {
-      throw new Error(offer.message);
+    const outputPath = options.outputPath ?? options.resolveDefaultOutputPath(outcome.disclosure);
+
+    if (outcome.game) {
+      await writeGameFile(outputPath, outcome.game);
+    } else {
+      await writeRecordingFile(outputPath, {
+        playerId: guestPlayerId,
+        rounds: outcome.offer.rounds,
+        scores: outcome.scores,
+        recording: outcome.recording ?? '',
+      });
     }
-    if (offer.type !== 'offer') {
-      throw new Error('The host sent an unexpected message.');
-    }
-    if (offer.protocol !== protocolVersion) {
-      throw new Error(
-        `The host runs an incompatible Nova version (protocol ${offer.protocol}, expected ${protocolVersion}).`,
-      );
-    }
 
-    const accepted = options.assumeYes || (await confirmOffer(offer, report));
-    if (!accepted) {
-      connection.send({ type: 'decline' });
-      throw new Error('Match declined.');
-    }
-
-    connection.send({ type: 'accept', scriptName: options.scriptName, script });
-    report(`Joined. ${offer.hostName} is running ${offer.rounds} rounds…`);
-
-    // Progress messages arrive until the result does.
-    for (;;) {
-      const message = hostMessageSchema.parse(await connection.receive());
-
-      if (message.type === 'progress') {
-        report(`Round ${message.round}/${message.rounds}`);
-        continue;
-      }
-      if (message.type === 'failed') {
-        throw new Error(message.message);
-      }
-      if (message.type !== 'result') {
-        throw new Error('The host sent an unexpected message.');
-      }
-
-      const outputPath = options.outputPath ?? options.resolveDefaultOutputPath(message.disclosure);
-
-      if (message.disclosure === 'full') {
-        if (!message.game) {
-          throw new Error('The host promised a full recording but did not send one.');
-        }
-        await writeGameFile(outputPath, message.game);
-      } else {
-        await writeRecordingFile(outputPath, {
-          playerId: guestPlayerId,
-          rounds: offer.rounds,
-          scores: message.scores,
-          recording: message.recording ?? '',
-        });
-      }
-
-      return { outputPath, scores: message.scores, disclosure: message.disclosure };
-    }
+    return { disclosure: outcome.disclosure, outputPath, scores: outcome.scores };
   } finally {
     connection.close();
   }

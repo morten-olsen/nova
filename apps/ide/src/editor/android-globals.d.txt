@@ -1,0 +1,122 @@
+// Ambient declarations for the android script sandbox. Loaded into Monaco as an
+// extra library, not compiled as part of this app.
+
+type Direction = 'north' | 'east' | 'south' | 'west';
+
+type MaterialBundle = {
+  metal?: number;
+  electronics?: number;
+  polymer?: number;
+  ore?: number;
+  water?: number;
+  acidCanister?: number;
+};
+
+type Position = { x: number; y: number };
+
+/** What is in the ground. Cannot be collected — it needs extractors and processors. */
+type TileComposition = {
+  ore?: number;
+  acid?: number;
+  water?: number;
+  radiation?: number;
+};
+
+type Tile = {
+  position: Position;
+  composition: TileComposition;
+  /** Loose earth-launched material lying on the surface. This is what `android.collect` takes. */
+  scattered?: MaterialBundle;
+  revealedBy?: string[];
+};
+
+type Android = {
+  id: string;
+  ownerId: string;
+  scriptId: string;
+  position: Position;
+  battery: number;
+  health: number;
+  active: boolean;
+  cargo?: MaterialBundle;
+  /** `[Redacted]` on every android but your own. */
+  memory?: string;
+  /** `[Redacted]` on every android but your own. */
+  recording?: string;
+};
+
+type BuildingType =
+  | 'charger'
+  | 'relay-tower'
+  | 'depot'
+  | 'extractor'
+  | 'processor'
+  | 'acid-processing-plant'
+  | 'scanner'
+  | 'radar'
+  | 'colony-module';
+
+type Building = {
+  id: string;
+  ownerId: string;
+  type: BuildingType;
+  position: Position;
+  remainingConstruction: { ticks: number; resources: MaterialBundle };
+};
+
+type Message = {
+  id: string;
+  senderAndroidId: string;
+  ownerId: string;
+  position: Position;
+  content: string;
+};
+
+type Script = { id: string; ownerId: string; name: string; content: string };
+
+type Player = { id: string; name: string };
+
+/**
+ * The world as this android can see it. Tiles your owner has not revealed are
+ * absent, as is anything standing on them — treat a missing tile as unknown,
+ * not as empty.
+ */
+type World = {
+  round?: number;
+  tiles: Tile[];
+  androids: Android[];
+  buildings: Building[];
+  scripts: Script[];
+  players?: Player[];
+  messages?: Message[];
+};
+
+/** Optional on every action: both are written without costing a turn. */
+type ActionState = {
+  /** Private working state, max 4096 characters. Replaces the previous value. */
+  memory?: string;
+  /** Player-facing log, max 16384 characters. Replaces the previous value. */
+  recording?: string;
+};
+
+type Action = ActionState &
+  (
+    | { type: 'android.wait' }
+    | { type: 'android.move'; direction: Direction }
+    | { type: 'android.charge' }
+    | { type: 'android.collect'; resources?: MaterialBundle }
+    | { type: 'android.deposit'; resources?: MaterialBundle }
+    | { type: 'android.withdraw'; resources: MaterialBundle }
+    | { type: 'android.start-construction'; buildingType: BuildingType; resources?: MaterialBundle }
+    | { type: 'android.continue-construction'; resources?: MaterialBundle }
+    | { type: 'android.salvage' }
+    | { type: 'android.dismantle' }
+    | { type: 'android.broadcast'; content: string }
+    | { type: 'android.clean-acid'; direction: Direction }
+  );
+
+/** The id of the android whose turn is running. */
+declare const androidId: string;
+
+/** A fogged snapshot of the world for this turn. */
+declare const world: World;

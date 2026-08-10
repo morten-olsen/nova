@@ -1,13 +1,8 @@
 import { type Event, eventSchema } from '../events/events.js';
+import type { GameRecording } from '../recording/recording.js';
 import { createBaseRuleset } from '../ruleset/ruleset.base.js';
 import type { World } from '../schemas/schemas.world.js';
 import { redactedValue } from '../script-runner/world-projection.js';
-
-type GameRecording = {
-  version: 1;
-  initialWorld: World;
-  events: Event[];
-};
 
 /** Returns the complete game state while hiding another player's executable and persisted Android state. */
 const projectWorldForPlayer = (world: World, playerId: string): World =>
@@ -63,5 +58,4 @@ const projectRecordingForPlayer = (recording: GameRecording, playerId: string): 
   };
 };
 
-export type { GameRecording };
 export { projectRecordingForPlayer, projectWorldForPlayer };

@@ -1,4 +1,4 @@
-import { calculateColonyScores, type World } from '@morten-olsen/nova-game/browser';
+import { calculateColonyScores, type World } from '@morten-olsen/nova-game';
 import { getFaction } from '@morten-olsen/nova-renderer';
 import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 

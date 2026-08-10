@@ -1,4 +1,4 @@
-import type { Building, World } from '@morten-olsen/nova-game/browser';
+import type { Building, World } from '@morten-olsen/nova-game';
 
 type PieceKind = 'android' | 'material-cache' | 'unknown-structure' | Building['type'];
 

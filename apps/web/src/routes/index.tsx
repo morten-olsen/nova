@@ -1,21 +1,21 @@
+import { createTimeline, usesFogOfWar, type TimelineFrame } from '@morten-olsen/nova-game';
 import type { TabletopRenderer, TileClickEvent, TilePosition } from '@morten-olsen/nova-renderer';
+import {
+  CameraControls,
+  getSelectedPieceId,
+  Inspector,
+  isSameSelection,
+  resolveSelection,
+  Scoreboard,
+  selectionFromBoardClick,
+  TimelineControls,
+  WorldRenderer,
+  type Selection,
+} from '@morten-olsen/nova-replay-ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { CameraControls } from '../components/camera-controls.tsx';
-import { Inspector } from '../components/inspector.tsx';
-import { Scoreboard } from '../components/scoreboard.tsx';
-import { TimelineControls } from '../components/timeline-controls.tsx';
 import { loadEmbeddedRecording } from '../game/embedded-recording.ts';
-import { createTimeline, usesFogOfWar, type TimelineFrame } from '../game/recording.ts';
-import {
-  getSelectedPieceId,
-  isSameSelection,
-  resolveSelection,
-  selectionFromBoardClick,
-  type Selection,
-} from '../game/selection.ts';
-import { WorldRenderer } from '../visualization/world-renderer.tsx';
 
 const baseFrameDuration = 900;
 

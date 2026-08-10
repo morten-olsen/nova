@@ -1,0 +1,43 @@
+{
+  "name": "@morten-olsen/nova-replay-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Shared replay viewer components and theme for Project Nova",
+  "packageManager": "pnpm@10.28.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/nova-replay-ui.ts",
+      "types": "./dist/nova-replay-ui.d.ts",
+      "import": "./dist/nova-replay-ui.js",
+      "default": "./dist/nova-replay-ui.js"
+    },
+    "./theme.css": "./src/theme/nova-theme.css"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-renderer": "workspace:*"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typescript": "^5.9.2"
+  }
+}

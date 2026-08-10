@@ -5,6 +5,7 @@ export * from './mechanics/construction/construction.js';
 export * from './mechanics/game/game.js';
 export * from './mechanics/mechanics.base.js';
 export * from './mechanics/user/user.js';
+export * from './recording/recording.js';
 export * from './ruleset/ruleset.base.js';
 export * from './ruleset/ruleset.js';
 export * from './scoring/scoring.js';

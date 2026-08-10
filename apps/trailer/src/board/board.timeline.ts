@@ -1,4 +1,4 @@
-import { createBaseRuleset, type Event, type World } from '@morten-olsen/nova-game/browser';
+import { createBaseRuleset, type Event, type World } from '@morten-olsen/nova-game';
 
 type Recording = {
   events: Event[];

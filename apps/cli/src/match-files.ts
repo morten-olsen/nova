@@ -1,9 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 
-import type { World } from '@morten-olsen/nova-game';
-import { calculateColonyScores } from '@morten-olsen/nova-game';
-
-import type { FinalScore } from './match-protocol.js';
+import type { FinalScore } from '@morten-olsen/nova-match';
 
 type RecordingFile = {
   playerId: string;
@@ -39,24 +36,6 @@ const writeRecordingFile = async (path: string, file: RecordingFile): Promise<vo
   );
 };
 
-const finalScoresOf = (world: World): FinalScore[] =>
-  calculateColonyScores(world).map((score) => ({
-    playerId: score.playerId,
-    playerName: score.playerName,
-    total: score.total,
-  }));
-
-/**
- * Everything a player's own Androids wrote to their `recording` field, which is
- * all that `recording` disclosure reveals to them.
- */
-const androidRecordingFor = (world: World, ownerId: string): string =>
-  world.androids
-    .filter((android) => android.ownerId === ownerId)
-    .map((android) => android.recording)
-    .filter((recording) => recording.length > 0)
-    .join('\n');
-
 /** Renders the final standing for the terminal, winner first. */
 const formatScores = (scores: FinalScore[]): string[] => {
   const ranked = [...scores].sort((left, right) => right.total - left.total);
@@ -64,4 +43,4 @@ const formatScores = (scores: FinalScore[]): string[] => {
 };
 
 export type { RecordingFile };
-export { androidRecordingFor, finalScoresOf, formatScores, writeRecordingFile };
+export { formatScores, writeRecordingFile };

@@ -17,6 +17,7 @@
   "dependencies": {
     "@morten-olsen/nova-docs": "workspace:*",
     "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-match": "workspace:*",
     "@morten-olsen/nova-web": "workspace:*",
     "node-datachannel": "^0.32.3",
     "peerjs": "^1.5.5",

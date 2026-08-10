@@ -21,12 +21,6 @@
       "types": "./dist/nova-game.d.ts",
       "import": "./dist/nova-game.js",
       "default": "./dist/nova-game.js"
-    },
-    "./browser": {
-      "source": "./src/nova-game.browser.ts",
-      "types": "./dist/nova-game.browser.d.ts",
-      "import": "./dist/nova-game.browser.js",
-      "default": "./dist/nova-game.browser.js"
     }
   },
   "devDependencies": {

@@ -18,6 +18,7 @@
   "dependencies": {
     "@morten-olsen/nova-game": "workspace:*",
     "@morten-olsen/nova-renderer": "workspace:*",
+    "@morten-olsen/nova-replay-ui": "workspace:*",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.140.1",
     "react": "^19.2.3",

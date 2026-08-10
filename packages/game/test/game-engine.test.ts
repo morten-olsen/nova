@@ -7,11 +7,12 @@ import {
   projectWorldForAndroid,
   projectWorldForPlayer,
   Ruleset,
-  ScriptRunner,
   type Event,
   type Mechanic,
   type World,
 } from '../src/nova-game.js';
+
+import { createTestScriptRunner } from './vm-script-runner.js';
 
 const emptyWorld = (): World => ({
   scripts: [],
@@ -90,7 +91,7 @@ const createAndroidTurnMechanic = (): Mechanic => ({
 });
 
 describe('game engine', () => {
-  it('projects a fogged world for android scripts', () => {
+  it('projects a fogged world for android scripts', async () => {
     const world = createWorld({
       scripts: [
         { id: 'own-script', ownerId: 'owner', name: 'own', content: '' },
@@ -154,10 +155,12 @@ describe('game engine', () => {
     expect(fogged.scripts.map((script) => script.id)).toEqual(['own-script']);
     expect(fogged.players).toEqual([{ id: 'owner', name: 'Owner' }]);
 
-    const event = new ScriptRunner().execute({
+    // The loop hands the runner an already-fogged world, so a script that
+    // counts tiles sees only the two revealed above, not the whole board.
+    const event = await createTestScriptRunner().execute({
       androidId: 'owner-android',
       content: "({ type: world.tiles.length === 2 ? 'android.wait' : 'android.move', direction: 'east' })",
-      world,
+      world: fogged,
     });
     expect(event.type).toBe('android.wait');
   });
@@ -187,9 +190,7 @@ describe('game engine', () => {
     expect(playerWorld.scripts).toHaveLength(2);
     expect(playerWorld.androids).toHaveLength(1);
     expect(playerWorld.scripts[1]?.content).toBe('[Redacted]');
-    expect(playerWorld.androids[0]).toEqual(
-      expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }),
-    );
+    expect(playerWorld.androids[0]).toEqual(expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }));
 
     const recording = projectRecordingForPlayer(
       {
@@ -207,13 +208,12 @@ describe('game engine', () => {
       'owner',
     );
     expect(recording.initialWorld.scripts[1]?.content).toBe('[Redacted]');
-    expect(recording.events[0]).toEqual(
-      expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }),
-    );
+    expect(recording.events[0]).toEqual(expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }));
   });
 
   it('composes the base mechanics into a playable upload, launch, move, and fail loop', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset({
         world: {
           width: 2,
@@ -279,6 +279,7 @@ describe('game engine', () => {
 
   it('persists an android memory and recording alongside its action', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset({ world: { width: 1, height: 1 } }),
     });
 
@@ -318,6 +319,7 @@ describe('game engine', () => {
    */
   it('discards the memory and recording written by a rejected action', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset({ world: { width: 3, height: 3 } }),
     });
 
@@ -344,6 +346,7 @@ describe('game engine', () => {
 
   it('uses base mechanics to charge androids and construct buildings', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset({ world: { width: 2, height: 1 } }),
       initWorld: createWorld({
         tiles: [
@@ -415,6 +418,7 @@ describe('game engine', () => {
   });
   it('damages androids standing in acid at round end', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset(),
       initWorld: createWorld({
         tiles: [{ position: { x: 0, y: 0 }, composition: { acid: 4 } }],
@@ -447,6 +451,7 @@ describe('game engine', () => {
 
   it('allows androids to clean adjacent acid when their owner has an acid processing plant', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset(),
       initWorld: createWorld({
         tiles: [
@@ -494,6 +499,7 @@ describe('game engine', () => {
 
   it('reveals a radius-5 disc around a completed radar and nothing around an unfinished one', async () => {
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset({ world: { width: 13, height: 13, composition: { acid: 0 } } }),
       initWorld: createWorld({
         buildings: [
@@ -540,7 +546,7 @@ describe('game engine', () => {
     const ruleset = new Ruleset({
       mechanics: [createMutationFriendlyMechanic()],
     });
-    const loop = new Loop({ ruleset, initWorld });
+    const loop = new Loop({ ruleset, initWorld, scriptRunner: createTestScriptRunner() });
 
     initWorld.tiles.push({
       position: { x: 99, y: 99 },
@@ -598,6 +604,7 @@ describe('game engine', () => {
       mechanics: [createAndroidTurnMechanic()],
     });
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset,
       initWorld: createWorld({
         scripts: [
@@ -664,6 +671,7 @@ describe('game engine', () => {
       mechanics: [createAndroidTurnMechanic()],
     });
     const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
       ruleset,
       initWorld: createWorld({
         scripts: [

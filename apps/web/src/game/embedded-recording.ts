@@ -1,8 +1,8 @@
-import { parseRecording, type Recording } from './recording.ts';
+import { parseRecording, type GameRecording } from '@morten-olsen/nova-game';
 
 type EmbeddedRecording = {
   name: string;
-  recording: Recording;
+  recording: GameRecording;
 };
 
 const gameScriptType = 'application/vnd.project-nova.game+json';

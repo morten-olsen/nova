@@ -6,3 +6,4 @@ out
 .u8.json
 pnpm-lock.yaml
 apps/web/src/routeTree.gen.ts
+apps/ide/src/routeTree.gen.ts

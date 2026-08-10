@@ -1,4 +1,4 @@
-import type { Tile } from '@morten-olsen/nova-game/browser';
+import type { Tile } from '@morten-olsen/nova-game';
 
 type TilePosition = { x: number; y: number };
 

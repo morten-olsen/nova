@@ -1,42 +1,54 @@
-import { createContext, runInContext } from 'node:vm';
-
-import { World } from '../schemas/schemas.world.js';
-import { AndroidEvent, androidEventSchema } from '../events/events.android.js';
-
-import { projectWorldForAndroid } from './world-projection.js';
+import type { World } from '../schemas/schemas.world.js';
+import { androidEventSchema, type AndroidEvent } from '../events/events.android.js';
 
 type ScriptExecuteOptions = {
   androidId: string;
   content: string;
+  /**
+   * Already fogged by {@link projectWorldForAndroid}. Runners expose this as the
+   * `world` global verbatim; they must not be handed the unprojected world.
+   */
   world: World;
 };
 
-type ScriptRunnerOptions = {
-  timeoutMs?: number;
+/**
+ * Runs one android's script for a single turn and resolves with the action it
+ * chose.
+ *
+ * The engine deliberately ships no implementation. `node:vm` cannot run in a
+ * browser, and a Worker — the only way to get a hard timeout in one — cannot be
+ * driven synchronously, so the host supplies the sandbox that fits its
+ * platform. Implementations must evaluate `content` such that the value of its
+ * final expression statement is the result, matching the documented script
+ * contract in `docs/ANDROID-BUILDER-MANUAL.md`, then hand that value to
+ * {@link toAndroidEvent}.
+ */
+type ScriptRunner = {
+  execute: (options: ScriptExecuteOptions) => Promise<AndroidEvent>;
 };
 
-class ScriptRunner {
-  #timeoutMs: number;
+type ToAndroidEventOptions = {
+  androidId: string;
+  result: unknown;
+};
 
-  constructor(options: ScriptRunnerOptions = {}) {
-    this.#timeoutMs = options.timeoutMs ?? 1000;
+/**
+ * Validates a script's completion value and stamps it with the acting android.
+ *
+ * Shared by every {@link ScriptRunner} so that a script rejected by one sandbox
+ * is rejected identically by the others.
+ */
+const toAndroidEvent = (options: ToAndroidEventOptions): AndroidEvent => {
+  const { androidId, result } = options;
+  if (typeof result !== 'object' || result === null) {
+    const described = result === undefined ? 'undefined' : JSON.stringify(result);
+    throw new Error(
+      `Script for ${androidId} must end in an action object, but produced ${described}. ` +
+        "Parenthesise the action so it is the final expression, e.g. ({ type: 'android.wait' });",
+    );
   }
+  return androidEventSchema.parse({ ...result, androidId });
+};
 
-  public execute = (options: ScriptExecuteOptions) => {
-    const { androidId, world, content } = options;
-    const context = createContext({
-      androidId,
-      world: projectWorldForAndroid(world, androidId),
-    });
-    const result = runInContext(content, context, {
-      timeout: this.#timeoutMs,
-    });
-    const event: AndroidEvent = {
-      ...result,
-      androidId,
-    };
-    return androidEventSchema.parse(event);
-  };
-}
-
-export { ScriptRunner };
+export type { ScriptExecuteOptions, ScriptRunner };
+export { toAndroidEvent };

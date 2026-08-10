@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
 import { calculateColonyScores, createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
+import { disclosureSchema, type Disclosure } from '@morten-olsen/nova-match';
 
 import {
   createGameFile,
@@ -13,12 +14,12 @@ import {
   updateGameFileFromLoop,
   writeGameFile,
 } from './game-file.js';
+import { createVmScriptRunner } from './script-runner.js';
 import { createFactory, updateFactory } from './factory.js';
 import { createPlayServer, listenOnRandomPort } from './play-server.js';
 import { hostGame } from './match-host.js';
 import { joinGame } from './match-guest.js';
 import { formatScores } from './match-files.js';
-import { disclosureSchema, type Disclosure } from './match-protocol.js';
 
 type CommandResult = {
   message: string;
@@ -103,6 +104,7 @@ const createGame = async (values: Record<string, string | boolean | undefined>):
     ruleset: createBaseRuleset({
       world: { width, height },
     }),
+    scriptRunner: createVmScriptRunner(),
   });
 
   await writeGameFile(file, createGameFile(loop.world));

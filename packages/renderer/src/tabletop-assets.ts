@@ -1,4 +1,4 @@
-import type { Building } from '@morten-olsen/nova-game/browser';
+import type { Building } from '@morten-olsen/nova-game';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 

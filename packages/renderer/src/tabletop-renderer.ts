@@ -1,4 +1,4 @@
-import type { World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 

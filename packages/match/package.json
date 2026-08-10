@@ -1,0 +1,37 @@
+{
+  "name": "@morten-olsen/nova-match",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Peer match protocol and flow, shared by the CLI and the browser",
+  "packageManager": "pnpm@10.28.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/nova-match.ts",
+      "types": "./dist/nova-match.d.ts",
+      "import": "./dist/nova-match.js",
+      "default": "./dist/nova-match.js"
+    }
+  },
+  "dependencies": {
+    "@morten-olsen/nova-game": "workspace:*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@morten-olsen/nova-tests": "workspace:*",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.3"
+  }
+}

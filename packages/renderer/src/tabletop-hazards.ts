@@ -1,4 +1,4 @@
-import type { Tile, World } from '@morten-olsen/nova-game/browser';
+import type { Tile, World } from '@morten-olsen/nova-game';
 
 import { fbm, tileRandom } from './tabletop-noise.js';
 import { getPixelPosition, pixelsPerTile, type BoardBounds } from './tabletop-bounds.js';

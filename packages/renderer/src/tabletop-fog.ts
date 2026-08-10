@@ -1,4 +1,4 @@
-import type { World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game';
 
 import { novaPalette } from './nova-palette.js';
 import { getTileOrigin, pixelsPerTile, type BoardBounds } from './tabletop-bounds.js';

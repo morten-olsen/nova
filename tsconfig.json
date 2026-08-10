@@ -11,10 +11,19 @@
       "path": "./packages/renderer"
     },
     {
+      "path": "./packages/replay-ui"
+    },
+    {
+      "path": "./packages/match"
+    },
+    {
       "path": "./apps/cli"
     },
     {
       "path": "./apps/web"
+    },
+    {
+      "path": "./apps/ide"
     },
     {
       "path": "./apps/trailer"

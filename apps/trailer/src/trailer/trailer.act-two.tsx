@@ -1,4 +1,4 @@
-import type { World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game';
 import { AbsoluteFill, Sequence } from 'remotion';
 
 import { Broadcast } from '../overlay/overlay.broadcast.tsx';

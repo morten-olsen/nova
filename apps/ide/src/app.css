@@ -1,0 +1,29 @@
+/*
+ * The lab shares the replay viewer's visual language — same tokens, same panel
+ * and button primitives — so the board looks identical in both apps.
+ */
+@import '@morten-olsen/nova-replay-ui/theme.css';
+
+@source '../src/**/*.tsx';
+
+/* Monaco measures its own container, so the editor pane must have a real height
+   rather than being sized by its content. */
+.editor-pane {
+  min-height: 0;
+}
+
+/* Console output. Monospaced and scrollable, with failures called out — a
+   silent failed turn is the single most confusing thing a new script does. */
+.console-line {
+  border-left: 2px solid transparent;
+  padding-left: 0.5rem;
+}
+
+.console-line[data-kind='error'] {
+  border-left-color: var(--color-warning);
+  color: #ffd9df;
+}
+
+.console-line[data-kind='note'] {
+  color: var(--color-ink-dim);
+}

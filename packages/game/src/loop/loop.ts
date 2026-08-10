@@ -1,12 +1,14 @@
-import { Event } from '../events/events.js';
+import type { Event } from '../events/events.js';
 import { Ruleset } from '../ruleset/ruleset.js';
-import { World } from '../schemas/schemas.world.js';
-import { ScriptRunner } from '../script-runner/script-runner.js';
+import type { World } from '../schemas/schemas.world.js';
+import type { ScriptRunner } from '../script-runner/script-runner.js';
+import { projectWorldForAndroid } from '../script-runner/world-projection.js';
 
 type LoopOptions = {
   initWorld?: World;
   events?: Event[];
   ruleset: Ruleset;
+  scriptRunner: ScriptRunner;
 };
 
 class Loop {
@@ -33,7 +35,7 @@ class Loop {
     this.#initWorld = ruleset.buildWorld(initWorld);
     this.#world = structuredClone(this.#initWorld);
     this.#events = [];
-    this.#scriptRunner = new ScriptRunner();
+    this.#scriptRunner = options.scriptRunner;
     if (options.events) {
       this.applyEvents(options.events);
     }
@@ -41,6 +43,16 @@ class Loop {
 
   public get world() {
     return structuredClone(this.#world);
+  }
+
+  /**
+   * The world before any event was applied.
+   *
+   * Paired with {@link events} this is a complete recording: replaying the
+   * events onto it reproduces {@link world} exactly.
+   */
+  public get initialWorld() {
+    return structuredClone(this.#initWorld);
   }
 
   public get events() {
@@ -79,10 +91,10 @@ class Loop {
         continue;
       }
       try {
-        const event = this.#scriptRunner.execute({
+        const event = await this.#scriptRunner.execute({
           androidId,
           content: script.content,
-          world: structuredClone(world),
+          world: projectWorldForAndroid(world, androidId),
         });
         applyEvent(event);
       } catch (err) {

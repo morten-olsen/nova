@@ -99,7 +99,28 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/web/**/*.{ts,tsx}'],
+    // The engine runs in Node, in the browser, and inside a Worker. Anything
+    // platform-specific belongs behind a host-supplied interface — the
+    // `ScriptRunner` split exists precisely because `node:vm` cannot follow the
+    // engine into a browser.
+    files: ['packages/game/src/**/*.ts', 'packages/match/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*'],
+              message:
+                'packages/game must stay platform-neutral. Put Node-only code behind an interface and implement it in the host (see ScriptRunner).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/{web,ide}/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: { ...reactHooks.configs.recommended.rules },
   },

@@ -1,15 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { createBaseRuleset, Loop, World, eventSchema, worldSchema } from '@morten-olsen/nova-game';
-import { z } from 'zod';
+import { createBaseRuleset, Loop, parseRecording, World, type GameRecording } from '@morten-olsen/nova-game';
 
-const gameFileSchema = z.object({
-  version: z.literal(1),
-  initialWorld: worldSchema,
-  events: eventSchema.array(),
-});
+import { createVmScriptRunner } from './script-runner.js';
 
-type GameFile = z.infer<typeof gameFileSchema>;
+/**
+ * A game file is a recording plus its future: the CLI keeps appending events to
+ * the same document it hands the replay viewer, so the two share one schema.
+ */
+type GameFile = GameRecording;
 
 const createGameFile = (world: World): GameFile => ({
   version: 1,
@@ -19,7 +18,7 @@ const createGameFile = (world: World): GameFile => ({
 
 const readGameFile = async (path: string): Promise<GameFile> => {
   const content = await readFile(path, 'utf8');
-  return gameFileSchema.parse(JSON.parse(content));
+  return parseRecording(content);
 };
 
 const writeGameFile = async (path: string, gameFile: GameFile): Promise<void> => {
@@ -31,6 +30,7 @@ const createLoopFromGameFile = (gameFile: GameFile): Loop => {
     ruleset: createBaseRuleset(),
     initWorld: gameFile.initialWorld,
     events: gameFile.events,
+    scriptRunner: createVmScriptRunner(),
   });
 };
 

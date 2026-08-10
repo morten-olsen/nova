@@ -1,4 +1,4 @@
-import { eventSchema, worldSchema } from '@morten-olsen/nova-game/browser';
+import { eventSchema, worldSchema } from '@morten-olsen/nova-game';
 import { z } from 'zod';
 
 import colonyRaceJson from '../../../../examples/games/trailer-colony-race.json';

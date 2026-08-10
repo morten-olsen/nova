@@ -1,4 +1,4 @@
-import type { World } from '@morten-olsen/nova-game/browser';
+import type { World } from '@morten-olsen/nova-game';
 
 /**
  * The single source of truth for Project Nova's colour language. The renderer

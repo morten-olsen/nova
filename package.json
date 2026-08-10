@@ -16,7 +16,9 @@
     "build:web": "pnpm --filter @morten-olsen/nova-web build",
     "trailer:scenarios": "pnpm --filter @morten-olsen/nova-trailer scenarios",
     "trailer:studio": "pnpm --filter @morten-olsen/nova-trailer studio",
-    "trailer:render": "pnpm --filter @morten-olsen/nova-trailer render"
+    "trailer:render": "pnpm --filter @morten-olsen/nova-trailer render",
+    "dev:ide": "pnpm --filter @morten-olsen/nova-ide dev",
+    "build:ide": "pnpm --filter @morten-olsen/nova-ide build"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

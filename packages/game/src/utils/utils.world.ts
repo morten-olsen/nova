@@ -1,4 +1,4 @@
-import type { World } from '../nova-game.browser.js';
+import type { World } from '../schemas/schemas.world.js';
 
 const getWorldSize = (world: World) => {
   const { tiles } = world;
