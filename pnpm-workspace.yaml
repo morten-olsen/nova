@@ -2,3 +2,8 @@ packages:
   - ./docs
   - ./packages/*
   - ./apps/*
+
+# Remotion's bundler runs esbuild, which needs its postinstall to place the
+# platform binary.
+onlyBuiltDependencies:
+  - esbuild

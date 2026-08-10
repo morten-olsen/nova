@@ -1,0 +1,1080 @@
+{
+  "events": [
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "east",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "east",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "east",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "north",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "north",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.collect",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "south",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.start-construction",
+      "buildingType": "depot",
+      "resources": {
+        "metal": 6
+      },
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.continue-construction",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.continue-construction",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.deposit",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.broadcast",
+      "content": "pod field at 5,4 — metal confirmed. depot up at 5,5.",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "east",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "north",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.collect",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "west",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "south",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.deposit",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "type": "android.move",
+      "direction": "east",
+      "androidId": "android-1"
+    },
+    {
+      "type": "game.round-end"
+    }
+  ],
+  "initialWorld": {
+    "androids": [
+      {
+        "active": true,
+        "battery": 100,
+        "health": 100,
+        "id": "android-1",
+        "memory": "",
+        "ownerId": "player-aurora",
+        "position": {
+          "x": 2,
+          "y": 6
+        },
+        "recording": "",
+        "scriptId": "script-1"
+      }
+    ],
+    "buildings": [
+      {
+        "health": 100,
+        "id": "aurora-charger-initial",
+        "initial": true,
+        "ownerId": "player-aurora",
+        "position": {
+          "x": 2,
+          "y": 6
+        },
+        "remainingConstruction": {
+          "resources": {},
+          "ticks": 0
+        },
+        "type": "charger"
+      }
+    ],
+    "messages": [],
+    "players": [
+      {
+        "id": "player-aurora",
+        "name": "Aurora Combine"
+      }
+    ],
+    "round": 0,
+    "scripts": [
+      {
+        "content": "// aurora-prospector v2 — find loose material, bank it, build outward.\nconst me = world.androids.find((a) => a.id === androidId);\nconst here = world.tiles.find(\n  (t) => t.position.x === me.position.x && t.position.y === me.position.y,\n);\nconst carried = Object.values(me.cargo ?? {}).reduce((sum, n) => sum + n, 0);\nconst loose = Object.values(here.scattered ?? {}).reduce((sum, n) => sum + n, 0);\nconst depot = world.buildings.find(\n  (b) => b.ownerId === me.ownerId && b.type === 'depot',\n);\n\nif (loose > 0 && carried < 10) {\n  ({ type: 'android.collect', memory: 'hauling' });\n} else if (!depot && carried >= 6) {\n  ({ type: 'android.start-construction', buildingType: 'depot', resources: { metal: 6 } });\n} else if (depot && depot.remainingConstruction.ticks > 0) {\n  ({ type: 'android.continue-construction' });\n} else if (depot && carried > 0) {\n  ({ type: 'android.deposit' });\n} else {\n  ({ type: 'android.move', direction: me.memory === 'hauling' ? 'west' : 'east' });\n}",
+        "id": "script-1",
+        "name": "aurora-prospector",
+        "ownerId": "player-aurora"
+      }
+    ],
+    "tiles": [
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 0
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 1
+        }
+      },
+      {
+        "composition": {
+          "water": 2
+        },
+        "position": {
+          "x": 1,
+          "y": 1
+        }
+      },
+      {
+        "composition": {
+          "water": 1
+        },
+        "position": {
+          "x": 2,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 1
+        },
+        "scattered": {
+          "electronics": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 2
+        },
+        "scattered": {
+          "metal": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 2
+        }
+      },
+      {
+        "composition": {
+          "ore": 2
+        },
+        "position": {
+          "x": 8,
+          "y": 2
+        }
+      },
+      {
+        "composition": {
+          "ore": 3,
+          "water": 1
+        },
+        "position": {
+          "x": 9,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 2
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 3
+        },
+        "scattered": {
+          "polymer": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 3
+        }
+      },
+      {
+        "composition": {
+          "ore": 1
+        },
+        "position": {
+          "x": 8,
+          "y": 3
+        }
+      },
+      {
+        "composition": {
+          "ore": 2
+        },
+        "position": {
+          "x": 9,
+          "y": 3
+        }
+      },
+      {
+        "composition": {
+          "ore": 3
+        },
+        "position": {
+          "x": 10,
+          "y": 3
+        }
+      },
+      {
+        "composition": {
+          "ore": 1
+        },
+        "position": {
+          "x": 11,
+          "y": 3
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 4
+        },
+        "scattered": {
+          "electronics": 2,
+          "metal": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 4
+        },
+        "scattered": {
+          "metal": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 4
+        }
+      },
+      {
+        "composition": {
+          "ore": 2,
+          "water": 1
+        },
+        "position": {
+          "x": 10,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 4
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 5
+        },
+        "scattered": {
+          "electronics": 1,
+          "metal": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 5
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 4,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 5,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 6
+        },
+        "scattered": {
+          "metal": 3,
+          "polymer": 1
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 11,
+          "y": 6
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 7
+        }
+      },
+      {
+        "composition": {
+          "acid": 2
+        },
+        "position": {
+          "x": 4,
+          "y": 7
+        }
+      },
+      {
+        "composition": {
+          "acid": 2
+        },
+        "position": {
+          "x": 5,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 6,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 7
+        }
+      },
+      {
+        "composition": {
+          "radiation": 2
+        },
+        "position": {
+          "x": 10,
+          "y": 7
+        }
+      },
+      {
+        "composition": {
+          "radiation": 2
+        },
+        "position": {
+          "x": 11,
+          "y": 7
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 1,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 2,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 3,
+          "y": 8
+        }
+      },
+      {
+        "composition": {
+          "acid": 1
+        },
+        "position": {
+          "x": 4,
+          "y": 8
+        }
+      },
+      {
+        "composition": {
+          "acid": 3
+        },
+        "position": {
+          "x": 5,
+          "y": 8
+        }
+      },
+      {
+        "composition": {
+          "acid": 1
+        },
+        "position": {
+          "x": 6,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 7,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 8,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 9,
+          "y": 8
+        }
+      },
+      {
+        "composition": {},
+        "position": {
+          "x": 10,
+          "y": 8
+        }
+      },
+      {
+        "composition": {
+          "radiation": 3
+        },
+        "position": {
+          "x": 11,
+          "y": 8
+        }
+      }
+    ]
+  },
+  "version": 1
+}

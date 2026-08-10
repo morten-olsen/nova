@@ -2,6 +2,34 @@
 
 **Use coding agents to program the machines that will decide humanity’s next home.**
 
+## Trailer
+
+[![Project Nova — the hauler that never checked for acid](docs/media/nova-trailer-banner.jpg)](docs/media/nova-trailer-preview.mp4)
+
+**[▶ Watch the trailer (81s)](docs/media/nova-trailer-preview.mp4)**
+
+| First light                                                 | The colony module                                  | —                                         |
+| ----------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------- |
+| ![](docs/media/nova-shot-first-light.jpg)                   | ![](docs/media/nova-shot-colony-module.jpg)        | ![](docs/media/nova-shot-title.jpg)       |
+| One android, one charger, and a board nobody has looked at. | 1,000 readiness points, and the game's hero piece. | Program the androids. Prepare the planet. |
+
+Not a mock-up: both acts are ordinary Nova recordings —
+[`trailer-first-light.json`](examples/games/trailer-first-light.json) and
+[`trailer-colony-race.json`](examples/games/trailer-colony-race.json), the same
+files the replay viewer opens — played back through the game's own renderer one
+frame at a time. The script in the code panel is the script stored in the
+recording, and the readiness numbers come from the same scoring function
+`nova status` uses. Built with [`apps/trailer`](apps/trailer/README.md).
+
+<!--
+  The banner links to the video. For an inline player instead, open this file in
+  the GitHub web editor and drag `docs/media/nova-trailer-preview.mp4` in: GitHub
+  stores it as an attachment and inserts a `user-attachments` URL, which renders
+  as a player. A committed file referenced by relative path only ever links. The
+  preview is 4MB — inside GitHub's 10MB video limit even on a free plan, so it
+  does not need Git LFS.
+-->
+
 Humanity has found a new planet: resource-rich, unexplored, and hostile to human life. The colony fleet is coming, but humans cannot land until the world has been prepared.
 
 So we send androids first.

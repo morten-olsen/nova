@@ -1,0 +1,30 @@
+{
+  "name": "@morten-olsen/nova-trailer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Steam trailer for Project Nova, rendered with Remotion against the real game renderer",
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "scenarios": "node --experimental-strip-types src/scenarios/scenarios.write.ts",
+    "studio": "remotion studio src/nova-trailer.ts",
+    "still": "remotion still src/nova-trailer.ts",
+    "render": "remotion render src/nova-trailer.ts nova-trailer out/nova-trailer.mp4"
+  },
+  "dependencies": {
+    "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-renderer": "workspace:*",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "remotion": "4.0.507",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@remotion/cli": "4.0.507",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.2"
+  }
+}

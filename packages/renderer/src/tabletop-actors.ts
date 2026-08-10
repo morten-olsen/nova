@@ -2,7 +2,13 @@ import type { World } from '@morten-olsen/nova-game/browser';
 import * as THREE from 'three';
 
 import { getFaction, getMaterialAccent, novaPalette, toColorValue } from './nova-palette.js';
-import { createPlaceholder, getBuildingKind, loadPieceModel, setOwnerColor } from './tabletop-assets.js';
+import {
+  createPlaceholder,
+  getBuildingKind,
+  getLoadedPieceModel,
+  loadPieceModel,
+  setOwnerColor,
+} from './tabletop-assets.js';
 import { createPieceLayouts, getTileKey, type PieceKind, type PieceLayout } from './tabletop-layout.js';
 import { terrainSurfaceHeight } from './tabletop-board.js';
 import type { ParticleEmitter } from './tabletop-particles.js';
@@ -153,7 +159,7 @@ const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
     travel: 0,
   };
 
-  void loadPieceModel(piece.kind).then((model) => {
+  const applyModel = (model: THREE.Group | undefined): void => {
     if (!model) {
       return;
     }
@@ -161,7 +167,16 @@ const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
     actor.accents = setOwnerColor(instance, piece.accentColor);
     visual.clear();
     visual.add(instance);
-  });
+  };
+
+  // Take the model now if it is already cached. Deferring to the promise costs a
+  // microtask, and by then this frame has been drawn with the placeholder.
+  const cached = getLoadedPieceModel(piece.kind);
+  if (cached) {
+    applyModel(cached);
+  } else {
+    void loadPieceModel(piece.kind).then(applyModel);
+  }
   return actor;
 };
 

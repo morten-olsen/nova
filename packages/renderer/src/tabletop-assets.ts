@@ -20,6 +20,7 @@ const assetUrls: Record<string, string> = {
 
 const loader = new GLTFLoader();
 const models = new Map<PieceKind, Promise<THREE.Group | undefined>>();
+const loadedModels = new Map<PieceKind, THREE.Group>();
 
 const loadPieceModel = (kind: PieceKind): Promise<THREE.Group | undefined> => {
   const cachedModel = models.get(kind);
@@ -30,10 +31,24 @@ const loadPieceModel = (kind: PieceKind): Promise<THREE.Group | undefined> => {
   if (!url) {
     return Promise.resolve(undefined);
   }
-  const model = loader.loadAsync(url).then(({ scene }) => scene);
+  const model = loader.loadAsync(url).then(({ scene }) => {
+    loadedModels.set(kind, scene);
+    return scene;
+  });
   models.set(kind, model);
   return model;
 };
+
+/**
+ * The already-loaded model for a kind, or `undefined` if it has not arrived.
+ *
+ * Exists so a piece appearing on an already-warm cache can take its real model
+ * in the same frame. Awaiting the promise instead costs a microtask, and a
+ * microtask is a frame the renderer has already drawn: interactively that is a
+ * box flickering for one frame, and in stepped capture — where many `advance`
+ * calls run in one synchronous block — it is every frame of the shot.
+ */
+const getLoadedPieceModel = (kind: PieceKind): THREE.Group | undefined => loadedModels.get(kind);
 
 const createPlaceholder = (kind: PieceKind): THREE.Group => {
   const group = new THREE.Group();
@@ -88,4 +103,18 @@ const setOwnerColor = (object: THREE.Object3D, color: THREE.Color): THREE.MeshSt
 const getBuildingKind = (building: Building): PieceKind =>
   Object.hasOwn(assetUrls, building.type) ? building.type : 'unknown-structure';
 
-export { createPlaceholder, getBuildingKind, loadPieceModel, setOwnerColor };
+/**
+ * Warms the model cache for every piece kind.
+ *
+ * Models load asynchronously and swap in over a placeholder primitive, which is
+ * invisible in interactive play — a piece is a box for a frame or two on the
+ * first board that shows it. Offline capture has no such grace: the frames are
+ * kept, so a shot rendered before the GLBs arrive is permanently a shot of grey
+ * boxes. Await this once before the first `advance` and the cache serves every
+ * later piece synchronously.
+ */
+const preloadPieceModels = async (): Promise<void> => {
+  await Promise.all(Object.keys(assetUrls).map((kind) => loadPieceModel(kind as PieceKind)));
+};
+
+export { createPlaceholder, getBuildingKind, getLoadedPieceModel, loadPieceModel, preloadPieceModels, setOwnerColor };

@@ -91,6 +91,14 @@ export default tseslint.config(
     },
   },
   {
+    // Repo scripts run under Node, not in a browser. Declared inline rather than
+    // pulling in `globals` for two names.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: { ...reactHooks.configs.recommended.rules },
@@ -123,6 +131,9 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['**/node_modules/', '**/dist/', '**/.task/'],
+    // `out/` is Remotion's render target: video, stills, and a full webpack
+    // bundle. Linting a bundle's single-line output is what makes an otherwise
+    // fast lint look like it has hung.
+    ignores: ['**/node_modules/', '**/dist/', '**/.task/', '**/out/'],
   },
 );

@@ -37,3 +37,31 @@ Regenerate it with:
 python3 examples/games/generate-later-stage-sample.py
 pnpm nova status --file examples/games/later-stage-tabletop-sample.json
 ```
+
+## Trailer scenarios
+
+`examples/games/trailer-first-light.json` and
+`examples/games/trailer-colony-race.json` are the two recordings the store
+trailer is cut from. They are ordinary recordings — open either in the viewer —
+but they are choreographed rather than simulated, so that specific rules land on
+specific rounds.
+
+| File                       | Board | Rounds | Designed to show                                                                                                                            |
+| -------------------------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trailer-first-light.json` | 12x9  | 0–19   | The smallest complete loop: an unexplored board, fog opening around one Android, a pod field, a first depot, a broadcast.                   |
+| `trailer-colony-race.json` | 16x12 | 46–66  | Two colony programs; an Android killed by acid, a scanner lost to hostile salvage, the flats being cleaned, and a colony module completing. |
+
+Regenerate both with:
+
+```sh
+pnpm build
+pnpm trailer:scenarios
+pnpm nova status --file examples/games/trailer-colony-race.json
+```
+
+The generator replays every event through `createBaseRuleset` while writing, so
+these files cannot contain a move the rules reject, and it asserts the beats
+afterwards — the colony module completes, the scanner is salvaged before the
+climax, the acid kills before the sabotage, and Aurora starts behind on
+readiness and finishes ahead. The scenario sources live in
+`apps/trailer/src/scenarios`; see [`apps/trailer/README.md`](../apps/trailer/README.md).

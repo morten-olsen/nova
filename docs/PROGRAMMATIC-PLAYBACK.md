@@ -42,6 +42,28 @@ give the host explicit dimensions before creating it.
 
 Call `renderer.dispose()` when finished; it releases the WebGL context.
 
+### Preload the models before the first frame
+
+Piece models are GLBs, loaded asynchronously, with a grey placeholder primitive
+standing in until each arrives. Interactively that is a box for a frame or two on
+the first board that shows a given piece. **In capture it is permanent**, because
+the frames are kept — and worse than permanent if you render a still, since a
+whole stepped catch-up runs synchronously and the models cannot land until after
+the last `advance` has already drawn.
+
+Await the cache once before you step anything:
+
+```ts
+import { preloadPieceModels } from '@morten-olsen/nova-renderer';
+
+await preloadPieceModels();
+renderer.setWorld(frames[0]);
+```
+
+The cache is module-level and shared, so this is cheap to call again and pieces
+that appear later in a recording take their real model in the same frame they
+appear.
+
 ### The fog flag is not optional
 
 `fogOfWar` must be decided from the **whole recording**, not from the frame you
@@ -256,6 +278,17 @@ Points to note:
 - One renderer per composition instance; dispose it on unmount.
 - Use Remotion's concurrency of 1 per browser tab for a shot, since the
   simulation is sequential.
+- `await preloadPieceModels()` before the first `advance`, or the shot is a shot
+  of placeholder boxes.
+- Seeking backwards has no answer other than rebuilding the renderer and
+  replaying: every easing is `1 - exp(-k * delta)`, which has no inverse.
+
+## A worked trailer
+
+`apps/trailer` is a complete example: a two-act store trailer driven entirely
+through this API, with the shot list kept as data (world/camera/selection cues on
+a timeline) rather than as branches inside the stepping loop. See
+[`apps/trailer/README.md`](../apps/trailer/README.md).
 
 ## Related documents
 
