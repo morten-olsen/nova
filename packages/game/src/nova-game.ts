@@ -28,3 +28,4 @@ export * from './schemas/schemas.tile.js';
 export * from './schemas/schemas.world.js';
 export * from './script-runner/script-runner.js';
 export * from './script-runner/world-projection.js';
+export * from './world-disclosure/world-disclosure.js';

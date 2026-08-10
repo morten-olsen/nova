@@ -1,5 +1,7 @@
 import type { World } from '../schemas/schemas.world.js';
 
+const redactedValue = '[Redacted]';
+
 const positionKey = ({ x, y }: { x: number; y: number }): string => `${x},${y}`;
 
 /** Returns the information available to one android's script. */
@@ -24,11 +26,14 @@ const projectWorldForAndroid = (world: World, androidId: string): World => {
     ...world,
     scripts: world.scripts.filter((script) => script.ownerId === android.ownerId),
     tiles: world.tiles.filter((tile) => isVisible(tile)),
-    androids: world.androids.filter(isVisible),
+    androids: world.androids.filter(isVisible).map((candidate) => ({
+      ...candidate,
+      ...(candidate.id === androidId ? {} : { memory: redactedValue, recording: redactedValue }),
+    })),
     buildings: world.buildings.filter(isVisible),
     players: world.players?.filter((player) => player.id === android.ownerId),
     messages: world.messages?.filter(isVisible),
   });
 };
 
-export { projectWorldForAndroid };
+export { projectWorldForAndroid, redactedValue };

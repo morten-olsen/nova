@@ -15,7 +15,7 @@ Return one valid action object. For example:
 ({ type: 'android.move', direction: 'east' });
 ```
 
-Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (maximum 4,096 characters) for decisions across turns. `recording` is a player-facing log (maximum 16,384 characters) retained on the Android after it is deactivated. Each value replaces the previous value, so read the Android's current value from `world.androids` when appending to a recording.
+Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (maximum 4,096 characters) for decisions across turns. `recording` is a player-facing log (maximum 16,384 characters) retained on the Android after it is deactivated. Each value replaces the previous value, so read the current Android's value from `world.androids` when appending to a recording. The `memory` and `recording` of every other Android are `[Redacted]`.
 
 ```js
 const android = world.androids.find((candidate) => candidate.id === androidId);

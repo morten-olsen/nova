@@ -371,9 +371,11 @@ Sight range is measured two different ways, and the difference is deliberate:
 
 A radar therefore sees roughly twice the ground a scanner does — about 81 tiles against 41 — for roughly twice the cost and almost twice the construction time. It is the mid-game answer to mapping a region, where the scanner is the early-game answer to seeing past your own Androids.
 
-Each script receives a fogged world projection for its Android's owner. It includes the tiles that owner can currently see, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted.
+Each script receives a fogged world projection for its Android's owner. It includes the tiles that owner can currently see, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted. The acting Android retains its `memory` and `recording`; those fields are `[Redacted]` on every other Android.
 
 Sight is not memory: once your Androids move out of range, or a scanner or radar is salvaged, a tile drops out of the projection again. Scripts that need to remember the map must persist it themselves in Android `memory` or share it through broadcasts.
+
+A player-facing replay preserves the complete world for rendering, but replaces another player's script source and Android `memory` and `recording` with `[Redacted]`. The same redaction applies to the corresponding event payloads.
 
 ## 15. Conflict
 

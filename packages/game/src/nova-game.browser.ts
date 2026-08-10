@@ -26,3 +26,4 @@ export * from './schemas/schemas.scripts.js';
 export * from './schemas/schemas.tile.js';
 export * from './schemas/schemas.world.js';
 export * from './script-runner/world-projection.js';
+export * from './world-disclosure/world-disclosure.js';

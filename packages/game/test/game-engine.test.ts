@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   createBaseRuleset,
   Loop,
+  projectRecordingForPlayer,
   projectWorldForAndroid,
+  projectWorldForPlayer,
   Ruleset,
   ScriptRunner,
   type Event,
@@ -158,6 +160,56 @@ describe('game engine', () => {
       world,
     });
     expect(event.type).toBe('android.wait');
+  });
+
+  it('redacts another player’s scripts and Android state without hiding the world', () => {
+    const world = createWorld({
+      scripts: [
+        { id: 'own-script', ownerId: 'owner', name: 'own', content: 'own source' },
+        { id: 'other-script', ownerId: 'other', name: 'other', content: 'private source' },
+      ],
+      androids: [
+        {
+          id: 'other-android',
+          ownerId: 'other',
+          scriptId: 'other-script',
+          position: { x: 2, y: 0 },
+          battery: 100,
+          health: 100,
+          active: true,
+          memory: 'private memory',
+          recording: 'private recording',
+        },
+      ],
+    });
+
+    const playerWorld = projectWorldForPlayer(world, 'owner');
+    expect(playerWorld.scripts).toHaveLength(2);
+    expect(playerWorld.androids).toHaveLength(1);
+    expect(playerWorld.scripts[1]?.content).toBe('[Redacted]');
+    expect(playerWorld.androids[0]).toEqual(
+      expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }),
+    );
+
+    const recording = projectRecordingForPlayer(
+      {
+        version: 1,
+        initialWorld: world,
+        events: [
+          {
+            type: 'android.wait',
+            androidId: 'other-android',
+            memory: 'updated private memory',
+            recording: 'updated private recording',
+          },
+        ],
+      },
+      'owner',
+    );
+    expect(recording.initialWorld.scripts[1]?.content).toBe('[Redacted]');
+    expect(recording.events[0]).toEqual(
+      expect.objectContaining({ memory: '[Redacted]', recording: '[Redacted]' }),
+    );
   });
 
   it('composes the base mechanics into a playable upload, launch, move, and fail loop', async () => {
