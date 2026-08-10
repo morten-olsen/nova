@@ -75,8 +75,10 @@ npx nova join <invite-code> --script bot/<file>.js
 The host chooses the round count and the disclosure mode, which decides what
 evidence both players keep afterwards:
 
-- \`--disclosure full\` writes the complete recording for both players, openable
-  with \`npx nova play --file match.json\`.
+- \`--disclosure full\` writes a replayable recording for both players, openable
+  with \`npx nova play --file match.json\`. It preserves the world for rendering,
+  but redacts the other player's script source, Android memory, and Android
+  recording.
 - \`--disclosure recording\` writes only what each player's own Android put in its
   \`recording\` field, plus the final scores. There is no replay to inspect.
 

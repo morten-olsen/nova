@@ -37,8 +37,9 @@ type JoinMatchResult = {
 const describeDisclosure = (disclosure: OfferMessage['disclosure']): string =>
   disclosure === 'full'
     ? [
-        '    full — when the match ends, both players receive the complete',
-        "    recording: every round, both Androids, and each other's script.",
+        '    full — when the match ends, both players receive a replay:',
+        '    every round and both Androids. Opponent script source, Android',
+        '    memory, and Android recording are redacted.',
         '    Openable with `nova play`.',
       ].join('\n')
     : [

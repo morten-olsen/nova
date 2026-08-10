@@ -6,9 +6,9 @@ import { z } from 'zod';
 /**
  * How the match is disclosed to both players when it ends.
  *
- * `full` hands both sides the complete recording: the same `game.json` shape
- * `nova create-game` produces, replayable with `nova play`, including the
- * opponent's script and every tile they ever saw.
+ * `full` hands both sides a replayable `game.json`-shaped recording. It keeps
+ * the complete world for rendering, but replaces the opponent's script source,
+ * Android memory, and Android recording with `[Redacted]`.
  *
  * `recording` hands each side only what their own Android wrote to its
  * `recording` field during play, plus the final scores. Nothing about how the

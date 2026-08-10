@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-import { createBaseRuleset, Loop, type Event, type World } from '@morten-olsen/nova-game';
+import { createBaseRuleset, Loop, projectRecordingForPlayer, type Event, type World } from '@morten-olsen/nova-game';
 
 import { createGameFile, writeGameFile, type GameFile } from './game-file.js';
 import { androidRecordingFor, finalScoresOf, writeRecordingFile } from './match-files.js';
@@ -182,9 +182,9 @@ const simulate = async (
 /**
  * Sends the guest their side of the disclosure and writes the host's own.
  *
- * The host is restricted exactly as the guest is: under `recording` it keeps
- * only its own Android's notes, so running the simulation is not an information
- * advantage even though the full world passed through this process.
+ * Under `full`, each player receives a renderable replay with the other
+ * player's executable and persisted Android state redacted. Under `recording`,
+ * each player keeps only its own Android's notes.
  */
 const deliverResult = async (
   connection: MatchConnection,
@@ -195,8 +195,13 @@ const deliverResult = async (
   const scores = finalScoresOf(world);
 
   if (options.disclosure === 'full') {
-    connection.send({ type: 'result', disclosure: 'full', scores, game: gameFile });
-    await writeGameFile(options.outputPath, gameFile);
+    connection.send({
+      type: 'result',
+      disclosure: 'full',
+      scores,
+      game: projectRecordingForPlayer(gameFile, guestPlayerId),
+    });
+    await writeGameFile(options.outputPath, projectRecordingForPlayer(gameFile, hostPlayerId));
   } else {
     connection.send({
       type: 'result',
