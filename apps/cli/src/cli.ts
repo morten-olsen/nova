@@ -15,6 +15,10 @@ import {
 } from './game-file.js';
 import { createFactory, updateFactory } from './factory.js';
 import { createPlayServer, listenOnRandomPort } from './play-server.js';
+import { hostGame } from './match-host.js';
+import { joinGame } from './match-guest.js';
+import { formatScores } from './match-files.js';
+import { disclosureSchema, type Disclosure } from './match-protocol.js';
 
 type CommandResult = {
   message: string;
@@ -65,6 +69,9 @@ const getOptions = () => {
       script: { type: 'string' },
       'script-id': { type: 'string' },
       rounds: { type: 'string', short: 'r' },
+      disclosure: { type: 'string' },
+      out: { type: 'string', short: 'o' },
+      yes: { type: 'boolean', short: 'y' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -79,8 +86,13 @@ const usage = `Usage:
   nova launch-android --file game.json --owner player-1 --script-id script-1
   nova run --file game.json [--rounds 1]
   nova play --file game.json
+  nova host --script bot/android.js [--rounds 20] [--disclosure full|recording]
+  nova join ABCDE-FGHJK --script bot/android.js
 
 Game files store the generated initial world plus the complete event log.
+
+host and join play one Android against another over a peer-to-peer connection.
+The host picks the rounds and the disclosure mode, and shares the invite code.
 `;
 
 const createGame = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
@@ -198,6 +210,95 @@ const play = async (values: Record<string, string | boolean | undefined>): Promi
   return { message: `Opening replay at ${url}\nPress Ctrl+C to stop the replay server.` };
 };
 
+const requireDisclosure = (value: string | boolean | undefined): Disclosure => {
+  if (value === undefined) {
+    return 'full';
+  }
+
+  const parsed = disclosureSchema.safeParse(value);
+  if (!parsed.success) {
+    throw new Error(`--disclosure must be "full" or "recording", received: ${String(value)}`);
+  }
+
+  return parsed.data;
+};
+
+/** Progress goes out as it happens; a peer match is too slow to report only at the end. */
+const report = (message: string): void => {
+  console.log(message);
+};
+
+const host = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
+  const scriptPath = resolvePath(requireString(values.script, 'script'));
+  const disclosure = requireDisclosure(values.disclosure);
+  const rounds = optionalNumber(values.rounds, 20);
+  const outputPath = resolvePath(
+    typeof values.out === 'string' ? values.out : disclosure === 'full' ? 'match.json' : 'match-recording.json',
+  );
+
+  const result = await hostGame({
+    scriptPath,
+    scriptName: basename(scriptPath),
+    playerName: typeof values.name === 'string' ? values.name : 'host',
+    rounds,
+    width: optionalNumber(values.width, 16),
+    height: optionalNumber(values.height, 16),
+    disclosure,
+    outputPath,
+    report,
+  });
+
+  return {
+    message: [
+      '',
+      'Match complete.',
+      ...formatScores(result.scores),
+      '',
+      `Wrote ${result.outputPath}`,
+      disclosure === 'full'
+        ? `Replay it with: npx nova play --file ${result.outputPath}`
+        : "Only your own Android's recording and the final scores were kept.",
+    ].join('\n'),
+  };
+};
+
+const join = async (
+  values: Record<string, string | boolean | undefined>,
+  code: string | undefined,
+): Promise<CommandResult> => {
+  if (!code) {
+    throw new Error('Missing invite code. Usage: nova join <invite-code> --script bot/android.js');
+  }
+
+  const scriptPath = resolvePath(requireString(values.script, 'script'));
+  const result = await joinGame({
+    code,
+    scriptPath,
+    scriptName: basename(scriptPath),
+    playerName: typeof values.name === 'string' ? values.name : 'guest',
+    // The guest only learns the disclosure mode from the host's offer, so the
+    // default filename cannot be chosen until then.
+    outputPath: typeof values.out === 'string' ? resolvePath(values.out) : undefined,
+    resolveDefaultOutputPath: (disclosure) =>
+      resolvePath(disclosure === 'full' ? 'match.json' : 'match-recording.json'),
+    assumeYes: values.yes === true,
+    report,
+  });
+
+  return {
+    message: [
+      '',
+      'Match complete.',
+      ...formatScores(result.scores),
+      '',
+      `Wrote ${result.outputPath}`,
+      result.disclosure === 'full'
+        ? `Replay it with: npx nova play --file ${result.outputPath}`
+        : "Only your own Android's recording and the final scores were disclosed.",
+    ].join('\n'),
+  };
+};
+
 const runRounds = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
   const file = resolvePath(requireString(values.file, 'file'));
   const rounds = optionalNumber(values.rounds, 1);
@@ -260,6 +361,14 @@ const main = async (): Promise<void> => {
 
     if (command === 'play') {
       return play(values);
+    }
+
+    if (command === 'host') {
+      return host(values);
+    }
+
+    if (command === 'join') {
+      return join(values, directory);
     }
 
     throw new Error(`Unknown command: ${command}\n\n${usage}`);

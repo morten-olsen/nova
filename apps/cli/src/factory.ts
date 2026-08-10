@@ -32,6 +32,7 @@ const packageJson = {
     status: 'nova status --file game.json',
     simulate: 'nova run --file game.json --rounds 10',
     play: 'nova play --file game.json',
+    host: 'nova host --script bot/starter-builder.js --rounds 20',
   },
   dependencies: novaDependencies,
 };
@@ -60,6 +61,30 @@ npx nova play --file game.json
 \`\`\`
 
 Each upload creates a new script id. Existing androids keep their old script, so launch a new android (when charger capacity permits) to test an uploaded version. Game files are recordings: do not hand-edit \`game.json\`; recreate it with \`npx nova create-game --file game.json\` when you want a clean run. Run \`npx nova update\` to update the pinned Nova packages and refresh \`docs/\`; it leaves your bots untouched.
+
+## Playing another player
+
+An Android can be matched against another player's Android over a peer-to-peer
+connection. One side hosts and shares the invite code it prints:
+
+\`\`\`sh
+npx nova host --script bot/<file>.js --rounds 20 --disclosure full
+npx nova join <invite-code> --script bot/<file>.js
+\`\`\`
+
+The host chooses the round count and the disclosure mode, which decides what
+evidence both players keep afterwards:
+
+- \`--disclosure full\` writes the complete recording for both players, openable
+  with \`npx nova play --file match.json\`.
+- \`--disclosure recording\` writes only what each player's own Android put in its
+  \`recording\` field, plus the final scores. There is no replay to inspect.
+
+Under \`recording\`, whatever the Android wrote down is the only account of the
+match. An Android intended for competitive play should write to \`recording\`
+deliberately: note what it saw, where it went, and why it changed plan. Note
+that a rejected action is discarded whole, including its \`recording\` write, so
+an Android that fails a turn records nothing for that round.
 
 ## Boundaries
 

@@ -259,6 +259,37 @@ describe('game engine', () => {
     );
   });
 
+  /**
+   * `recording` is the player's only account of a match played with limited
+   * disclosure, so whether a refused action still records matters to how a
+   * competitive Android is written.
+   */
+  it('discards the memory and recording written by a rejected action', async () => {
+    const loop = new Loop({
+      ruleset: createBaseRuleset({ world: { width: 3, height: 3 } }),
+    });
+
+    loop.applyEvents([
+      {
+        type: 'user.upload-android-script',
+        ownerId: 'player-1',
+        // The android starts at 0,0, so moving north leaves the map.
+        content: `({ type: 'android.move', direction: 'north', memory: 'noted', recording: 'noted' })`,
+        name: 'walks-off-the-map',
+      },
+      {
+        type: 'user.launch-android',
+        ownerId: 'player-1',
+        scriptId: 'script-1',
+      },
+    ]);
+
+    await loop.run();
+
+    expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
+    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ memory: '', recording: '' }));
+  });
+
   it('uses base mechanics to charge androids and construct buildings', async () => {
     const loop = new Loop({
       ruleset: createBaseRuleset({ world: { width: 2, height: 1 } }),
