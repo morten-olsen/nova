@@ -7,7 +7,7 @@ An Android is a small JavaScript program that chooses exactly one action each tu
 The script runs in a sandbox with two globals:
 
 - `androidId`: the id of the Android whose turn is running.
-- `world`: a snapshot of the current world.
+- `world`: a fogged snapshot of the current world. It contains only tiles revealed for this Android's owner, plus the Android's current tile. Androids, buildings, and broadcasts outside those tiles are omitted.
 
 Return one valid action object. For example:
 
@@ -27,7 +27,7 @@ const android = world.androids.find((candidate) => candidate.id === androidId);
 });
 ```
 
-Scripts cannot import modules, read files, make network calls, or retain state between turns. Derive decisions from `world`, including Android position, cargo, buildings, tiles, messages, and the script's owner id. See the rulebook for every action and its required fields.
+Scripts cannot import modules, read files, make network calls, or retain state between turns. Derive decisions from the visible part of `world`, including Android position, cargo, buildings, tiles, and messages. Do not treat a missing tile or entity as proof that it does not exist; it may be in the fog. See the rulebook for every action and its required fields.
 
 ## Recommended first strategy
 

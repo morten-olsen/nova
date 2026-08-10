@@ -3,6 +3,8 @@ import { createContext, runInContext } from 'node:vm';
 import { World } from '../schemas/schemas.world.js';
 import { AndroidEvent, androidEventSchema } from '../events/events.android.js';
 
+import { projectWorldForAndroid } from './world-projection.js';
+
 type ScriptExecuteOptions = {
   androidId: string;
   content: string;
@@ -24,7 +26,7 @@ class ScriptRunner {
     const { androidId, world, content } = options;
     const context = createContext({
       androidId,
-      world: structuredClone(world),
+      world: projectWorldForAndroid(world, androidId),
     });
     const result = runInContext(content, context, {
       timeout: this.#timeoutMs,

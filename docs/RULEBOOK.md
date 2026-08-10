@@ -35,7 +35,7 @@ Androids are autonomous once launched. A script returns one android action per t
 Scripts run with these globals:
 
 - `androidId` — the id of the android currently taking its turn
-- `world` — the current world snapshot visible to the script runner
+- `world` — the fogged world snapshot visible to the script runner
 
 A simple script returns an event object:
 
@@ -361,7 +361,7 @@ Androids reveal nearby tiles at round end. Current reveal defaults:
 - active androids reveal tiles within range 2
 - completed scanners reveal tiles within range 4
 
-Scripts currently receive the world snapshot from the engine. Future competitive modes may restrict this to visible/remembered information.
+Each script receives a fogged world projection for its Android's owner. It includes tiles that owner has revealed, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted. Revealed tiles remain known after the Android that discovered them moves away, so scripts can use the explored map as persistent information.
 
 ## 15. Conflict
 
@@ -414,7 +414,6 @@ These concepts are intended but not fully implemented:
 - formal colony readiness scoring
 - fleet-arrival endgame
 - relay tower broadcast extension
-- restricted fog-of-war for scripts
 - direct defensive structures
 - richer natural resource chains
 - player-facing reports beyond recordings and world state

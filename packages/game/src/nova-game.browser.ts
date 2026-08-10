@@ -24,3 +24,4 @@ export type { MaterialBundle } from './schemas/schemas.resources.js';
 export * from './schemas/schemas.scripts.js';
 export * from './schemas/schemas.tile.js';
 export * from './schemas/schemas.world.js';
+export * from './script-runner/world-projection.js';

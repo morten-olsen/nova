@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { createBaseRuleset, Loop, Ruleset, type Event, type Mechanic, type World } from '../src/nova-game.js';
+import {
+  createBaseRuleset,
+  Loop,
+  projectWorldForAndroid,
+  Ruleset,
+  ScriptRunner,
+  type Event,
+  type Mechanic,
+  type World,
+} from '../src/nova-game.js';
 
 const emptyWorld = (): World => ({
   scripts: [],
@@ -79,6 +88,78 @@ const createAndroidTurnMechanic = (): Mechanic => ({
 });
 
 describe('game engine', () => {
+  it('projects a fogged world for android scripts', () => {
+    const world = createWorld({
+      scripts: [
+        { id: 'own-script', ownerId: 'owner', name: 'own', content: '' },
+        { id: 'other-script', ownerId: 'other', name: 'other', content: '' },
+      ],
+      tiles: [
+        { position: { x: 0, y: 0 }, composition: { acid: 0 } },
+        { position: { x: 1, y: 0 }, composition: { acid: 0 }, revealedBy: ['owner'] },
+        { position: { x: 2, y: 0 }, composition: { acid: 0 }, revealedBy: ['other'] },
+      ],
+      androids: [
+        {
+          id: 'owner-android',
+          ownerId: 'owner',
+          scriptId: 'own-script',
+          position: { x: 0, y: 0 },
+          battery: 100,
+          health: 100,
+          active: true,
+        },
+        {
+          id: 'other-android',
+          ownerId: 'other',
+          scriptId: 'other-script',
+          position: { x: 2, y: 0 },
+          battery: 100,
+          health: 100,
+          active: true,
+        },
+      ],
+      buildings: [
+        {
+          id: 'hidden-building',
+          ownerId: 'other',
+          type: 'depot',
+          position: { x: 2, y: 0 },
+          remainingConstruction: { ticks: 0, resources: {} },
+        },
+      ],
+      players: [
+        { id: 'owner', name: 'Owner' },
+        { id: 'other', name: 'Other' },
+      ],
+      messages: [
+        {
+          id: 'hidden-message',
+          senderAndroidId: 'other-android',
+          ownerId: 'other',
+          position: { x: 2, y: 0 },
+          content: 'hidden',
+        },
+      ],
+    });
+
+    const fogged = projectWorldForAndroid(world, 'owner-android');
+
+    expect(fogged.tiles.map((tile) => tile.position.x)).toEqual([0, 1]);
+    expect(fogged.androids.map((android) => android.id)).toEqual(['owner-android']);
+    expect(fogged.buildings).toEqual([]);
+    expect(fogged.messages).toEqual([]);
+    expect(fogged.scripts.map((script) => script.id)).toEqual(['own-script']);
+    expect(fogged.players).toEqual([{ id: 'owner', name: 'Owner' }]);
+
+    const event = new ScriptRunner().execute({
+      androidId: 'owner-android',
+      content: "({ type: world.tiles.length === 2 ? 'android.wait' : 'android.move', direction: 'east' })",
+      world,
+    });
+    expect(event.type).toBe('android.wait');
+  });
+
   it('composes the base mechanics into a playable upload, launch, move, and fail loop', async () => {
     const loop = new Loop({
       ruleset: createBaseRuleset({
