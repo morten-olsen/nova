@@ -11,7 +11,7 @@ import {
   type OfferMessage,
 } from '@morten-olsen/nova-match';
 
-import { createWorkerScriptRunner } from '../runner/worker-script-runner.ts';
+import { getScriptRunner } from '../runner/script-runner.ts';
 
 import { createMatchHost, joinMatch } from './peer-transport.ts';
 import type { MatchResult } from './match-state.ts';
@@ -43,14 +43,12 @@ type JoinFlowOptions = {
   scriptName: string;
 };
 
-const scriptRunnerTimeoutMs = 1000;
-
 /**
  * Hosts a match from the browser.
  *
  * The host runs both androids, including the opponent's, through the same
- * Worker sandbox the Run button uses — so a hostile opponent script is bounded
- * by the same per-turn timeout rather than being trusted.
+ * QuickJS sandbox the Run button uses — so a hostile opponent script is bounded
+ * by the same per-turn CPU, memory and stack limits rather than being trusted.
  */
 const startHosting = async (options: HostFlowOptions, handlers: FlowHandlers): Promise<void> => {
   const code = createInviteCode();
@@ -70,7 +68,7 @@ const startHosting = async (options: HostFlowOptions, handlers: FlowHandlers): P
     rounds: options.rounds,
     script: options.script,
     scriptName: options.scriptName,
-    scriptRunner: createWorkerScriptRunner({ timeoutMs: scriptRunnerTimeoutMs }),
+    scriptRunner: getScriptRunner(),
     width: options.size,
   });
 

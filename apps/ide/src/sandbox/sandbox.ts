@@ -1,12 +1,11 @@
 import { createBaseRuleset, Loop, type GameRecording } from '@morten-olsen/nova-game';
 
-import { createWorkerScriptRunner } from '../runner/worker-script-runner.ts';
+import { getScriptRunner } from '../runner/script-runner.ts';
 
 type SandboxOptions = {
   content: string;
   height: number;
   rounds: number;
-  timeoutMs: number;
   width: number;
 };
 
@@ -27,9 +26,9 @@ const ownerId = 'player-1';
  * caused it.
  */
 const runSandbox = async (options: SandboxOptions): Promise<SandboxResult> => {
-  const { content, height, rounds, timeoutMs, width } = options;
+  const { content, height, rounds, width } = options;
   const ruleset = createBaseRuleset({ world: { width, height } });
-  const loop = new Loop({ ruleset, scriptRunner: createWorkerScriptRunner({ timeoutMs }) });
+  const loop = new Loop({ ruleset, scriptRunner: getScriptRunner() });
 
   loop.applyEvents([
     { type: 'user.upload-android-script', ownerId, name: 'draft', content },

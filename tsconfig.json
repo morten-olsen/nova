@@ -17,6 +17,9 @@
       "path": "./packages/match"
     },
     {
+      "path": "./packages/script-runner"
+    },
+    {
       "path": "./apps/cli"
     },
     {

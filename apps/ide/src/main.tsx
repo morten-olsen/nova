@@ -3,7 +3,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import './app.css';
+import { getScriptRunner } from './runner/script-runner.ts';
 import { routeTree } from './routeTree.gen.ts';
+
+// Spawns the script worker now so it loads its interpreter while the user is
+// still finding their way to the editor, rather than on the first Run.
+getScriptRunner();
 
 // Vite fills BASE_URL from `base`, which on GitHub Pages is the repository
 // sub-path. The router needs it too, or every link it builds points at the

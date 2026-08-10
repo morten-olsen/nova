@@ -17,6 +17,7 @@
     "@morten-olsen/nova-match": "workspace:*",
     "@morten-olsen/nova-renderer": "workspace:*",
     "@morten-olsen/nova-replay-ui": "workspace:*",
+    "@morten-olsen/nova-script-runner": "workspace:*",
     "@tanstack/react-router": "^1.140.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

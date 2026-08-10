@@ -15,12 +15,14 @@ type ScriptExecuteOptions = {
  * Runs one android's script for a single turn and resolves with the action it
  * chose.
  *
- * The engine deliberately ships no implementation. `node:vm` cannot run in a
- * browser, and a Worker — the only way to get a hard timeout in one — cannot be
- * driven synchronously, so the host supplies the sandbox that fits its
- * platform. Implementations must evaluate `content` such that the value of its
- * final expression statement is the result, matching the documented script
- * contract in `docs/ANDROID-BUILDER-MANUAL.md`, then hand that value to
+ * The engine deliberately ships no implementation: a sandbox needs an
+ * interpreter, and the engine should not force one on every host that only
+ * wants the rules. `@morten-olsen/nova-script-runner` is the implementation the
+ * CLI and the IDE both use, and what any other host should reach for first.
+ *
+ * An implementation must evaluate `content` such that the value of its final
+ * expression statement is the result, matching the documented script contract
+ * in `docs/ANDROID-BUILDER-MANUAL.md`, then hand that value to
  * {@link toAndroidEvent}.
  */
 type ScriptRunner = {

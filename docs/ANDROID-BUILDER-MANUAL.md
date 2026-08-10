@@ -4,10 +4,12 @@ An Android is a small JavaScript program that chooses exactly one action each tu
 
 ## Script contract
 
-The script runs in a sandbox with two globals:
+The script runs in a sandbox with four globals:
 
 - `androidId`: the id of the Android whose turn is running.
 - `world`: a fogged snapshot of the current world. It contains only tiles revealed for this Android's owner, plus the Android's current tile. Androids, buildings, and broadcasts outside those tiles are omitted.
+- `turn`: the turn now being played, counting from 1.
+- `finalTurn`: the turn the match is scheduled to end on, or `undefined` when it has no scheduled end. Compare it against `turn` to know how much time is left — but check for `undefined` first, because most matches do not set one.
 
 Return one valid action object. For example:
 
@@ -28,6 +30,23 @@ const android = world.androids.find((candidate) => candidate.id === androidId);
 ```
 
 Scripts cannot import modules, read files, make network calls, or retain state between turns. Derive decisions from the visible part of `world`, including Android position, cargo, buildings, tiles, and messages. Do not treat a missing tile or entity as proof that it does not exist; it may be in the fog. See the rulebook for every action and its required fields.
+
+The action you return travels back as JSON, so it must be a plain object. Values JSON cannot carry — functions, class instances, circular references — fail the turn.
+
+## Sandbox and limits
+
+Scripts run in QuickJS, the same interpreter in the browser IDE and in the CLI, so a bot that works in one behaves identically in the other. It is a standards-compliant JavaScript engine, but it is not a browser and it is not Node: there is no `console`, no `fetch`, no `window`, no `process`, and no timers.
+
+Each turn gets its own interpreter with its own budget, and a turn that exceeds any of them fails that turn without affecting the next one:
+
+| Limit      | Default                                       | What exhausts it                                                      |
+| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| CPU        | 10,000 ticks (roughly 100 million operations) | Infinite loops, and searches that never terminate                     |
+| Wall clock | 1 second                                      | Work that is slow without being long, such as allocating relentlessly |
+| Memory     | 16 MB                                         | Building enormous arrays or strings                                   |
+| Call stack | 128 KB                                        | Unbounded recursion                                                   |
+
+The CPU budget is counted in interpreter ticks rather than milliseconds, so a script is cut off at the same point on every machine — which is what lets two peers replay the same match and agree on the outcome. A normal bot is nowhere near any of these; the shipped starter builder finishes a turn without spending a single tick.
 
 ## Recommended first strategy
 

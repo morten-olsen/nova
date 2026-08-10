@@ -1,8 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 import { createBaseRuleset, Loop, parseRecording, World, type GameRecording } from '@morten-olsen/nova-game';
-
-import { createVmScriptRunner } from './script-runner.js';
+import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 
 /**
  * A game file is a recording plus its future: the CLI keeps appending events to
@@ -30,7 +29,7 @@ const createLoopFromGameFile = (gameFile: GameFile): Loop => {
     ruleset: createBaseRuleset(),
     initWorld: gameFile.initialWorld,
     events: gameFile.events,
-    scriptRunner: createVmScriptRunner(),
+    scriptRunner: createQuickJsScriptRunner(),
   });
 };
 

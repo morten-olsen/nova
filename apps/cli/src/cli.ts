@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util';
 
 import { calculateColonyScores, createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
 import { disclosureSchema, type Disclosure } from '@morten-olsen/nova-match';
+import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 
 import {
   createGameFile,
@@ -14,7 +15,6 @@ import {
   updateGameFileFromLoop,
   writeGameFile,
 } from './game-file.js';
-import { createVmScriptRunner } from './script-runner.js';
 import { createFactory, updateFactory } from './factory.js';
 import { createPlayServer, listenOnRandomPort } from './play-server.js';
 import { hostGame } from './match-host.js';
@@ -104,7 +104,7 @@ const createGame = async (values: Record<string, string | boolean | undefined>):
     ruleset: createBaseRuleset({
       world: { width, height },
     }),
-    scriptRunner: createVmScriptRunner(),
+    scriptRunner: createQuickJsScriptRunner(),
   });
 
   await writeGameFile(file, createGameFile(loop.world));

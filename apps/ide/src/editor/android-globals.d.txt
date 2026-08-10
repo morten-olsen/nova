@@ -83,6 +83,8 @@ type Player = { id: string; name: string };
  */
 type World = {
   round?: number;
+  /** The round the match is scheduled to end on, if it has one. Also available as `finalTurn`. */
+  finalRound?: number;
   tiles: Tile[];
   androids: Android[];
   buildings: Building[];
@@ -120,3 +122,12 @@ declare const androidId: string;
 
 /** A fogged snapshot of the world for this turn. */
 declare const world: World;
+
+/** The turn now being played, counting from 1. */
+declare const turn: number;
+
+/**
+ * The turn the match is scheduled to end on, or `undefined` when it has no
+ * scheduled end. Compare against `turn` to know how much time is left.
+ */
+declare const finalTurn: number | undefined;
