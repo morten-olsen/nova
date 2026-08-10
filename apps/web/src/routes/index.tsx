@@ -2,10 +2,10 @@ import type { TileClickEvent } from '@morten-olsen/nova-renderer';
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { RecordingLoader } from '../components/recording-loader.tsx';
 import { TileInspector } from '../components/tile-inspector.tsx';
 import { TimelineControls } from '../components/timeline-controls.tsx';
-import { createTimeline, type Recording, type TimelineFrame } from '../game/recording.ts';
+import { loadEmbeddedRecording } from '../game/embedded-recording.ts';
+import { createTimeline, type TimelineFrame } from '../game/recording.ts';
 import { WorldRenderer } from '../visualization/world-renderer.tsx';
 
 type ReplayScreenProps = {
@@ -14,7 +14,6 @@ type ReplayScreenProps = {
   isPlaying: boolean;
   maxFrame: number;
   onFrameChange: (value: number) => void;
-  onLoad: (recording: Recording, name: string) => void;
   onTileClick: (event: TileClickEvent) => void;
   onTogglePlayback: () => void;
   recordingName: string;
@@ -27,7 +26,6 @@ const ReplayScreen = ({
   isPlaying,
   maxFrame,
   onFrameChange,
-  onLoad,
   onTileClick,
   onTogglePlayback,
   recordingName,
@@ -45,12 +43,6 @@ const ReplayScreen = ({
             <span>UNITS {frame.world.androids.length}</span>
             <span className="h-1 w-1 bg-cyan-700" />
             <span>STRUCTURES {frame.world.buildings.length}</span>
-            <details className="command-button px-3 py-2 text-slate-200">
-              <summary className="cursor-pointer">Load another</summary>
-              <div className="absolute right-6 z-10 mt-3 w-[min(32rem,calc(100vw-3rem))]">
-                <RecordingLoader onLoad={onLoad} />
-              </div>
-            </details>
           </div>
         </header>
 
@@ -82,31 +74,14 @@ const ReplayScreen = ({
   );
 };
 
-const RecordingLanding = ({ onLoad }: { onLoad: (recording: Recording, name: string) => void }): React.ReactNode => {
-  return (
-    <main className="min-h-screen bg-transparent p-4 font-mono text-slate-100">
-      <div className="mx-auto flex min-h-[80vh] max-w-4xl flex-col justify-center gap-3">
-        <header className="command-panel p-5">
-          <p className="command-label text-cyan-300">Project Nova / remote operations terminal</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-[0.12em] text-slate-100">REPLAY COMMAND</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-            Load a colony recording to review round-by-round automation, inspect infrastructure, and study the board
-            state.
-          </p>
-        </header>
-        <RecordingLoader onLoad={onLoad} />
-      </div>
-    </main>
-  );
-};
-
 const VisualizerPage = (): React.ReactNode => {
-  const [recording, setRecording] = useState<Recording | null>(null);
-  const [recordingName, setRecordingName] = useState<string>('');
-  const [frameIndex, setFrameIndex] = useState(0);
+  const [embeddedRecording] = useState(loadEmbeddedRecording);
+  const [frameIndex, setFrameIndex] = useState(() =>
+    Math.max(0, createTimeline(embeddedRecording.recording).length - 1),
+  );
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedTile, setSelectedTile] = useState<{ x: number; y: number } | null>(null);
-  const timeline = useMemo(() => (recording ? createTimeline(recording) : []), [recording]);
+  const timeline = useMemo(() => createTimeline(embeddedRecording.recording), [embeddedRecording.recording]);
   const frame = timeline[frameIndex];
   const maxFrame = Math.max(0, timeline.length - 1);
 
@@ -127,13 +102,6 @@ const VisualizerPage = (): React.ReactNode => {
   }, [isPlaying, maxFrame]);
 
   const handleTileClick = useCallback((event: TileClickEvent): void => setSelectedTile(event.position), []);
-  const handleLoad = useCallback((nextRecording: Recording, name: string): void => {
-    setRecording(nextRecording);
-    setRecordingName(name);
-    setFrameIndex(Math.max(0, createTimeline(nextRecording).length - 1));
-    setIsPlaying(false);
-    setSelectedTile(null);
-  }, []);
   const handleFrameChange = useCallback((value: number): void => {
     setFrameIndex(value);
     setIsPlaying(false);
@@ -145,8 +113,8 @@ const VisualizerPage = (): React.ReactNode => {
     setIsPlaying((playing) => !playing);
   }, [frameIndex, maxFrame]);
 
-  if (!recording || !frame) {
-    return <RecordingLanding onLoad={handleLoad} />;
+  if (!frame) {
+    throw new Error('The supplied game recording contains no replay frames.');
   }
   return (
     <ReplayScreen
@@ -154,10 +122,9 @@ const VisualizerPage = (): React.ReactNode => {
       frameIndex={frameIndex}
       isPlaying={isPlaying}
       maxFrame={maxFrame}
-      recordingName={recordingName}
+      recordingName={embeddedRecording.name}
       selectedTile={selectedTile}
       onFrameChange={handleFrameChange}
-      onLoad={handleLoad}
       onTileClick={handleTileClick}
       onTogglePlayback={handleTogglePlayback}
     />

@@ -30,7 +30,10 @@ Run one or more rounds, then inspect the resulting state:
 ```sh
 npx nova run --file game.json --rounds 10
 npx nova status --file game.json
+npx nova play --file game.json
 ```
+
+`play` starts a local replay server on a random port, opens the current recording in your browser, and keeps running until you press Ctrl+C. It bundles the replay interface with the Nova CLI, so no separate web app or file upload is needed.
 
 Run short batches while developing. `status` reports active Androids, their location and battery, scripts, buildings, and the event count. The full event history and world recording are in `game.json`; it is useful evidence when diagnosing behavior, but it should not be edited by hand.
 
@@ -59,4 +62,5 @@ nova status --file game.json
 nova upload-script --file game.json --owner player-1 --name name --script bot/file.js
 nova launch-android --file game.json --owner player-1 --script-id script-1
 nova run --file game.json [--rounds 1]
+nova play --file game.json
 ```

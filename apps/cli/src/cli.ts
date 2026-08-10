@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
-import { isAbsolute, resolve } from 'node:path';
+import { isAbsolute, resolve, basename } from 'node:path';
+import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
 import { createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
@@ -13,6 +14,7 @@ import {
   writeGameFile,
 } from './game-file.js';
 import { createFactory, updateFactory } from './factory.js';
+import { createPlayServer, listenOnRandomPort } from './play-server.js';
 
 type CommandResult = {
   message: string;
@@ -76,6 +78,7 @@ const usage = `Usage:
   nova upload-script --file game.json --owner player-1 --name miner --script ./bot.js
   nova launch-android --file game.json --owner player-1 --script-id script-1
   nova run --file game.json [--rounds 1]
+  nova play --file game.json
 
 Game files store the generated initial world plus the complete event log.
 `;
@@ -156,6 +159,37 @@ const launchAndroid = async (values: Record<string, string | boolean | undefined
   return { message: `Launched android-${loop.world.androids.length}.` };
 };
 
+const openBrowser = (url: string): void => {
+  const [command, args] =
+    process.platform === 'darwin'
+      ? ['open', [url]]
+      : process.platform === 'win32'
+        ? ['cmd', ['/c', 'start', '', url]]
+        : ['xdg-open', [url]];
+  const browser = spawn(command, args, { detached: true, stdio: 'ignore' });
+  browser.on('error', () => undefined);
+  browser.unref();
+};
+
+const play = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
+  const file = resolvePath(requireString(values.file, 'file'));
+  const gameContent = await readFile(file, 'utf8');
+  createLoopFromGameFile(await readGameFile(file));
+
+  const server = createPlayServer(gameContent, basename(file));
+  const port = await listenOnRandomPort(server);
+  const url = `http://127.0.0.1:${port}`;
+  openBrowser(url);
+
+  const closeServer = (): void => {
+    server.close();
+  };
+  process.once('SIGINT', closeServer);
+  process.once('SIGTERM', closeServer);
+
+  return { message: `Opening replay at ${url}\nPress Ctrl+C to stop the replay server.` };
+};
+
 const runRounds = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
   const file = resolvePath(requireString(values.file, 'file'));
   const rounds = optionalNumber(values.rounds, 1);
@@ -214,6 +248,10 @@ const main = async (): Promise<void> => {
 
     if (command === 'run') {
       return runRounds(values);
+    }
+
+    if (command === 'play') {
+      return play(values);
     }
 
     throw new Error(`Unknown command: ${command}\n\n${usage}`);

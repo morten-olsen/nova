@@ -31,6 +31,7 @@ const packageJson = {
   scripts: {
     status: 'nova status --file game.json',
     simulate: 'nova run --file game.json --rounds 10',
+    play: 'nova play --file game.json',
   },
   dependencies: novaDependencies,
 };
@@ -55,6 +56,7 @@ npx nova upload-script --file game.json --owner player-1 --name <name> --script 
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 npx nova run --file game.json --rounds 10
 npx nova status --file game.json
+npx nova play --file game.json
 \`\`\`
 
 Each upload creates a new script id. Existing androids keep their old script, so launch a new android (when charger capacity permits) to test an uploaded version. Game files are recordings: do not hand-edit \`game.json\`; recreate it with \`npx nova create-game --file game.json\` when you want a clean run. Run \`npx nova update\` to update the pinned Nova packages and refresh \`docs/\`; it leaves your bots untouched.

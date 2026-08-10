@@ -1,7 +1,12 @@
 {
   "name": "@morten-olsen/nova-web",
   "version": "1.0.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "scripts": {

@@ -6,6 +6,9 @@
   "bin": {
     "nova": "./dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "check": "tsc -b --pretty false",
     "build": "tsc -b --pretty false",
@@ -14,6 +17,7 @@
   "dependencies": {
     "@morten-olsen/nova-docs": "workspace:*",
     "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-web": "workspace:*",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -162,7 +162,10 @@ npx nova upload-script --file game.json --owner player-1 --name starter-builder 
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 npx nova run --file game.json --rounds 10
 npx nova status --file game.json
+npx nova play --file game.json
 ```
+
+`nova play` opens the replay in your browser without uploading `game.json`; press Ctrl+C in the terminal when you are done.
 
 Open the factory in your coding agent and ask it to read `AGENTS.md`, then improve `bot/starter-builder.js`. Make a small change, upload it as a new script version, simulate a few rounds, and use the recording to decide what to change next.
 
@@ -201,7 +204,7 @@ Launch the visualizer:
 pnpm dev:web
 ```
 
-Then upload a generated or sample recording and scrub through the event history.
+Then run `pnpm nova play --file examples/games/starter-builder-sample.json` to open the bundled replay UI and scrub through the event history.
 
 ## Project status
 
