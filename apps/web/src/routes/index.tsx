@@ -2,6 +2,7 @@ import type { TileClickEvent } from '@morten-olsen/nova-renderer';
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Scoreboard } from '../components/scoreboard.tsx';
 import { TileInspector } from '../components/tile-inspector.tsx';
 import { TimelineControls } from '../components/timeline-controls.tsx';
 import { loadEmbeddedRecording } from '../game/embedded-recording.ts';
@@ -56,7 +57,10 @@ const ReplayScreen = ({
             </div>
             <WorldRenderer className="min-h-0 flex-1" world={frame.world} onTileClick={onTileClick} />
           </section>
-          <TileInspector world={frame.world} position={selectedTile} />
+          <div className="flex min-h-0 flex-col gap-2 xl:overflow-hidden">
+            <Scoreboard world={frame.world} />
+            <TileInspector world={frame.world} position={selectedTile} />
+          </div>
         </div>
 
         <footer className="shrink-0">

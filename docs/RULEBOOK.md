@@ -8,9 +8,9 @@ This rulebook is written for players and coding agents that want to play the cur
 
 Only one player can become the planet's founding colony authority.
 
-The current ruleset does not yet implement final victory scoring. The intended endgame is colony readiness: players prepare a viable colony through infrastructure, explored territory, reliable logistics, environmental preparation, resource supply, and defensive resilience.
+Colony readiness is scored continuously from the current world state. Players prepare a viable colony through completed infrastructure, secured material, environmental preparation, and reliable resource supply. Discovery and other information-gathering are useful for play, but do not themselves earn readiness points.
 
-For now, a good android strategy should focus on:
+A good android strategy should focus on:
 
 - finding scattered earth-launched material
 - building chargers to increase android capacity
@@ -156,7 +156,7 @@ An android script must return one android event. The engine adds `androidId` aut
   type: 'android.wait',
   memory: 'return-to-depot',
   recording: 'No safe route found this round.',
-})
+});
 ```
 
 ### Wait
@@ -164,7 +164,7 @@ An android script must return one android event. The engine adds `androidId` aut
 Do nothing.
 
 ```js
-({ type: 'android.wait' })
+({ type: 'android.wait' });
 ```
 
 ### Move
@@ -172,7 +172,7 @@ Do nothing.
 Move one tile north, south, east, or west. Moving outside the map fails the turn and deactivates the android.
 
 ```js
-({ type: 'android.move', direction: 'east' })
+({ type: 'android.move', direction: 'east' });
 ```
 
 Directions: `north`, `south`, `east`, `west`.
@@ -182,7 +182,7 @@ Directions: `north`, `south`, `east`, `west`.
 Recharge on an owned charger on the android's current tile. Adds up to 25 battery, capped at 100.
 
 ```js
-({ type: 'android.charge' })
+({ type: 'android.charge' });
 ```
 
 ### Collect
@@ -190,8 +190,7 @@ Recharge on an owned charger on the android's current tile. Adds up to 25 batter
 Collect scattered material from the current tile into cargo. If `resources` is omitted, the android collects what it can up to cargo capacity.
 
 ```js
-({ type: 'android.collect' })
-({ type: 'android.collect', resources: { metal: 3 } })
+({ type: 'android.collect' })({ type: 'android.collect', resources: { metal: 3 } });
 ```
 
 ### Deposit
@@ -201,8 +200,7 @@ Deposit cargo into an owned storage-capable building on the current tile. If `re
 Storage-capable buildings currently include depots, processors, and acid processing plants.
 
 ```js
-({ type: 'android.deposit' })
-({ type: 'android.deposit', resources: { ore: 2 } })
+({ type: 'android.deposit' })({ type: 'android.deposit', resources: { ore: 2 } });
 ```
 
 ### Withdraw
@@ -210,7 +208,7 @@ Storage-capable buildings currently include depots, processors, and acid process
 Withdraw material from an owned storage-capable building on the current tile.
 
 ```js
-({ type: 'android.withdraw', resources: { metal: 4 } })
+({ type: 'android.withdraw', resources: { metal: 4 } });
 ```
 
 Storage-capable buildings currently include depots, extractors, processors, and acid processing plants.
@@ -220,7 +218,7 @@ Storage-capable buildings currently include depots, extractors, processors, and 
 Start a building on the current tile. The tile must not already contain a building. Supplied resources can come from android cargo. Current compatibility also allows using loose/current-tile material in some cases, but scripts should prefer collecting material into cargo first.
 
 ```js
-({ type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } })
+({ type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } });
 ```
 
 ### Continue Construction
@@ -228,8 +226,7 @@ Start a building on the current tile. The tile must not already contain a buildi
 Continue construction on an owned construction site on the current tile. If material requirements have been met, each continue action reduces remaining construction time by 1 tick.
 
 ```js
-({ type: 'android.continue-construction' })
-({ type: 'android.continue-construction', resources: { electronics: 1 } })
+({ type: 'android.continue-construction' })({ type: 'android.continue-construction', resources: { electronics: 1 } });
 ```
 
 ### Salvage
@@ -237,7 +234,7 @@ Continue construction on an owned construction site on the current tile. If mate
 Damage/salvage the building on the current tile. Initial chargers cannot be salvaged. Self-salvage is faster than hostile salvage. When a building is fully salvaged, part of its build cost becomes scattered material on the tile.
 
 ```js
-({ type: 'android.salvage' })
+({ type: 'android.salvage' });
 ```
 
 ### Broadcast
@@ -245,7 +242,7 @@ Damage/salvage the building on the current tile. Initial chargers cannot be salv
 Broadcast a public message of up to 256 characters. Messages are stored in world messages.
 
 ```js
-({ type: 'android.broadcast', content: 'metal found at 3,4' })
+({ type: 'android.broadcast', content: 'metal found at 3,4' });
 ```
 
 ### Clean Acid
@@ -253,7 +250,7 @@ Broadcast a public message of up to 256 characters. Messages are stored in world
 Clean 1 acid from an adjacent tile. The android's owner must have a completed acid processing plant anywhere in the world. The cleaned acid is stored as `acidCanister` in that plant. Cleaning costs 1 battery.
 
 ```js
-({ type: 'android.clean-acid', direction: 'north' })
+({ type: 'android.clean-acid', direction: 'north' });
 ```
 
 ### Dismantle
@@ -261,7 +258,7 @@ Clean 1 acid from an adjacent tile. The android's owner must have a completed ac
 Destroy this android voluntarily.
 
 ```js
-({ type: 'android.dismantle' })
+({ type: 'android.dismantle' });
 ```
 
 ## 9. Resources and Progression
@@ -288,16 +285,16 @@ Composition usually cannot be picked up directly. It requires buildings:
 
 Current building types:
 
-| Building | Cost | Construction ticks | Function |
-| --- | --- | ---: | --- |
-| `charger` | 10 metal | 2 | Increases android capacity by 1; charges androids |
-| `depot` | 6 metal | 2 | Stores material |
-| `extractor` | 12 metal, 2 electronics | 5 | Harvests tile composition into storage |
-| `processor` | 15 metal, 4 electronics, 2 polymer | 6 | Converts 2 ore into 1 metal at round end |
-| `acid-processing-plant` | 12 metal, 3 electronics, 2 polymer | 5 | Enables androids to clean adjacent acid |
-| `relay-tower` | 8 metal, 4 electronics | 3 | Planned communication infrastructure |
-| `scanner` | 8 metal, 6 electronics | 4 | Reveals nearby tiles at longer range |
-| `colony-module` | 50 metal, 20 electronics, 20 polymer | 12 | Planned victory/readiness infrastructure |
+| Building                | Cost                                 | Construction ticks | Function                                          |
+| ----------------------- | ------------------------------------ | -----------------: | ------------------------------------------------- |
+| `charger`               | 10 metal                             |                  2 | Increases android capacity by 1; charges androids |
+| `depot`                 | 6 metal                              |                  2 | Stores material                                   |
+| `extractor`             | 12 metal, 2 electronics              |                  5 | Harvests tile composition into storage            |
+| `processor`             | 15 metal, 4 electronics, 2 polymer   |                  6 | Converts 2 ore into 1 metal at round end          |
+| `acid-processing-plant` | 12 metal, 3 electronics, 2 polymer   |                  5 | Enables androids to clean adjacent acid           |
+| `relay-tower`           | 8 metal, 4 electronics               |                  3 | Planned communication infrastructure              |
+| `scanner`               | 8 metal, 6 electronics               |                  4 | Reveals nearby tiles at longer range              |
+| `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Planned victory/readiness infrastructure          |
 
 A building under construction occupies its tile immediately.
 
@@ -377,21 +374,26 @@ Current conflict tools are indirect:
 
 Direct android combat is not implemented.
 
-## 16. Colony Claim and Endgame
+## 16. Colony Readiness Score
 
-Colony victory scoring is not implemented yet.
+The readiness score answers: **which player has prepared the most viable colony right now?** It is calculated from the current `World` and reported per player with a contributor breakdown in `nova status` and the replay UI.
 
-The intended endgame asks: which player best prepared the planet for humans?
+Only completed, functioning colony assets and materials secured in completed buildings count. Construction sites, loose material, Android cargo, scripts, messages, Android count, map discovery, scanners, and relay towers earn no points. Scanners and exploration remain strategically useful because they help Androids locate viable resources and building sites.
 
-Likely scoring factors:
+| Contributor                   |     Points |
+| ----------------------------- | ---------: |
+| Colony module                 | 1,000 each |
+| Acid-processing plant         |   120 each |
+| Processor                     |   100 each |
+| Extractor                     |    80 each |
+| Depot                         |    40 each |
+| Charger                       |    25 each |
+| Stored metal                  | 2 per unit |
+| Stored electronics or polymer | 3 per unit |
+| Stored ore                    | 1 per unit |
+| Stored water or acid canister | 2 per unit |
 
-- completed colony modules
-- infrastructure quality
-- explored territory
-- reliable resource supply
-- environmental cleanup
-- power/logistics capacity
-- ability to maintain a valid colony site until fleet arrival
+Stored materials count only when they are in a completed building owned by that player. The algorithm deliberately measures present readiness, not historical achievement: an asset that is salvaged or a stockpile that is spent stops contributing.
 
 ## 17. Design Goals
 
@@ -411,7 +413,6 @@ The rules should create these strategic questions:
 These concepts are intended but not fully implemented:
 
 - launch delay
-- formal colony readiness scoring
 - fleet-arrival endgame
 - relay tower broadcast extension
 - direct defensive structures

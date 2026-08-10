@@ -7,6 +7,7 @@ export * from './mechanics/mechanics.base.js';
 export * from './mechanics/user/user.js';
 export * from './ruleset/ruleset.base.js';
 export * from './ruleset/ruleset.js';
+export * from './scoring/scoring.js';
 export * from './schemas/schemas.android.js';
 export * from './schemas/schemas.base.js';
 export * from './schemas/schemas.building.js';

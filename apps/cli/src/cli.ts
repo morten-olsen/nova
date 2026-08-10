@@ -4,7 +4,7 @@ import { isAbsolute, resolve, basename } from 'node:path';
 import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
-import { createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
+import { calculateColonyScores, createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
 
 import {
   createGameFile,
@@ -107,6 +107,12 @@ const status = async (values: Record<string, string | boolean | undefined>): Pro
   const androidLines = world.androids.map((android) => {
     return `  ${android.id}: owner=${android.ownerId} position=${android.position.x},${android.position.y} battery=${android.battery} active=${android.active}`;
   });
+  const scoreLines = calculateColonyScores(world).flatMap((score) => [
+    `  ${score.playerName} (${score.playerId}): ${score.total}`,
+    ...score.contributors.map(
+      (contributor) => `    ${contributor.label}: ${contributor.quantity} = ${contributor.points}`,
+    ),
+  ]);
 
   return {
     message: [
@@ -116,6 +122,8 @@ const status = async (values: Record<string, string | boolean | undefined>): Pro
       `Androids: ${world.androids.length} (${activeAndroids} active)`,
       ...androidLines,
       `Buildings: ${world.buildings.length}`,
+      'Colony readiness:',
+      ...(scoreLines.length ? scoreLines : ['  No players.']),
     ].join('\n'),
   };
 };

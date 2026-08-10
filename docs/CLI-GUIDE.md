@@ -35,7 +35,9 @@ npx nova play --file game.json
 
 `play` starts a local replay server on a random port, opens the current recording in your browser, and keeps running until you press Ctrl+C. It bundles the replay interface with the Nova CLI, so no separate web app or file upload is needed.
 
-Run short batches while developing. `status` reports active Androids, their location and battery, scripts, buildings, and the event count. The full event history and world recording are in `game.json`; it is useful evidence when diagnosing behavior, but it should not be edited by hand.
+Run short batches while developing. `status` reports active Androids, their location and battery, scripts, buildings, the event count, and a per-player colony-readiness score with its contributors. Readiness only counts completed infrastructure and material secured in completed buildings; exploration, scanners, relay towers, loose material, scripts, and Androids have no direct score. The full event history and world recording are in `game.json`; it is useful evidence when diagnosing behavior, but it should not be edited by hand.
+
+`play` shows the same live readiness ranking and breakdown for the selected replay frame. See [the colony-readiness rules](RULEBOOK.md#16-colony-readiness-score) for the point values.
 
 ## A disciplined experiment
 
