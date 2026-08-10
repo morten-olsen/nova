@@ -74,4 +74,15 @@ That is intentionally simple. Improve it by making one observable decision at a 
 
 Give every meaningful change a new script name and upload it. Existing Androids keep their old script version, so the simulation can contain multiple generations at once. This makes it possible to compare policies, but capacity comes from completed chargers, so dismantle obsolete Androids or build capacity when necessary.
 
+## Grow and retire the fleet from a charger
+
+An Android standing on one of its owner's completed chargers is at a deployment bay, and can manage the fleet without the player intervening:
+
+- `({ type: 'android.launch', scriptId })` launches a sibling on that charger, running any of the owner's scripts in `world.scripts`.
+- `({ type: 'android.dismantle', targetAndroidId })` retires another of the owner's Androids, wherever it stands.
+
+Both are held to the rules a player launch is held to. A launch needs spare capacity — the owner's active Androids must number fewer than their completed chargers — and because the launching Android is itself active, one charger is never enough to launch from. A dismantle can only target the same owner's Androids, and never the Android acting: to self-destruct, omit `targetAndroidId`.
+
+This makes a self-sustaining fleet possible: a script that builds chargers can fill them, and one that recognizes an obsolete generation can retire it. Count capacity from `world.buildings` before launching — a refused launch is a failed turn, which deactivates the Android that tried. A newly launched Android takes its first turn in the following round.
+
 The rulebook is the player-facing contract. When its wording does not answer an implementation question, inspect `node_modules/@morten-olsen/nova-game/src/` to understand the current engine. Do not import those files from a bot: they are reference material, not part of the sandbox API.

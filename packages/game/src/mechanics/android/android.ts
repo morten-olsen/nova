@@ -5,6 +5,7 @@ import { androidMechanicsCollect } from './android.collect.js';
 import { androidMechanicsDeactivateFailedTurn } from './android.deactivate-failed-turn.js';
 import { androidMechanicsDeposit } from './android.deposit.js';
 import { androidMechanicsDismantle } from './android.dismantle.js';
+import { androidMechanicsLaunch } from './android.launch.js';
 import { androidMechanicsMove } from './android.move.js';
 import { androidMechanicsWithdraw } from './android.withdraw.js';
 import { androidMechanicsUpdateState } from './android.update-state.js';
@@ -19,6 +20,7 @@ const androidMechanics = [
   androidMechanicsDeposit,
   androidMechanicsWithdraw,
   androidMechanicsBroadcast,
+  androidMechanicsLaunch,
   androidMechanicsDismantle,
   androidMechanicsDeactivateFailedTurn,
 ];

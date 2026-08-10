@@ -73,9 +73,22 @@ type AndroidSalvageEvent = z.infer<typeof androidSalvageEventSchema>;
 
 const androidDismantleEventSchema = androidSchema.extend({
   type: z.literal('android.dismantle'),
+  /**
+   * Another android of the same owner to dismantle, which requires the acting
+   * android to be on one of its owner's completed chargers. Omitted, the acting
+   * android dismantles itself from wherever it stands.
+   */
+  targetAndroidId: idSchema.optional(),
 });
 
 type AndroidDismantleEvent = z.infer<typeof androidDismantleEventSchema>;
+
+const androidLaunchEventSchema = androidSchema.extend({
+  type: z.literal('android.launch'),
+  scriptId: idSchema,
+});
+
+type AndroidLaunchEvent = z.infer<typeof androidLaunchEventSchema>;
 
 const androidBroadcastEventSchema = androidSchema.extend({
   type: z.literal('android.broadcast'),
@@ -102,6 +115,7 @@ const androidEventSchema = z.union([
   androidContinueConstructionEventSchema,
   androidSalvageEventSchema,
   androidDismantleEventSchema,
+  androidLaunchEventSchema,
   androidBroadcastEventSchema,
   androidCleanAcidEventSchema,
 ]);
@@ -117,6 +131,7 @@ export type {
   AndroidDepositEvent,
   AndroidDismantleEvent,
   AndroidEvent,
+  AndroidLaunchEvent,
   AndroidMoveEvent,
   AndroidSalvageEvent,
   AndroidStartConstructionEvent,
@@ -132,6 +147,7 @@ export {
   androidDepositEventSchema,
   androidDismantleEventSchema,
   androidEventSchema,
+  androidLaunchEventSchema,
   androidMoveEventSchema,
   androidSalvageEventSchema,
   androidStartConstructionEventSchema,
