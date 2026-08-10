@@ -133,7 +133,48 @@ The current local ruleset already supports a playable automation loop:
 - take damage from acid and radiation
 - clean adjacent acid tiles after building an acid processing plant
 
-The full player-facing rules live in [`RULEBOOK.md`](./docs/RULEBOOK.md).
+The full player-facing rules live in [`RULEBOOK.md`](./docs/RULEBOOK.md). Android builders should also read the [CLI guide](./docs/CLI-GUIDE.md) and [Android builder manual](./docs/ANDROID-BUILDER-MANUAL.md).
+
+## Getting started: build your first Android
+
+You need Node.js 24 or newer. Run the initializer from the directory where you want your Android factory to live:
+
+```sh
+npx -p @morten-olsen/nova nova init
+```
+
+Nova asks for a folder name, creates that folder, installs the Nova packages, and adds:
+
+- `bot/starter-builder.js` — a safe first Android to modify
+- `docs/RULEBOOK.md` — the current player rules and action API
+- `docs/CLI-GUIDE.md` — how to create, run, and inspect simulations
+- `docs/ANDROID-BUILDER-MANUAL.md` — guidance for evolving Android behavior
+- `AGENTS.md` — instructions for a coding agent working in the factory
+
+You can also supply the name without a prompt: `npx -p @morten-olsen/nova nova init my-android-factory`.
+
+Enter the new directory and run the starter Android:
+
+```sh
+cd my-android-factory
+npx nova create-game --file game.json --width 8 --height 8
+npx nova upload-script --file game.json --owner player-1 --name starter-builder --script bot/starter-builder.js
+npx nova launch-android --file game.json --owner player-1 --script-id script-1
+npx nova run --file game.json --rounds 10
+npx nova status --file game.json
+```
+
+Open the factory in your coding agent and ask it to read `AGENTS.md`, then improve `bot/starter-builder.js`. Make a small change, upload it as a new script version, simulate a few rounds, and use the recording to decide what to change next.
+
+### Keep an existing factory current
+
+Run this from the factory root whenever you want the current game packages and documentation:
+
+```sh
+npx -p @morten-olsen/nova nova update
+```
+
+`update` pins `@morten-olsen/nova`, `@morten-olsen/nova-game`, and `@morten-olsen/nova-docs` to the exact version of the CLI being run, reinstalls dependencies, and refreshes `docs/`. It leaves your Android programs in `bot/` untouched.
 
 ## Try it locally
 
@@ -141,7 +182,7 @@ Install dependencies, then generate and run a sample game:
 
 ```sh
 pnpm install
-pnpm nova init --file game.json --width 6 --height 6
+pnpm nova create-game --file game.json --width 6 --height 6
 pnpm nova upload-script --file game.json --owner player-1 --name starter-builder --script examples/bots/starter-builder.js
 pnpm nova launch-android --file game.json --owner player-1 --script-id script-1
 pnpm nova run --file game.json --rounds 35

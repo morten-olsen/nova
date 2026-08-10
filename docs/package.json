@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "packageManager": "pnpm@10.28.0",
+  "files": [
+    "RULEBOOK.md",
+    "CLI-GUIDE.md",
+    "ANDROID-BUILDER-MANUAL.md",
+    "examples"
+  ],
   "publishConfig": {
     "access": "public"
   }

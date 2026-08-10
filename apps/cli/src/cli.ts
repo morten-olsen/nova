@@ -12,6 +12,7 @@ import {
   updateGameFileFromLoop,
   writeGameFile,
 } from './game-file.js';
+import { createFactory, updateFactory } from './factory.js';
 
 type CommandResult = {
   message: string;
@@ -68,7 +69,9 @@ const getOptions = () => {
 };
 
 const usage = `Usage:
-  nova init --file game.json [--width 16 --height 16]
+  nova init [factory-folder]
+  nova create-game --file game.json [--width 16 --height 16]
+  nova update
   nova status --file game.json
   nova upload-script --file game.json --owner player-1 --name miner --script ./bot.js
   nova launch-android --file game.json --owner player-1 --script-id script-1
@@ -77,7 +80,7 @@ const usage = `Usage:
 Game files store the generated initial world plus the complete event log.
 `;
 
-const init = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
+const createGame = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
   const file = resolvePath(requireString(values.file, 'file'));
   const width = optionalNumber(values.width, 16);
   const height = optionalNumber(values.height, 16);
@@ -169,7 +172,7 @@ const runRounds = async (values: Record<string, string | boolean | undefined>): 
 
 const main = async (): Promise<void> => {
   const { positionals, values } = getOptions();
-  const [command] = positionals;
+  const [command, directory] = positionals;
 
   if (values.help || !command) {
     console.log(usage);
@@ -178,7 +181,23 @@ const main = async (): Promise<void> => {
 
   const result = await (async (): Promise<CommandResult> => {
     if (command === 'init') {
-      return init(values);
+      if (values.file) {
+        return createGame(values);
+      }
+
+      const factoryDirectory = await createFactory({ directory });
+      return {
+        message: `Created Android factory at ${factoryDirectory}.\n\nNext: cd ${directory ?? '<factory-folder>'} && npx nova create-game --file game.json`,
+      };
+    }
+
+    if (command === 'create-game') {
+      return createGame(values);
+    }
+
+    if (command === 'update') {
+      const factoryDirectory = await updateFactory();
+      return { message: `Updated Nova packages and docs in ${factoryDirectory}.` };
     }
 
     if (command === 'status') {

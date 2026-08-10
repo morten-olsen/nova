@@ -12,6 +12,7 @@
     "start": "pnpm run build && node ./dist/cli.js"
   },
   "dependencies": {
+    "@morten-olsen/nova-docs": "workspace:*",
     "@morten-olsen/nova-game": "workspace:*",
     "zod": "^4.4.3"
   },

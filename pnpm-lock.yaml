@@ -50,6 +50,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@morten-olsen/nova-docs':
+        specifier: workspace:*
+        version: link:../../docs
       '@morten-olsen/nova-game':
         specifier: workspace:*
         version: link:../../packages/game
@@ -130,6 +133,8 @@ importers:
       vitest:
         specifier: ^3.2.3
         version: 3.2.7(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)
+
+  docs: {}
 
   packages/config: {}
 
