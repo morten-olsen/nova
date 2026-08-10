@@ -8,6 +8,9 @@
   "references": [
     {
       "path": "../../packages/game"
+    },
+    {
+      "path": "../../packages/script-runner"
     }
   ]
 }

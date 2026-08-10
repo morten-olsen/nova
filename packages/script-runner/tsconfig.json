@@ -1,0 +1,9 @@
+{
+  "extends": "@morten-olsen/nova-config/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["es2024", "dom"]
+  },
+  "include": ["src/**/*.ts"]
+}

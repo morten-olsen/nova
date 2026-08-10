@@ -5,9 +5,11 @@ import { ScriptExecuteOptions, ScriptRunner, toAndroidEvent } from '../src/nova-
 /**
  * Test double for the `ScriptRunner` the host normally supplies.
  *
- * Deliberately a near-copy of the CLI's `createVmScriptRunner` rather than an
- * import of it: the engine must not depend on an app, and these tests need a
- * sandbox with a real timeout to cover the runaway-script path.
+ * Deliberately `node:vm` rather than an import of the real QuickJS runner from
+ * `@morten-olsen/nova-script-runner`: that package depends on this one, and
+ * these tests only need a sandbox with a real timeout to cover the
+ * runaway-script path. Parity between this and the shipped sandbox is pinned in
+ * that package's `vm-parity` tests, not here.
  */
 const createTestScriptRunner = (timeoutMs = 100): ScriptRunner => ({
   execute: async ({ androidId, content, world }: ScriptExecuteOptions) => {

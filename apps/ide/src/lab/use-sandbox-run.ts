@@ -42,7 +42,7 @@ const useSandboxRun = ({ rounds, size }: SandboxRunOptions): SandboxRun => {
         setIsRunning(true);
         setError(undefined);
         try {
-          const next = await runSandbox({ content, height: size, rounds, timeoutMs: 1000, width: size });
+          const next = await runSandbox({ content, height: size, rounds, width: size });
           setResult(next);
           setRecording(next.recording);
           setRunId((current) => current + 1);

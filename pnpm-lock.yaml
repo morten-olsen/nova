@@ -59,6 +59,9 @@ importers:
       '@morten-olsen/nova-match':
         specifier: workspace:*
         version: link:../../packages/match
+      '@morten-olsen/nova-script-runner':
+        specifier: workspace:*
+        version: link:../../packages/script-runner
       '@morten-olsen/nova-web':
         specifier: workspace:*
         version: link:../web
@@ -108,6 +111,9 @@ importers:
       '@morten-olsen/nova-replay-ui':
         specifier: workspace:*
         version: link:../../packages/replay-ui
+      '@morten-olsen/nova-script-runner':
+        specifier: workspace:*
+        version: link:../../packages/script-runner
       '@tanstack/react-router':
         specifier: ^1.140.1
         version: 1.170.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -383,6 +389,34 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
+
+  packages/script-runner:
+    dependencies:
+      '@jitl/quickjs-ng-wasmfile-release-sync':
+        specifier: ^0.32.0
+        version: 0.32.0
+      '@morten-olsen/nova-game':
+        specifier: workspace:*
+        version: link:../game
+      quickjs-emscripten-core:
+        specifier: ^0.32.0
+        version: 0.32.0
+    devDependencies:
+      '@morten-olsen/nova-config':
+        specifier: workspace:*
+        version: link:../config
+      '@morten-olsen/nova-tests':
+        specifier: workspace:*
+        version: link:../tests
+      '@types/node':
+        specifier: ^24.0.3
+        version: 24.13.3
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.7(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.49.2)
 
   packages/tests:
     dependencies:
@@ -768,6 +802,12 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@jitl/quickjs-ffi-types@0.32.0':
+    resolution: {integrity: sha512-v9T+GQpmk43VDJ7d72sf0Nexhk+ArvtUihW27dy7lqAl0zBObFKtSBBIm5RBjwIhE8VwsPPm9PNuvPvNqLWUEg==}
+
+  '@jitl/quickjs-ng-wasmfile-release-sync@0.32.0':
+    resolution: {integrity: sha512-XAX2jjZWWh3M0YaRqi82xMKNW/gkF6mo3MpW3UY2cmVxnQai1JuboVsJQVoLU629iEL4XWvHtO4h5lo7NRnAcg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -3272,6 +3312,9 @@ packages:
     resolution: {integrity: sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==}
     engines: {node: '>=8'}
 
+  quickjs-emscripten-core@0.32.0:
+    resolution: {integrity: sha512-QFnPfjFey8EqknSrSxe1hZrf1/8z7/6s1QzGOmKo6++02r7QRRX7ZoyNaZh7JuVjWsVW87KnQrbZqnHkOAzUyg==}
+
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
@@ -4344,6 +4387,12 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@jitl/quickjs-ffi-types@0.32.0': {}
+
+  '@jitl/quickjs-ng-wasmfile-release-sync@0.32.0':
+    dependencies:
+      '@jitl/quickjs-ffi-types': 0.32.0
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -7149,6 +7198,10 @@ snapshots:
   queue-microtask@1.2.3: {}
 
   quick-lru@4.0.1: {}
+
+  quickjs-emscripten-core@0.32.0:
+    dependencies:
+      '@jitl/quickjs-ffi-types': 0.32.0
 
   rc@1.2.8:
     dependencies:

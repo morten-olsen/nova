@@ -1,0 +1,46 @@
+{
+  "name": "@morten-olsen/nova-script-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "QuickJS android script sandbox, shared by the CLI and the browser",
+  "packageManager": "pnpm@10.28.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "check": "tsc -b --pretty false",
+    "build": "tsc -b --pretty false",
+    "test": "vitest run",
+    "bench": "pnpm build && node --experimental-strip-types ./bench/turn-cost.ts"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/nova-script-runner.ts",
+      "types": "./dist/nova-script-runner.d.ts",
+      "import": "./dist/nova-script-runner.js",
+      "default": "./dist/nova-script-runner.js"
+    },
+    "./worker": {
+      "source": "./src/worker/worker-script-runner.ts",
+      "types": "./dist/worker/worker-script-runner.d.ts",
+      "import": "./dist/worker/worker-script-runner.js",
+      "default": "./dist/worker/worker-script-runner.js"
+    }
+  },
+  "dependencies": {
+    "@jitl/quickjs-ng-wasmfile-release-sync": "^0.32.0",
+    "@morten-olsen/nova-game": "workspace:*",
+    "quickjs-emscripten-core": "^0.32.0"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@morten-olsen/nova-tests": "workspace:*",
+    "@types/node": "^24.0.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.3"
+  }
+}

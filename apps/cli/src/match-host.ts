@@ -9,11 +9,11 @@ import {
   type Disclosure,
   type FinalScore,
 } from '@morten-olsen/nova-match';
+import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 
 import { writeGameFile } from './game-file.js';
 import { writeRecordingFile } from './match-files.js';
 import { createMatchHost } from './match-transport.js';
-import { createVmScriptRunner } from './script-runner.js';
 
 type HostMatchOptions = {
   disclosure: Disclosure;
@@ -69,7 +69,7 @@ const hostGame = async (options: HostMatchOptions): Promise<HostMatchResult> => 
       rounds: options.rounds,
       script,
       scriptName: options.scriptName,
-      scriptRunner: createVmScriptRunner(),
+      scriptRunner: createQuickJsScriptRunner(),
       width: options.width,
     });
 

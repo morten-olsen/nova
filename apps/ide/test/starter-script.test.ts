@@ -1,10 +1,5 @@
-import {
-  calculateColonyScores,
-  createBaseRuleset,
-  Loop,
-  toAndroidEvent,
-  type ScriptRunner,
-} from '@morten-olsen/nova-game';
+import { calculateColonyScores, createBaseRuleset, Loop } from '@morten-olsen/nova-game';
+import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 import { describe, expect, it } from 'vitest';
 
 import { starterScript } from '../src/lab/starter-script.ts';
@@ -13,20 +8,15 @@ import { starterScript } from '../src/lab/starter-script.ts';
  * The starter script is the first thing anyone sees, and the thing they copy.
  * A bot that walks off the map on round 3 teaches the wrong lesson, so this
  * plays it for real and asserts it survives and scores.
+ *
+ * Played through the same QuickJS sandbox the app ships, rather than a local
+ * `eval` stand-in: the limits and the language surface are part of what the
+ * starter script has to survive.
  */
-const indirectEval = eval;
-
-const evalRunner: ScriptRunner = {
-  execute: async ({ androidId, content, world }) => {
-    Object.assign(globalThis, { androidId, world });
-    return toAndroidEvent({ androidId, result: indirectEval(content) });
-  },
-};
-
 const play = async (rounds: number, size = 10) => {
   const loop = new Loop({
     ruleset: createBaseRuleset({ world: { width: size, height: size } }),
-    scriptRunner: evalRunner,
+    scriptRunner: createQuickJsScriptRunner(),
   });
   loop.applyEvents([
     { type: 'user.upload-android-script', ownerId: 'player-1', name: 'starter', content: starterScript },

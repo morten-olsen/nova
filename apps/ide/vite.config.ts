@@ -19,6 +19,22 @@ export default defineConfig({
   resolve: {
     conditions: ['source', 'module', 'browser', 'development|production'],
   },
+  // The script worker loads its QuickJS interpreter through a dynamic import,
+  // so it has to be code-split — which Vite's default IIFE worker format cannot
+  // do. Module workers are supported by every browser this app targets.
+  worker: {
+    format: 'es',
+  },
+  optimizeDeps: {
+    // QuickJS ships as a JS loader that finds its `.wasm` sibling through
+    // `import.meta.url`. Pre-bundling rewrites the loader into
+    // `node_modules/.vite/deps/`, where that sibling does not exist, so the
+    // request falls through to the dev server's SPA fallback and the module
+    // tries to compile `index.html` as WebAssembly. Left unbundled, the loader
+    // is served from its own directory and finds the file. Production builds do
+    // not go through the optimizer and were never affected.
+    exclude: ['quickjs-emscripten-core', '@jitl/quickjs-ng-wasmfile-release-sync'],
+  },
   build: {
     rollupOptions: {
       output: {
