@@ -18,11 +18,15 @@
     "@morten-olsen/nova-docs": "workspace:*",
     "@morten-olsen/nova-game": "workspace:*",
     "@morten-olsen/nova-web": "workspace:*",
+    "node-datachannel": "^0.32.3",
+    "peerjs": "^1.5.5",
+    "ws": "^8.21.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@morten-olsen/nova-config": "workspace:*",
     "@types/node": "^24.0.3",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.9.2"
   }
 }

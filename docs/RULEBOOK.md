@@ -151,6 +151,10 @@ Dismantling is voluntary. It destroys the android and frees charger capacity. It
 
 An android script must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
 
+Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material — the turn becomes a failed turn and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
+
+In a peer match played with `--disclosure recording` (see the [CLI guide](CLI-GUIDE.md#play-another-player)), `recording` is the only account of the match the player receives, alongside the final scores. Under that mode what an Android writes down is part of its design, not a debugging aid.
+
 ```js
 ({
   type: 'android.wait',

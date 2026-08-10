@@ -195,6 +195,24 @@ npx nova play --file game.json
 
 `nova play` opens the replay in your browser without uploading `game.json`; press Ctrl+C in the terminal when you are done.
 
+### Play against another player
+
+When your Android can hold its own, match it against someone else's over a peer-to-peer connection. One player hosts and shares the invite code that is printed:
+
+```sh
+npx nova host --script bot/starter-builder.js --rounds 20 --disclosure full
+npx nova join YF4D4-MGZKE --script bot/starter-builder.js
+```
+
+The joining player sees the terms — host, rounds, world size, and disclosure mode — and accepts before anything is sent. The host runs the simulation for both Androids and picks what evidence both players keep afterwards:
+
+- `--disclosure full` gives both players the complete recording, replayable with `nova play`, including each other's script.
+- `--disclosure recording` gives each player only what their own Android wrote to its `recording` field, plus the final scores.
+
+That second mode is where the game gets interesting. With no replay to fall back on, whatever your Android wrote down is your only account of what happened — so what it chooses to record becomes part of its design. See the [CLI guide](./docs/CLI-GUIDE.md#play-another-player) for the details.
+
+Because the host executes both scripts, only host a match with someone whose code you are willing to run.
+
 Open the factory in your coding agent and ask it to read `AGENTS.md`, then improve `bot/starter-builder.js`. Make a small change, upload it as a new script version, simulate a few rounds, and use the recording to decide what to change next.
 
 ### Keep an existing factory current
@@ -247,13 +265,14 @@ Current pieces:
 - sample recordings
 - browser visualizer for replay inspection
 - evolving player rulebook
+- peer-to-peer two-player matches with host-chosen disclosure
 
 Not yet implemented:
 
 - final colony-readiness scoring
 - fleet-arrival endgame
 - restricted competitive fog-of-war
-- richer multiplayer flow
+- more than two players in a match
 - direct combat and defensive systems
 
 ## Long-term vision

@@ -5,5 +5,10 @@ packages:
 
 # Remotion's bundler runs esbuild, which needs its postinstall to place the
 # platform binary.
+#
+# node-datachannel is the WebRTC implementation behind `nova host`/`nova join`.
+# Node has no built-in WebRTC, so peer matches need this native module; its
+# install script fetches the prebuilt binary for the current platform.
 onlyBuiltDependencies:
   - esbuild
+  - node-datachannel

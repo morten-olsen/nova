@@ -39,6 +39,56 @@ Run short batches while developing. `status` reports active Androids, their loca
 
 `play` shows the same live readiness ranking and breakdown for the selected replay frame. See [the colony-readiness rules](RULEBOOK.md#16-colony-readiness-score) for the point values.
 
+## Play another player
+
+`host` and `join` put one Android against another over a peer-to-peer
+connection. One player hosts:
+
+```sh
+npx nova host --script bot/starter-builder.js --rounds 20 --disclosure full
+```
+
+`host` prints an invite code and waits. The other player joins with it:
+
+```sh
+npx nova join YF4D4-MGZKE --script bot/starter-builder.js
+```
+
+The code can be typed with or without the dash and in any case. Before anything
+is sent, the joining player is shown the host's name, the round count, the world
+size and the disclosure mode, and is asked to accept. Pass `--yes` to accept
+without the prompt, and `--name` on either side to choose the name the other
+player sees.
+
+The host runs the simulation for both Androids, so both scripts execute on the
+host's machine. Only host a match with someone you are willing to run code from.
+
+Both players start with one Android and one initial charger, placed in opposite
+corners. Each Android sees only what its own sight reaches, exactly as in a
+single-player game.
+
+### Disclosure
+
+The host chooses what evidence both players keep when the match ends. Both
+players are treated the same way; hosting is not an information advantage.
+
+| `--disclosure` | What each player receives                                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `full`         | The complete recording, replayable with `nova play`. Includes both Androids, every round, and the other player's script.                         |
+| `recording`    | Only what that player's own Android wrote to its `recording` field, plus the final scores. No replay, and nothing about how the opponent played. |
+
+`full` is the default and the right choice while learning: both players can
+replay the match and read each other's script. `recording` is the competitive
+mode, and it changes how an Android should be written. What the Android chose to
+write down is the player's whole account of the match, so a competitive Android
+should record deliberately. A rejected action is discarded in full, including its
+`recording` write, so a failed turn leaves no note behind.
+
+Results are written to `match.json` under `full` and `match-recording.json`
+under `recording`; use `--out` to choose the path. A match needs internet access
+on both sides: Nova uses the public PeerJS signalling service to introduce the
+two peers, after which the game data goes directly between them.
+
 ## A disciplined experiment
 
 1. Create a new game or retain a known recording.
@@ -65,4 +115,6 @@ nova upload-script --file game.json --owner player-1 --name name --script bot/fi
 nova launch-android --file game.json --owner player-1 --script-id script-1
 nova run --file game.json [--rounds 1]
 nova play --file game.json
+nova host --script bot/file.js [--rounds 20] [--disclosure full|recording] [--width 16 --height 16] [--name alice] [--out match.json]
+nova join <invite-code> --script bot/file.js [--name bob] [--yes] [--out match.json]
 ```
