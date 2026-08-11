@@ -62,7 +62,8 @@ const HudHeader = ({ frame, recordingName }: { frame: TimelineFrame; recordingNa
     <div className="hud pointer-events-auto flex items-center gap-4 px-3 py-2">
       <Stat label="Round" value={frame.round} />
       <div className="h-7 w-px bg-hairline" />
-      <Stat label="Androids" value={frame.world.androids.length} />
+      {/* Wrecks stay in the world, so the count is of the androids still in play. */}
+      <Stat label="Androids" value={frame.world.androids.filter((android) => android.active).length} />
       <div className="h-7 w-px bg-hairline" />
       <Stat label="Structures" value={frame.world.buildings.length} />
     </div>

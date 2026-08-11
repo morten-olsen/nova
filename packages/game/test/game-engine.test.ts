@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createBaseRuleset,
+  failedTurnHealthPenalty,
   Loop,
   projectRecordingForPlayer,
   projectWorldForAndroid,
@@ -257,12 +258,15 @@ describe('game engine', () => {
 
     await loop.run();
 
+    // The second move would leave the map. That costs the round and some health,
+    // but the android stays in play.
     expect(loop.world.androids).toEqual([
       expect.objectContaining({
         id: 'android-1',
         position: { x: 1, y: 0 },
         battery: 99,
-        active: false,
+        health: expect.closeTo(88.8, 5),
+        active: true,
       }),
     ]);
     expect(loop.events.map((event) => event.type)).toEqual([
@@ -342,6 +346,95 @@ describe('game engine', () => {
 
     expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
     expect(loop.world.androids[0]).toEqual(expect.objectContaining({ memory: '', recording: '' }));
+  });
+
+  /**
+   * A refused action is a script bug. Costing the round and some health keeps the
+   * mistake expensive without ending a run over one bad edge case — but a script
+   * that never stops making it still runs its android into the ground.
+   */
+  it('wears an android down over repeated failed turns until it is destroyed', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset({ world: { width: 3, height: 3, composition: { acid: 0 } } }),
+    });
+
+    loop.applyEvents([
+      {
+        type: 'user.upload-android-script',
+        ownerId: 'player-1',
+        // The android starts at 0,0, so moving north leaves the map every round.
+        content: `({ type: 'android.move', direction: 'north' })`,
+        name: 'walks-off-the-map',
+      },
+      { type: 'user.launch-android', ownerId: 'player-1', scriptId: 'script-1' },
+    ]);
+
+    await loop.run();
+
+    expect(loop.world.androids[0]).toEqual(
+      expect.objectContaining({ active: true, health: expect.closeTo(100 - failedTurnHealthPenalty - 0.1, 5) }),
+    );
+
+    for (let round = 0; round < 9; round += 1) {
+      await loop.run();
+    }
+
+    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: false, health: 0 })]);
+    // Only the rounds it survived cost it a turn.
+    expect(loop.events.filter((event) => event.type === 'game.android-failed-turn')).toHaveLength(10);
+  });
+
+  /** The wreck is the only place a player can read what their android logged. */
+  it('keeps a destroyed android in the world as a deactivated wreck', async () => {
+    const loop = new Loop({
+      scriptRunner: createTestScriptRunner(),
+      ruleset: createBaseRuleset(),
+      initWorld: createWorld({
+        tiles: [
+          { position: { x: 0, y: 0 }, composition: { acid: 0 } },
+          { position: { x: 1, y: 0 }, composition: { acid: 4 } },
+        ],
+        scripts: [
+          {
+            id: 'move-script',
+            ownerId: 'player-1',
+            name: 'move',
+            content: "({ type: 'android.move', direction: 'east', recording: 'last transmission' })",
+          },
+        ],
+        androids: [
+          {
+            id: 'android-1',
+            ownerId: 'player-1',
+            scriptId: 'move-script',
+            position: { x: 0, y: 0 },
+            battery: 1,
+            health: 100,
+            active: true,
+          },
+        ],
+      }),
+    });
+
+    await loop.run();
+
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({
+        id: 'android-1',
+        active: false,
+        battery: 0,
+        health: expect.closeTo(97.9, 5),
+        recording: 'last transmission',
+      }),
+    ]);
+
+    const health = loop.world.androids[0]?.health;
+    await loop.run();
+
+    // A wreck takes no turn and stops decaying, so its final state is readable.
+    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ health, active: false }));
+    expect(loop.events.filter((event) => event.type === 'game.android-failed-turn')).toEqual([]);
   });
 
   it('uses base mechanics to charge androids and construct buildings', async () => {
@@ -578,7 +671,9 @@ describe('game engine', () => {
     await loop.run();
 
     expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
-    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: false })]);
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({ id: 'android-1', active: true, health: expect.closeTo(89.9, 5) }),
+    ]);
   });
 
   it('refuses an android launch away from an owned charger', async () => {
@@ -600,12 +695,12 @@ describe('game engine', () => {
     expect(loop.world.androids).toHaveLength(1);
   });
 
-  /** Destroyed androids leave the world, so the count alone would reissue a live id. */
-  it('does not reuse the id of an android that has been destroyed', async () => {
+  /** A world can arrive with id gaps, so the count alone would reissue a live id. */
+  it('does not reuse the id of an android that is missing from the world', async () => {
     const loop = new Loop({
       scriptRunner: createTestScriptRunner(),
       ruleset: createBaseRuleset(),
-      // As the world looks after `android-1` was destroyed and removed.
+      // As a hand-written or migrated world looks with `android-1` absent.
       initWorld: createLaunchWorld(
         [
           { x: 0, y: 0 },
@@ -683,8 +778,11 @@ describe('game engine', () => {
 
     await loop.run();
 
-    // The dismantled android is destroyed at round end, freeing its capacity.
-    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: true })]);
+    // Deactivation is what frees the capacity; the wreck stays in the world.
+    expect(loop.world.androids).toEqual([
+      expect.objectContaining({ id: 'android-1', active: true }),
+      expect.objectContaining({ id: 'android-2', active: false }),
+    ]);
     expect(loop.events.map((event) => event.type)).toEqual(['game.round-start', 'android.dismantle', 'game.round-end']);
   });
 

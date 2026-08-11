@@ -37,6 +37,8 @@ type Actor = {
   targetOpacity: number;
   targetScale: number;
   targetYaw: number;
+  /** 0 → 1 progress of an android falling over as it is deactivated. */
+  topple: number;
   /** Eased selection lift, so picking a piece reads as it being raised. */
   lift: number;
   /** Smoothed travel speed, used to lean the piece into its movement. */
@@ -48,6 +50,9 @@ type PuffRequest = { color: THREE.Color; position: THREE.Vector3 };
 /** Battery below this pulses the owner accent toward warning. */
 const lowBatteryThreshold = 25;
 const spawnDuration = 0.42;
+const toppleDuration = 0.85;
+/** Share of the topple spent falling; the rest fades the piece out where it lies. */
+const toppleFallShare = 0.45;
 
 /** Overshoot easing. A plain lerp arrives with no weight; this lands. */
 const easeOutBack = (t: number): number => {
@@ -81,13 +86,16 @@ const getRenderPieces = (world: World): RenderPiece[] => {
     ];
   });
   return [
-    ...world.androids.map((android) => ({
-      accentColor: new THREE.Color(toColorValue(getFaction(world, android.ownerId).accent)),
-      constructionTicks: 0,
-      id: android.id,
-      kind: 'android' as const,
-      lowBattery: android.active && android.battery < lowBatteryThreshold,
-    })),
+    // A deactivated android is out of play; `animateTopple` shows it leaving.
+    ...world.androids
+      .filter((android) => android.active)
+      .map((android) => ({
+        accentColor: new THREE.Color(toColorValue(getFaction(world, android.ownerId).accent)),
+        constructionTicks: 0,
+        id: android.id,
+        kind: 'android' as const,
+        lowBattery: android.battery < lowBatteryThreshold,
+      })),
     ...world.buildings.map((building) => ({
       accentColor: new THREE.Color(toColorValue(getFaction(world, building.ownerId).accent)),
       constructionTicks: building.remainingConstruction.ticks,
@@ -156,6 +164,7 @@ const createActor = (piece: RenderPiece, layout: PieceLayout): Actor => {
     targetOpacity: 1,
     targetScale: (piece.constructionTicks > 0 ? 0.72 : 1) * layout.scale,
     targetYaw: 0,
+    topple: 0,
     travel: 0,
   };
 
@@ -219,6 +228,8 @@ const updateActors = ({ actors, pieces, world }: ActorUpdate): void => {
     existing.construction = piece.constructionTicks > 0;
     existing.lowBattery = piece.lowBattery;
     existing.leaving = false;
+    // Scrubbing a replay backwards can bring a toppled android back to its feet.
+    existing.topple = 0;
     existing.targetOpacity = 1;
     existing.target.set(layout.x, terrainSurfaceHeight, layout.z);
     existing.targetScale = (piece.constructionTicks > 0 ? 0.72 : 1) * layout.scale;
@@ -230,12 +241,20 @@ const updateActors = ({ actors, pieces, world }: ActorUpdate): void => {
     }
   }
   for (const [id, actor] of actors) {
-    if (!present.has(id)) {
-      actor.leaving = true;
-      actor.target.y = -0.3;
-      actor.targetOpacity = 0;
-      actor.targetScale = 0.01;
+    if (present.has(id)) {
+      continue;
     }
+
+    actor.leaving = true;
+    if (actor.kind === 'android') {
+      // An android falls over where it stood instead of sinking away; the rest of
+      // the exit belongs to `animateTopple`.
+      continue;
+    }
+
+    actor.target.y = -0.3;
+    actor.targetOpacity = 0;
+    actor.targetScale = 0.01;
   }
 };
 
@@ -260,7 +279,62 @@ type ActorFrame = {
   selectedId: string | undefined;
 };
 
+/** Idle bob, travel lean, and selection lift all ride on the model, not the root. */
+const animateVisual = (actor: Actor, elapsed: number, positionAlpha: number): void => {
+  const visual = actor.root.children[0];
+  if (!visual) {
+    return;
+  }
+  if (actor.kind !== 'android') {
+    visual.position.y = actor.lift;
+    return;
+  }
+
+  const bob =
+    Math.sin(elapsed * 5 + actor.phase) * 0.008 +
+    Math.sin(elapsed * 12 + actor.phase) * Math.min(0.02, actor.travel * 0.02);
+  // Lean into travel so movement has a direction beyond the yaw.
+  visual.rotation.x = Math.min(0.28, actor.travel * 0.16);
+  // Rights an android caught mid-topple by a replay scrubbing backwards.
+  visual.rotation.z = THREE.MathUtils.lerp(visual.rotation.z, 0, positionAlpha);
+  visual.position.y = bob + actor.lift;
+};
+
+/**
+ * A deactivated android is not swept off the board the way a salvaged structure
+ * is: it falls over where it stood, its accent goes dark, and it fades. Losing
+ * one should read as a death rather than as a piece quietly vanishing.
+ */
+const animateTopple = (actor: Actor, frame: ActorFrame, id: string): void => {
+  const { actors, delta, onPuff, pieces } = frame;
+  actor.topple = Math.min(1, actor.topple + delta / toppleDuration);
+  const fall = easeOutCubic(Math.min(1, actor.topple / toppleFallShare));
+
+  const visual = actor.root.children[0];
+  if (visual) {
+    visual.rotation.z = fall * (Math.PI / 2);
+    // The pivot sits at the feet, so the body settles as it comes over.
+    visual.position.y = THREE.MathUtils.lerp(visual.position.y, fall * -0.05, 1 - Math.exp(-12 * delta));
+  }
+  for (const accent of actor.accents) {
+    accent.emissiveIntensity = 1 - fall;
+  }
+  actor.opacity = 1 - Math.max(0, (actor.topple - toppleFallShare) / (1 - toppleFallShare));
+  setObjectOpacity(actor.root, actor.opacity);
+
+  if (actor.topple >= 1) {
+    onPuff({ color: new THREE.Color(toColorValue(novaPalette.structureDark)), position: actor.target.clone() });
+    pieces.remove(actor.root);
+    actors.delete(id);
+  }
+};
+
 const animateActor = (actor: Actor, frame: ActorFrame, id: string): void => {
+  if (actor.leaving && actor.kind === 'android') {
+    animateTopple(actor, frame, id);
+    return;
+  }
+
   const { delta, elapsed, onPuff, pieces, actors } = frame;
   const previousX = actor.root.position.x;
   const previousZ = actor.root.position.z;
@@ -299,19 +373,7 @@ const animateActor = (actor: Actor, frame: ActorFrame, id: string): void => {
   actor.travel = THREE.MathUtils.lerp(actor.travel, speed, 1 - Math.exp(-8 * delta));
 
   actor.lift = THREE.MathUtils.lerp(actor.lift, id === frame.selectedId ? 0.07 : 0, 1 - Math.exp(-12 * delta));
-  const visual = actor.root.children[0];
-  if (visual) {
-    const bob =
-      actor.kind === 'android'
-        ? Math.sin(elapsed * 5 + actor.phase) * 0.008 +
-          Math.sin(elapsed * 12 + actor.phase) * Math.min(0.02, actor.travel * 0.02)
-        : 0;
-    if (actor.kind === 'android') {
-      // Lean into travel so movement has a direction beyond the yaw.
-      visual.rotation.x = Math.min(0.28, actor.travel * 0.16);
-    }
-    visual.position.y = bob + actor.lift;
-  }
+  animateVisual(actor, elapsed, positionAlpha);
   if (actor.constructionRing) {
     actor.constructionRing.rotation.z = elapsed * 0.9;
   }

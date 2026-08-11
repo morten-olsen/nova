@@ -26,6 +26,12 @@ const hasMaterials = (materials: Record<string, number | undefined> | undefined)
 const collectPieceLocations = (world: World): Map<string, PieceLocation[]> => {
   const pieces = new Map<string, PieceLocation[]>();
   for (const android of world.androids) {
+    // Deactivated androids stay in the world for reference, but they are off the
+    // board: they neither take a piece slot nor crowd the pieces that remain.
+    if (!android.active) {
+      continue;
+    }
+
     const { x, y } = android.position;
     addPiece(pieces, getTileKey(x, y), { id: android.id, kind: 'android', x, z: y });
   }

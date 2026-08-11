@@ -149,6 +149,7 @@ Never convey owner, active/inactive state, or hazard solely with colour. Every p
 Uniform exponential easing on everything reads as mushy. Motion should have weight.
 
 - Pieces **arrive** with an overshoot and land with a dust puff; they leave by sinking and fading with another puff.
+- A **deactivated android** is the exception: it topples where it stood, its accent glow drains as it falls, and only then does it fade. A death should read as one, not as a piece being tidied away. The wreck stays in the world data, but never on the board.
 - Androids rotate toward their next orthogonal move, lean into travel, and gain a gait bob that scales with speed. Do not make them walk like realistic characters yet.
 - Active energy uses a slow pulse; scanners, radars, and relays use a restrained sweep or ping.
 - **Low battery** pulses the owner's accent emissive rather than recolouring it, so a status read never overwrites ownership.
