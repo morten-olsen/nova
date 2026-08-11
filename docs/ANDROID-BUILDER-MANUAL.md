@@ -17,7 +17,7 @@ It runs in a sandbox with five globals:
 - `world`: a fogged snapshot of the current world. It contains only tiles revealed for this Android's owner, plus the Android's current tile. Androids, buildings, and broadcasts outside those tiles are omitted.
 - `rules`: every number this game is played with — see [Read the rules, do not repeat them](#read-the-rules-do-not-repeat-them).
 - `turn`: the turn now being played, counting from 1.
-- `finalTurn`: the turn the match is scheduled to end on, or `undefined` when it has no scheduled end. Compare it against `turn` to know how much time is left — but check for `undefined` first, because most matches do not set one.
+- `finalTurn`: the turn the humans are expected to land on, or `undefined` when the game has no arrival date. Compare it against `turn` to know how much time is left — but check for `undefined` first, because an open-ended game does not set one. See [Play to the arrival date](#play-to-the-arrival-date).
 
 Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (`rules.android.memoryLimit` characters, 4,096 by default) for decisions across turns. `recording` is a player-facing log (`rules.android.recordingLimit` characters, 16,384 by default) retained on the Android after it is deactivated. Writing past either limit is a refused action, so it fails the turn like any other. Each value replaces the previous value, so read the current Android's value from `world.androids` when appending to a recording. The `memory` and `recording` of every other Android are `[Redacted]`.
 
@@ -69,16 +69,25 @@ Import _types_ from `@morten-olsen/nova-game` if you want to name one explicitly
 
 Scripts run in QuickJS, the same interpreter in the browser IDE and in the CLI, so a bot that works in one behaves identically in the other. It is a standards-compliant JavaScript engine, but it is not a browser and it is not Node: there is no `console`, no `fetch`, no `window`, no `process`, and no timers.
 
-Each turn gets its own interpreter with its own budget, and a turn that exceeds any of them fails that turn without affecting the next one:
+Each turn gets its own interpreter with its own budget, and a turn that exceeds any of them fails that turn without affecting the next one. Three of the four are rules, so a script can read its own allowance instead of assuming these numbers:
 
-| Limit      | Default                                       | What exhausts it                                                      |
-| ---------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| CPU        | 10,000 ticks (roughly 100 million operations) | Infinite loops, and searches that never terminate                     |
-| Wall clock | 1 second                                      | Work that is slow without being long, such as allocating relentlessly |
-| Memory     | 16 MB                                         | Building enormous arrays or strings                                   |
-| Call stack | 128 KB                                        | Unbounded recursion                                                   |
+| Limit      | Rule                       | Default                                       | What exhausts it                                                      |
+| ---------- | -------------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| CPU        | `rules.script.fuel`        | 10,000 ticks (roughly 100 million operations) | Infinite loops, and searches that never terminate                     |
+| Wall clock | `rules.script.timeoutMs`   | 1 second                                      | Work that is slow without being long, such as allocating relentlessly |
+| Memory     | `rules.script.memoryBytes` | 16 MB                                         | Building enormous arrays or strings                                   |
+| Call stack | —                          | 128 KB                                        | Unbounded recursion                                                   |
 
 The CPU budget is counted in interpreter ticks rather than milliseconds, so a script is cut off at the same point on every machine — which is what lets two peers replay the same match and agree on the outcome. A normal bot is nowhere near any of these; the shipped starter builder finishes a turn without spending a single tick.
+
+A bot that wants to plan expensively — a flood fill, a route search over every revealed tile — should size that work from `rules.script` rather than from this table, because a host can tighten the budgets as easily as it can loosen them:
+
+```ts
+// Scale the search to the game's budget instead of hoping 5,000 nodes fit.
+const nodeBudget = Math.floor(rules.script.fuel / 4);
+```
+
+The call stack is the exception: it is not a rule, because its ceiling is a property of the WebAssembly build rather than a design choice. Write iteratively where a recursion could get deep.
 
 ## Read the rules, do not repeat them
 
@@ -113,6 +122,44 @@ Three things this buys, all of them visible in `bot/starter-builder.ts`:
 Every value is resolved: nothing in `rules` is optional or absent, so there is no
 default to fill in. Treat it as read-only — writing to it changes nothing outside
 your own turn.
+
+## Play to the arrival date
+
+`turn` is the round being played. `finalTurn` is the round the humans are expected
+to land on — the game's deadline — and it is the one global that may be
+`undefined`, so check before using it.
+
+Nothing mechanical happens on that round: the engine does not stop the game, and
+readiness is scored from the world continuously. What it tells you is how much
+time the colony has left, and a good policy is not the same at both ends of it:
+
+- **Early**, with many turns left, investment pays. Explore, clean acid, build
+  chargers to grow the fleet, start the expensive buildings — a depot begun now
+  is finished long before the deadline.
+- **Late**, with few turns left, only what completes counts. Do not start
+  construction that cannot finish, and bank what you are carrying instead of
+  prospecting for more.
+
+Starting a building costs the turn it is started on, and each `ticks` after that
+is one `android.continue-construction`, so a site begun on `turn` completes on
+`turn + rules.buildings[type].ticks` at the earliest:
+
+```ts
+const turnsLeft = finalTurn === undefined ? Infinity : finalTurn - turn;
+const canFinish = (type: BuildingType): boolean => rules.buildings[type].ticks <= turnsLeft;
+```
+
+Two ways of playing set the arrival for you, because in both the round count is a
+real deadline that cannot be extended afterwards:
+
+- A peer match — `nova host --rounds 20`, or Match › Host in the browser lab —
+  where it is the round count the host offered.
+- A run in the browser lab, where it is the round count in the Run panel.
+  Changing it and running again is how an endgame is tested.
+
+A game file made with `nova create-game` has no arrival unless its rules file sets
+`match.finalRound`, because `nova run` can always be asked for more rounds. Write
+the bot so `undefined` means "play as though there is time", and it works in both.
 
 ## Recommended first strategy
 

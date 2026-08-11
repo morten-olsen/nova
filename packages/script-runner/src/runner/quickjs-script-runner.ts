@@ -4,10 +4,18 @@ import { loadQuickJs, warmUpQuickJs } from '../quickjs/quickjs-module.js';
 
 import { runInSandbox } from './quickjs-sandbox.js';
 import { toAndroidEventFromOutcome, toSandboxInputJson } from './sandbox-result.js';
-import { resolveLimits, type ScriptLimits } from './script-limits.js';
+import { resolveLimits } from './script-limits.js';
 
 type QuickJsScriptRunnerOptions = {
-  limits?: ScriptLimits;
+  /**
+   * Call-stack ceiling for a turn, in bytes.
+   *
+   * The one resource limit that is not a game rule, because it is a property of
+   * this sandbox rather than of the game — see `maxStackBytes`, which silently
+   * clamps it. CPU, wall clock and heap come from `rules.script` and arrive with
+   * every turn.
+   */
+  stackBytes?: number;
 };
 
 /**
@@ -23,7 +31,6 @@ type QuickJsScriptRunnerOptions = {
  * sandbox.
  */
 const createQuickJsScriptRunner = (options: QuickJsScriptRunnerOptions = {}): ScriptRunner => {
-  const limits = resolveLimits(options.limits);
   // Kicked off at construction rather than on the first turn: hosts build their
   // runner well before the first round, so the WebAssembly load overlaps with
   // whatever else startup is doing.
@@ -39,7 +46,10 @@ const createQuickJsScriptRunner = (options: QuickJsScriptRunnerOptions = {}): Sc
         androidId,
         content,
         inputJson: toSandboxInputJson({ androidId, world, rules }),
-        limits,
+        // Read per turn rather than held from construction: the budgets are
+        // rules, and the rules belong to the game being played rather than to
+        // the runner playing it.
+        limits: resolveLimits(rules, options.stackBytes),
       });
       return toAndroidEventFromOutcome({ androidId, outcome });
     },

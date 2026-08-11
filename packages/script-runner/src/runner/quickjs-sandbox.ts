@@ -2,7 +2,7 @@ import { Scope, type QuickJSContext, type QuickJSHandle, type QuickJSWASMModule 
 
 import { resetQuickJs } from '../quickjs/quickjs-module.js';
 
-import type { ResolvedScriptLimits } from './script-limits.js';
+import type { ScriptLimits } from './script-limits.js';
 
 type SandboxInput = {
   androidId: string;
@@ -18,7 +18,7 @@ type SandboxInput = {
    * in-process and off-thread runners can share this shape.
    */
   inputJson: string;
-  limits: ResolvedScriptLimits;
+  limits: ScriptLimits;
 };
 
 /**
@@ -101,9 +101,9 @@ const stringifyAction = (context: QuickJSContext, value: QuickJSHandle): string 
  * Runs one script to completion under a set of hard resource ceilings.
  *
  * Synchronous by construction. The runtime is built, used, and destroyed within
- * this call, which is what makes {@link ResolvedScriptLimits} per-turn rather
- * than per-match — and it is affordable only because `module` carries the
- * expensive part (the instantiated WebAssembly) across every call.
+ * this call, which is what makes {@link ScriptLimits} per-turn rather than
+ * per-match — and it is affordable only because `module` carries the expensive
+ * part (the instantiated WebAssembly) across every call.
  */
 const runInSandbox = (module: QuickJSWASMModule, input: SandboxInput): SandboxOutcome => {
   try {

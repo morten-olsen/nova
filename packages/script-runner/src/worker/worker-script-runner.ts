@@ -7,7 +7,15 @@ import { createPendingTurns } from './pending-turns.js';
 import type { ScriptWorkerRequest, ScriptWorkerResponse } from './worker-protocol.js';
 
 type WorkerScriptRunnerOptions = {
-  limits?: ScriptLimits;
+  /**
+   * Call-stack ceiling for a turn, in bytes.
+   *
+   * The one resource limit that is not a game rule, because it is a property of
+   * this sandbox rather than of the game — see `maxStackBytes`, which silently
+   * clamps it. CPU, wall clock and heap come from `rules.script` and arrive with
+   * every turn.
+   */
+  stackBytes?: number;
   /**
    * How long past a script's own wall-clock budget the host waits before
    * declaring the worker wedged and replacing it.
@@ -50,7 +58,6 @@ const defaultCreateWorker = (): Worker =>
  * answering altogether.
  */
 const createWorkerScriptRunner = (options: WorkerScriptRunnerOptions = {}): WorkerScriptRunner => {
-  const limits = resolveLimits(options.limits);
   const graceMs = options.graceMs ?? 500;
   const createWorker = options.createWorker ?? defaultCreateWorker;
 
@@ -105,7 +112,7 @@ const createWorkerScriptRunner = (options: WorkerScriptRunnerOptions = {}): Work
     return worker;
   };
 
-  const startTurn = (androidId: string, run: (id: number) => void): Promise<AndroidEvent> =>
+  const startTurn = (androidId: string, limits: ScriptLimits, run: (id: number) => void): Promise<AndroidEvent> =>
     new Promise<AndroidEvent>((resolve, reject) => {
       const id = nextId;
       nextId += 1;
@@ -134,8 +141,14 @@ const createWorkerScriptRunner = (options: WorkerScriptRunnerOptions = {}): Work
     },
 
     // `world` arrives already fogged by the loop, so it can be serialized as-is.
-    execute: ({ androidId, content, world, rules }: ScriptExecuteOptions) =>
-      startTurn(androidId, (id) => {
+    execute: ({ androidId, content, world, rules }: ScriptExecuteOptions) => {
+      // Read per turn rather than held from construction: the budgets are rules,
+      // and the rules belong to the game being played rather than to the runner
+      // playing it. The watchdog below is sized from them too, so a game that
+      // allows a slower turn does not look like a wedged worker.
+      const limits = resolveLimits(rules, options.stackBytes);
+
+      return startTurn(androidId, limits, (id) => {
         getWorker().postMessage({
           type: 'run',
           id,
@@ -144,7 +157,8 @@ const createWorkerScriptRunner = (options: WorkerScriptRunnerOptions = {}): Work
           inputJson: toSandboxInputJson({ androidId, world, rules }),
           limits,
         } satisfies ScriptWorkerRequest);
-      }),
+      });
+    },
   };
 };
 

@@ -67,6 +67,20 @@ const createBoard = (): Board => {
 
 const toppleOf = (actor: Actor | undefined): number => actor?.root.children[0]?.rotation.z ?? 0;
 
+/**
+ * The model an actor is showing, or a failed test.
+ *
+ * Throws rather than returning `undefined`, so the precondition — the actor is on
+ * the board and has a visual — is stated once instead of at every read of it.
+ */
+const visualOf = (board: Board, androidId: string): THREE.Object3D => {
+  const visual = board.actors.get(androidId)?.root.children[0];
+  if (!visual) {
+    throw new Error(`No actor visual on the board for ${androidId}.`);
+  }
+  return visual;
+};
+
 describe('a travelling android', () => {
   /**
    * The lean rotates the model about its origin, which sits at the centre of the
@@ -82,16 +96,15 @@ describe('a travelling android', () => {
     board.show(createWorld(true, { x: 6, y: 0 }));
     board.advance(0.3);
 
-    const visual = board.actors.get('android-1')?.root.children[0];
-    expect(visual).toBeDefined();
+    const visual = visualOf(board, 'android-1');
     // Precondition: it really is leaning, so the assertion below is not vacuous.
-    expect(visual!.rotation.x).toBeGreaterThan(0.2);
+    expect(visual.rotation.x).toBeGreaterThan(0.2);
 
     // The rim sits `radius * sin(lean)` below the model origin; the gait bob can
     // take a further 0.028 off at its trough. Both have to stay above the board.
-    const rimHeight = visual!.position.y - basePlateRadius * Math.sin(visual!.rotation.x);
+    const rimHeight = visual.position.y - basePlateRadius * Math.sin(visual.rotation.x);
     expect(rimHeight).toBeGreaterThan(-0.03);
-    expect(visual!.position.y).toBeGreaterThan(0);
+    expect(visual.position.y).toBeGreaterThan(0);
   });
 });
 

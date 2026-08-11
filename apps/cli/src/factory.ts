@@ -118,7 +118,8 @@ than one file that has to fit in one file:
   the rest are in scope without an import. Run \`npm run check\` to type-check
   without playing.
 - Read numbers from \`rules\`, never from the rulebook. Cargo capacity, build
-  costs, battery costs, hazard damage, sight ranges, what scores and the board's
+  costs, battery costs, hazard damage, sight ranges, what scores, the turn's own
+  CPU/wall-clock/memory budget in \`rules.script\`, and the board's
   \`width\`/\`height\` are all in there, resolved for this game:
 
   \`\`\`ts
@@ -180,6 +181,7 @@ an Android that fails a turn records nothing for that round.
 
 - Return exactly one valid action object from the turn function; use the rulebook action names and fields.
 - A turn reads the world from the \`androidId\`, \`world\`, \`rules\`, \`turn\` and \`finalTurn\` globals. It has no filesystem, no network and no timers, and nothing is imported while it runs.
+- \`finalTurn\` is the turn the humans are expected to land on, or \`undefined\` when the game has no arrival date. It is a deadline, not a mechanic: pace the colony against it, and do not start construction that cannot finish before it. \`nova host --rounds N\` sets it, and so does a run in the browser lab; a \`create-game\` file does not, because \`nova run\` can always be asked for more rounds.
 - Do not hardcode a game constant. If a number describes the game, it is in \`rules\`; if it describes your strategy, name it in the bot.
 - Treat the rulebook as the player contract. If it is unclear, inspect \`node_modules/@morten-olsen/nova-game/src/\` for the implemented behavior, then keep bot code independent of that package's internals.
 - Make one behavioral change at a time and validate it with a fresh or understood recording.

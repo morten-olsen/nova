@@ -108,7 +108,16 @@ const simulate = async (
   // One ruleset for the whole match: it builds the world, plays it, scores it,
   // and its rules are what the recording stores. The board the host offered is
   // the only rule a match currently negotiates.
-  const ruleset = createBaseRuleset({ world: { width: options.width, height: options.height } });
+  //
+  // The round count is not negotiated, but it is told to the androids: a peer
+  // match runs exactly the rounds the host offered and cannot be extended
+  // afterwards, so that count *is* when the humans arrive. A bot that paces
+  // itself against `finalTurn` gets to do so here rather than only in a
+  // scenario built by hand.
+  const ruleset = createBaseRuleset({
+    world: { width: options.width, height: options.height },
+    match: { finalRound: options.rounds },
+  });
   const initialWorld = createMatchWorld({
     guestName: guest.playerName,
     hostName: options.playerName,

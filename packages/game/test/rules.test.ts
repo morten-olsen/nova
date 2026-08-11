@@ -47,6 +47,7 @@ describe('rules', () => {
     );
     expect(rules.buildings.radar.sight).toEqual({ range: 5, shape: 'circular' });
     expect(rules.scoring.buildings['colony-module'].points).toBe(1_000);
+    expect(rules.script).toEqual({ fuel: 10_000, timeoutMs: 1_000, memoryBytes: 16 * 1024 * 1024 });
     expect(rules.match.finalRound).toBeNull();
   });
 
@@ -69,6 +70,19 @@ describe('rules', () => {
     // A sight rule is supplied whole, so half of one cannot silently inherit the
     // shape of a different sight source.
     expect(() => rulesSchema.parse({ buildings: { radar: { sight: { range: 6 } } } })).toThrow();
+  });
+
+  it('caps a script budget no host should be asked to honour', () => {
+    // Rules arrive as data, from a peer's offer or a downloaded game, and these
+    // three are the ones that spend the host's own machine per android per round.
+    expect(() => resolveRules({ script: { timeoutMs: 600_000 } })).toThrow();
+    expect(() => resolveRules({ script: { memoryBytes: 8 * 1024 * 1024 * 1024 } })).toThrow();
+    expect(() => resolveRules({ script: { fuel: 0 } })).toThrow();
+    // Inside the ceilings, a retuned budget is honoured as given.
+    expect(resolveRules({ script: { timeoutMs: 250 } }).script).toEqual({
+      ...defaultRules.script,
+      timeoutMs: 250,
+    });
   });
 
   it('generates the board the world rules describe', () => {

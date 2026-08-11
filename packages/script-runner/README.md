@@ -24,7 +24,7 @@ import { createWorkerScriptRunner } from '@morten-olsen/nova-script-runner/worke
 const scriptRunner = createWorkerScriptRunner();
 ```
 
-Both take the same `limits`, and both are `ScriptRunner`s as far as the engine is concerned.
+Neither is given resource limits: a turn's CPU, wall-clock and heap budget is a game rule, and arrives with the rules the engine hands to every `execute` call. Both are `ScriptRunner`s as far as the engine is concerned.
 
 ### Bundler requirements
 
@@ -53,6 +53,8 @@ Measured by `pnpm bench` on a 400-tile map: 0.7ms for a whole turn's runtime and
 ## Isolation and limits
 
 Every turn builds a fresh QuickJS runtime and destroys it afterwards. That is what makes the limits in `ScriptLimits` per turn rather than per match: a script that spends its entire memory budget hands none of that debt to the next android, and the script contract's "cannot retain state between turns" rule holds by construction.
+
+Three of the four come from `rules.script` — the game's own budget for a turn, read per turn rather than fixed when the runner is built, so a recording replays under the budget it was played with and a script can read its own allowance. The fourth, `stackBytes`, is a runner option rather than a rule, because its ceiling is a property of the WebAssembly build; `maxStackBytes` clamps it, and exceeding it aborts the module rather than failing a turn.
 
 CPU is budgeted in interpreter ticks rather than milliseconds, so a script is interrupted at the same instruction regardless of how fast the machine is — two peers replaying a match agree on the result. A wall-clock deadline sits behind it as a backstop for work that burns time without burning operations.
 

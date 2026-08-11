@@ -5,5 +5,5 @@ export type { QuickJsScriptRunnerOptions } from './runner/quickjs-script-runner.
 export { runInSandbox } from './runner/quickjs-sandbox.js';
 export type { SandboxInput, SandboxOutcome } from './runner/quickjs-sandbox.js';
 export { toAndroidEventFromOutcome, toSandboxInputJson } from './runner/sandbox-result.js';
-export { defaultLimits, maxStackBytes, resolveLimits } from './runner/script-limits.js';
-export type { ResolvedScriptLimits, ScriptLimits } from './runner/script-limits.js';
+export { defaultStackBytes, maxStackBytes, resolveLimits } from './runner/script-limits.js';
+export type { ScriptLimits } from './runner/script-limits.js';

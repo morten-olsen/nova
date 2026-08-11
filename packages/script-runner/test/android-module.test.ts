@@ -1,4 +1,4 @@
-import { toAndroidEvent } from '@morten-olsen/nova-game';
+import { defaultRules, toAndroidEvent } from '@morten-olsen/nova-game';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
@@ -41,7 +41,7 @@ const world = {
 
 const run = async (content: string) => {
   const runner = createQuickJsScriptRunner();
-  return runner.execute({ androidId: 'android-1', content, world });
+  return runner.execute({ androidId: 'android-1', content, world, rules: defaultRules });
 };
 
 describe('recognising a compiled module', () => {

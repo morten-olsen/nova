@@ -6,13 +6,21 @@ import { getWorldSize } from '../utils/utils.world.js';
 import { androidRulesSchema } from './rules.android.js';
 import { buildingsRulesSchema, salvageRulesSchema } from './rules.buildings.js';
 import { scoringRulesSchema } from './rules.scoring.js';
+import { scriptRulesSchema } from './rules.script.js';
 import { worldRulesSchema } from './rules.world.js';
 
 const matchRulesSchema = z.object({
   /**
-   * The round the match is scheduled to end on, written into the world at setup
-   * so scripts can read it as the `finalTurn` global. `null` means the match
-   * runs until its host stops it.
+   * The round the humans are expected to arrive on, which is also the round the
+   * match is scheduled to end on. Written into the world at setup so scripts can
+   * read it as the `finalTurn` global. `null` means no arrival is scheduled and
+   * the match runs until its host stops it.
+   *
+   * Nothing mechanical happens on that round — the engine neither stops nor
+   * scores differently — because it is the *host* that decides how many rounds
+   * to run. It is here so a script can pace itself against the deadline it is
+   * actually playing to: a colony that will be inspected on round 20 is built
+   * differently from one with no arrival date.
    */
   finalRound: z.int().min(1).nullable().default(null),
 });
@@ -42,6 +50,7 @@ const rulesSchema = z.object({
   buildings: buildingsRulesSchema.prefault({}),
   salvage: salvageRulesSchema.prefault({}),
   scoring: scoringRulesSchema.prefault({}),
+  script: scriptRulesSchema.prefault({}),
   match: matchRulesSchema.prefault({}),
 });
 

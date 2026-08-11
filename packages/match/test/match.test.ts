@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { World } from '@morten-olsen/nova-game';
+import type { ScriptRunner, World } from '@morten-olsen/nova-game';
 
 import {
   androidRecordingFor,
@@ -9,6 +9,9 @@ import {
   hostMessageSchema,
   normalizeInviteCode,
   peerIdForCode,
+  protocolVersion,
+  runHostMatch,
+  type MatchConnection,
 } from '../src/nova-match.js';
 
 const android = (id: string, ownerId: string, recording: string) => ({
@@ -117,5 +120,56 @@ describe('match protocol', () => {
         script: '({ type: "android.wait" })',
       }).type,
     ).toBe('accept');
+  });
+});
+
+const ignore = (): undefined => undefined;
+
+/** A connection that answers with a scripted guest, so the host can be run alone. */
+const scriptedGuest = (messages: unknown[]): MatchConnection => {
+  const queue = [...messages];
+  return {
+    send: ignore,
+    receive: () => Promise.resolve(queue.shift()),
+    close: ignore,
+  };
+};
+
+describe('hosting a match', () => {
+  it('plays the offered round count as the human arrival both androids can read', async () => {
+    const script = "({ type: 'android.wait' })";
+    const arrivals: (number | undefined)[] = [];
+    const scriptRunner: ScriptRunner = {
+      execute: ({ androidId, rules, world }) => {
+        arrivals.push(rules.match.finalRound ?? undefined, world.finalRound);
+        return Promise.resolve({ type: 'android.wait', androidId });
+      },
+    };
+
+    const outcome = await runHostMatch({
+      connection: scriptedGuest([
+        { type: 'hello', protocol: protocolVersion, playerName: 'bob' },
+        { type: 'accept', scriptName: 'bob-bot', script },
+      ]),
+      disclosure: 'full',
+      height: 6,
+      playerName: 'alice',
+      report: ignore,
+      rounds: 3,
+      script,
+      scriptName: 'alice-bot',
+      scriptRunner,
+      width: 6,
+    });
+
+    // A peer match runs exactly the rounds the host offered and cannot be
+    // continued, so that count is the arrival every turn is told about — in the
+    // rules it is played under and in the world it is handed.
+    expect(arrivals.length).toBeGreaterThan(0);
+    expect(new Set(arrivals)).toEqual(new Set([3]));
+    // And it survives into the recording, so a replay is scored and read as the
+    // match that was played.
+    expect(outcome.game?.rules.match.finalRound).toBe(3);
+    expect(outcome.game?.initialWorld.finalRound).toBe(3);
   });
 });
