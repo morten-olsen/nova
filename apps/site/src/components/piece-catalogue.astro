@@ -16,26 +16,42 @@ import scanner from '@previews/scanner.png';
 import { linkTo, siteLinks } from '../site-links.ts';
 
 /**
- * Roles are the rulebook's own, including the two pieces it lists as planned.
- * A modelled piece is not the same as a finished mechanic, and a page that
- * blurs the two sets a player up to be disappointed by the game.
+ * Roles are the rulebook's own, including the relay tower, which is the one
+ * piece here that is modelled and buildable without having a mechanic yet. A
+ * modelled piece is not the same as a finished mechanic, and a page that blurs
+ * the two sets a player up to be disappointed by the game.
  */
 const pieces = [
-  { image: android, name: 'Android', role: 'Runs your script, one action per round' },
-  { image: charger, name: 'Charger', role: 'Recharges, and raises android capacity by one' },
-  { image: depot, name: 'Depot', role: 'Stores material' },
-  { image: extractor, name: 'Extractor', role: 'Harvests the composition of its own tile' },
-  { image: processor, name: 'Processor', role: 'Converts two ore into one metal each round' },
-  { image: acidProcessingPlant, name: 'Acid processing plant', role: 'Lets your androids clean adjacent acid' },
-  { image: scanner, name: 'Scanner', role: 'Reveals nearby tiles at longer range' },
-  { image: radar, name: 'Radar', role: 'Reveals a radius-5 disc around itself' },
-  { image: materialCache, name: 'Material cache', role: 'Scattered material launched from Earth' },
-  { image: relayTower, name: 'Relay tower', role: 'Communication infrastructure, planned' },
-  { image: colonyModule, name: 'Colony module', role: 'Readiness infrastructure, planned' },
+  { image: android, kind: 'android', name: 'Android', role: 'Runs your script, one action per round' },
+  { image: charger, kind: 'charger', name: 'Charger', role: 'Recharges, and raises android capacity by one' },
+  { image: depot, kind: 'depot', name: 'Depot', role: 'Stores material' },
+  { image: extractor, kind: 'extractor', name: 'Extractor', role: 'Harvests the composition of its own tile' },
+  { image: processor, kind: 'processor', name: 'Processor', role: 'Converts two ore into one metal each round' },
+  {
+    image: acidProcessingPlant,
+    kind: 'acid-processing-plant',
+    name: 'Acid processing plant',
+    role: 'Lets your androids clean adjacent acid',
+  },
+  { image: scanner, kind: 'scanner', name: 'Scanner', role: 'Reveals nearby tiles at longer range' },
+  { image: radar, kind: 'radar', name: 'Radar', role: 'Reveals a radius-5 disc around itself' },
+  {
+    image: materialCache,
+    kind: 'material-cache',
+    name: 'Material cache',
+    role: 'Scattered material launched from Earth',
+  },
+  { image: relayTower, kind: 'relay-tower', name: 'Relay tower', role: 'Communication infrastructure, planned' },
+  {
+    image: colonyModule,
+    kind: 'colony-module',
+    name: 'Colony module',
+    role: 'Worth 1,000 readiness — the game’s hero piece',
+  },
 ] as const;
 ---
 
-<section class="border-t border-hairline py-20 sm:py-28" aria-labelledby="pieces-heading">
+<section class="border-t border-hairline py-20 sm:py-28" aria-labelledby="pieces-heading" data-piece-catalogue>
   <div class="mx-auto max-w-[72rem] px-4 sm:px-6">
     <div class="max-w-[44rem]" data-reveal>
       <h2 id="pieces-heading" class="display-sm text-[clamp(1.75rem,3.4vw,2.75rem)] text-ink">
@@ -48,18 +64,26 @@ const pieces = [
       </p>
     </div>
 
-    <ul class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    {
+      /* The live canvas is laid over this element, so it is the box the card
+        rects are measured against and the size of the drawing buffer. */
+    }
+    <ul class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-piece-grid>
       {
         pieces.map((piece, index) => (
           <li class="panel overflow-hidden" data-reveal style={`--reveal-delay: ${String(Math.min(index, 7) * 45)}ms`}>
-            <Image
-              src={piece.image}
-              alt={`The ${piece.name.toLowerCase()} piece.`}
-              widths={[256, 384]}
-              sizes="(min-width: 1024px) 15rem, (min-width: 640px) 30vw, 45vw"
-              loading="lazy"
-              class="aspect-square w-full object-cover"
-            />
+            {/* The slot holds the square whether or not the still is in it, so
+                the live renderer has a stable rect to scissor to. */}
+            <div class="aspect-square w-full" data-piece-slot={piece.kind}>
+              <Image
+                src={piece.image}
+                alt={`The ${piece.name.toLowerCase()} piece.`}
+                widths={[256, 384]}
+                sizes="(min-width: 1024px) 15rem, (min-width: 640px) 30vw, 45vw"
+                loading="lazy"
+                class="size-full object-cover"
+              />
+            </div>
             <div class="border-t border-hairline p-3.5">
               <h3 class="display-sm text-[0.8125rem] text-ink">{piece.name}</h3>
               <p class="mt-1 text-[0.8125rem] leading-snug text-ink-dim">{piece.role}</p>
@@ -76,3 +100,21 @@ const pieces = [
     </p>
   </div>
 </section>
+
+<script>
+  import { schedulePieces } from '../pieces/piece-mount.ts';
+
+  schedulePieces();
+</script>
+
+<style>
+  /*
+   * The stills go out of layout rather than to zero opacity, and that is what
+   * makes this a saving rather than an addition: a lazily-loaded image with no
+   * box is never near the viewport, so once the live stage commits, the eleven
+   * renders below the fold are never fetched at all.
+   */
+  [data-pieces='live'] [data-piece-slot] :global(img) {
+    display: none;
+  }
+</style>
