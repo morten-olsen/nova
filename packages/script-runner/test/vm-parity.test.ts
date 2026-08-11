@@ -2,9 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { createContext, runInContext } from 'node:vm';
 
 import { toAndroidEvent } from '@morten-olsen/nova-game';
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 import { createQuickJsScriptRunner } from '../src/runner/quickjs-script-runner.js';
+import { wrapAndroidModule } from '../src/module/android-module.js';
 
 /**
  * QuickJS replaced two sandboxes: `node:vm` in the CLI and `eval`-in-a-Worker
@@ -64,7 +66,15 @@ describe('QuickJS and node:vm agree on the script contract', () => {
   }
 
   it('agrees on the shipped starter bot', async () => {
-    const content = await readFile(new URL('../../../docs/examples/starter-builder.js', import.meta.url), 'utf8');
+    // The starter bot is a TypeScript module, and both sandboxes only ever see
+    // what it compiles to: a CommonJS module, wrapped in the call that makes its
+    // exported turn function the script's final expression.
+    const source = await readFile(new URL('../../../docs/examples/starter-builder.ts', import.meta.url), 'utf8');
+    const content = wrapAndroidModule(
+      ts.transpileModule(source, {
+        compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS },
+      }).outputText,
+    );
     await expect(runViaQuickJs(content)).resolves.toEqual(expectedEvent(content));
   });
 
@@ -76,6 +86,6 @@ describe('QuickJS and node:vm agree on the script contract', () => {
     // both places.
     const content = "{ type: 'android.wait' }";
     expect(runViaVm(content)).toBe('android.wait');
-    await expect(runViaQuickJs(content)).rejects.toThrowError(/must end in an action object/);
+    await expect(runViaQuickJs(content)).rejects.toThrowError(/must produce an action object/);
   });
 });

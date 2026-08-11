@@ -1,8 +1,20 @@
 import { calculateColonyScores, createBaseRuleset, Loop } from '@morten-olsen/nova-game';
-import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
+import { createQuickJsScriptRunner, wrapAndroidModule } from '@morten-olsen/nova-script-runner';
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 import { starterScript } from '../src/lab/starter-script.ts';
+
+/**
+ * Compiled and wrapped the way the lab does it: the same compiler, the same
+ * module format, and the same wrapper that turns an exported turn function into
+ * the single expression the sandbox evaluates.
+ */
+const emitted = ts.transpileModule(starterScript, {
+  compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS },
+}).outputText;
+
+const content = wrapAndroidModule(emitted);
 
 /**
  * The starter script is the first thing anyone sees, and the thing they copy.
@@ -19,7 +31,7 @@ const play = async (rounds: number, size = 10) => {
     scriptRunner: createQuickJsScriptRunner(),
   });
   loop.applyEvents([
-    { type: 'user.upload-android-script', ownerId: 'player-1', name: 'starter', content: starterScript },
+    { type: 'user.upload-android-script', ownerId: 'player-1', name: 'starter', content },
     { type: 'user.launch-android', ownerId: 'player-1', scriptId: 'script-1' },
   ]);
   for (let round = 0; round < rounds; round += 1) {

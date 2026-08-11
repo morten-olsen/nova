@@ -64,7 +64,7 @@ describe('the QuickJS runner and the script contract', () => {
   });
 
   it('explains a script that does not end in an action object', async () => {
-    await expect(run("{ type: 'android.wait' }")).rejects.toThrowError(/must end in an action object/);
+    await expect(run("{ type: 'android.wait' }")).rejects.toThrowError(/must produce an action object/);
   });
 
   it('reports the message a script threw', async () => {

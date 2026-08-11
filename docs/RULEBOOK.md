@@ -30,18 +30,19 @@ Players repeat this loop:
 5. Review the recording, messages, and world state.
 6. Improve future android behavior.
 
-Androids are autonomous once launched. A script returns one android action per turn.
+Androids are autonomous once launched. A script is a module whose default export is its turn function, called once per round and returning that round's action:
 
-Scripts run with these globals:
+```ts
+const turn: AndroidTurn = () => ({ type: 'android.move', direction: 'east' });
+export default turn;
+```
+
+The turn function runs with these globals:
 
 - `androidId` — the id of the android currently taking its turn
 - `world` — the fogged world snapshot visible to the script runner
 
-A simple script returns an event object:
-
-```js
-({ type: 'android.move', direction: 'east' });
-```
+The scripts stored in a game are the compiled result. A factory Android is written in TypeScript, across as many files as it needs, and the CLI compiles and bundles it into one script on upload. The action shapes below are what the turn function returns.
 
 ## 3. World
 
@@ -154,34 +155,34 @@ An android on one of its owner's completed chargers can also dismantle another a
 
 ## 8. Android Action API
 
-An android script must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
+An android script's turn function must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
 
 Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material — the turn becomes a failed turn and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
 
 In a peer match played with `--disclosure recording` (see the [CLI guide](CLI-GUIDE.md#play-another-player)), `recording` is the only account of the match the player receives, alongside the final scores. Under that mode what an Android writes down is part of its design, not a debugging aid.
 
-```js
-({
+```ts
+const action: Action = {
   type: 'android.wait',
   memory: 'return-to-depot',
   recording: 'No safe route found this round.',
-});
+};
 ```
 
 ### Wait
 
 Do nothing.
 
-```js
-({ type: 'android.wait' });
+```ts
+const action: Action = { type: 'android.wait' };
 ```
 
 ### Move
 
 Move one tile north, south, east, or west. Moving outside the map fails the turn and deactivates the android.
 
-```js
-({ type: 'android.move', direction: 'east' });
+```ts
+const action: Action = { type: 'android.move', direction: 'east' };
 ```
 
 Directions: `north`, `south`, `east`, `west`.
@@ -190,16 +191,17 @@ Directions: `north`, `south`, `east`, `west`.
 
 Recharge on an owned charger on the android's current tile. Adds up to 25 battery, capped at 100.
 
-```js
-({ type: 'android.charge' });
+```ts
+const action: Action = { type: 'android.charge' };
 ```
 
 ### Collect
 
 Collect scattered material from the current tile into cargo. If `resources` is omitted, the android collects what it can up to cargo capacity.
 
-```js
-({ type: 'android.collect' })({ type: 'android.collect', resources: { metal: 3 } });
+```ts
+const action: Action = { type: 'android.collect' };
+const withResources: Action = { type: 'android.collect', resources: { metal: 3 } };
 ```
 
 ### Deposit
@@ -208,16 +210,17 @@ Deposit cargo into an owned storage-capable building on the current tile. If `re
 
 Storage-capable buildings currently include depots, processors, and acid processing plants.
 
-```js
-({ type: 'android.deposit' })({ type: 'android.deposit', resources: { ore: 2 } });
+```ts
+const action: Action = { type: 'android.deposit' };
+const withResources: Action = { type: 'android.deposit', resources: { ore: 2 } };
 ```
 
 ### Withdraw
 
 Withdraw material from an owned storage-capable building on the current tile.
 
-```js
-({ type: 'android.withdraw', resources: { metal: 4 } });
+```ts
+const action: Action = { type: 'android.withdraw', resources: { metal: 4 } };
 ```
 
 Storage-capable buildings currently include depots, extractors, processors, and acid processing plants.
@@ -226,62 +229,63 @@ Storage-capable buildings currently include depots, extractors, processors, and 
 
 Start a building on the current tile. The tile must not already contain a building. Supplied resources can come from android cargo. Current compatibility also allows using loose/current-tile material in some cases, but scripts should prefer collecting material into cargo first.
 
-```js
-({ type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } });
+```ts
+const action: Action = { type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } };
 ```
 
 ### Continue Construction
 
 Continue construction on an owned construction site on the current tile. If material requirements have been met, each continue action reduces remaining construction time by 1 tick.
 
-```js
-({ type: 'android.continue-construction' })({ type: 'android.continue-construction', resources: { electronics: 1 } });
+```ts
+const action: Action = { type: 'android.continue-construction' };
+const withResources: Action = { type: 'android.continue-construction', resources: { electronics: 1 } };
 ```
 
 ### Salvage
 
 Damage/salvage the building on the current tile. Initial chargers cannot be salvaged. Self-salvage is faster than hostile salvage. When a building is fully salvaged, part of its build cost becomes scattered material on the tile.
 
-```js
-({ type: 'android.salvage' });
+```ts
+const action: Action = { type: 'android.salvage' };
 ```
 
 ### Broadcast
 
 Broadcast a public message of up to 256 characters. Messages are stored in world messages.
 
-```js
-({ type: 'android.broadcast', content: 'metal found at 3,4' });
+```ts
+const action: Action = { type: 'android.broadcast', content: 'metal found at 3,4' };
 ```
 
 ### Clean Acid
 
 Clean 1 acid from an adjacent tile. The android's owner must have a completed acid processing plant anywhere in the world. The cleaned acid is stored as `acidCanister` in that plant. Cleaning costs 1 battery.
 
-```js
-({ type: 'android.clean-acid', direction: 'north' });
+```ts
+const action: Action = { type: 'android.clean-acid', direction: 'north' };
 ```
 
 ### Launch
 
 Launch another android of the same owner on the current tile, which must hold one of the owner's completed chargers. `scriptId` must be one of the owner's scripts, as listed in `world.scripts`. The launch is refused unless the owner has spare charger capacity, exactly as a player launch is (see [Chargers and Android Capacity](#6-chargers-and-android-capacity)). The new android starts at full battery and health and takes its first turn in the following round.
 
-```js
-({ type: 'android.launch', scriptId: 'script-2' });
+```ts
+const action: Action = { type: 'android.launch', scriptId: 'script-2' };
 ```
 
 ### Dismantle
 
 Destroy this android voluntarily.
 
-```js
-({ type: 'android.dismantle' });
+```ts
+const action: Action = { type: 'android.dismantle' };
 ```
 
 With `targetAndroidId`, destroy another android of the same owner instead. The acting android must be on one of its owner's completed chargers, the target must be one of the owner's active androids, and an android cannot name itself as the target.
 
-```js
-({ type: 'android.dismantle', targetAndroidId: 'android-3' });
+```ts
+const action: Action = { type: 'android.dismantle', targetAndroidId: 'android-3' };
 ```
 
 ## 9. Resources and Progression

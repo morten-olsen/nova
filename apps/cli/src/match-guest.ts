@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 
@@ -14,6 +13,7 @@ import {
 import { writeGameFile } from './game-file.js';
 import { writeRecordingFile } from './match-files.js';
 import { joinMatch } from './match-transport.js';
+import { loadAndroidScript } from './android-script.js';
 
 type JoinMatchOptions = {
   /** Skips the confirmation prompt, for non-interactive use. */
@@ -84,7 +84,7 @@ const confirmOffer = async (offer: OfferMessage, report: (message: string) => vo
 const joinGame = async (options: JoinMatchOptions): Promise<JoinMatchResult> => {
   const { report } = options;
   const code = normalizeInviteCode(options.code);
-  const script = await readFile(options.scriptPath, 'utf8');
+  const script = await loadAndroidScript(options.scriptPath);
 
   report('Connecting to the host…');
   const connection = await joinMatch(peerIdForCode(code));

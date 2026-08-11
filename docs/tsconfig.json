@@ -1,0 +1,10 @@
+{
+  "extends": "@morten-olsen/nova-config/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["es2023"],
+    "types": ["@morten-olsen/nova-game/android"]
+  },
+  "include": ["examples/**/*.ts"],
+  "references": [{ "path": "../packages/game" }]
+}

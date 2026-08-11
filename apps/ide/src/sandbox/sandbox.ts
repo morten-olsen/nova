@@ -1,8 +1,10 @@
 import { createBaseRuleset, Loop, type GameRecording } from '@morten-olsen/nova-game';
 
 import { getScriptRunner } from '../runner/script-runner.ts';
+import { compileScript } from '../editor/monaco-setup.ts';
 
 type SandboxOptions = {
+  /** The script as written, TypeScript included. Compiled here, before it runs. */
   content: string;
   height: number;
   rounds: number;
@@ -31,7 +33,7 @@ const runSandbox = async (options: SandboxOptions): Promise<SandboxResult> => {
   const loop = new Loop({ ruleset, scriptRunner: getScriptRunner() });
 
   loop.applyEvents([
-    { type: 'user.upload-android-script', ownerId, name: 'draft', content },
+    { type: 'user.upload-android-script', ownerId, name: 'draft', content: await compileScript(content) },
     { type: 'user.launch-android', ownerId, scriptId: 'script-1' },
   ]);
 

@@ -22,6 +22,15 @@ const novaDependencies = {
   '@morten-olsen/nova-game': cliVersion,
 };
 
+/**
+ * TypeScript is a development dependency of the factory, not of an android: the
+ * CLI compiles a bot on its way into the sandbox, so this is here for the
+ * editor, and for `npm run check` to answer before a simulation does.
+ */
+const factoryDevDependencies = {
+  typescript: '^5.9.2',
+};
+
 const packageJson = {
   name: 'nova-android-factory',
   version: '0.1.0',
@@ -29,12 +38,45 @@ const packageJson = {
   type: 'module',
   engines: { node: '>=24' },
   scripts: {
+    check: 'tsc --noEmit',
     status: 'nova status --file game.json',
     simulate: 'nova run --file game.json --rounds 10',
     play: 'nova play --file game.json',
-    host: 'nova host --script bot/starter-builder.js --rounds 20',
+    host: 'nova host --script bot/starter-builder.ts --rounds 20',
   },
   dependencies: novaDependencies,
+  devDependencies: factoryDevDependencies,
+};
+
+/**
+ * The compiler settings an android is written under.
+ *
+ * `types` is the load-bearing line: it pulls in the sandbox globals — `world`,
+ * `androidId`, `turn`, `finalTurn` — along with `Action` and the rest of the
+ * game's model types, so a bot needs no imports to be fully typed. They are the
+ * engine's own types, so they follow the game rather than a copy of it.
+ *
+ * The `lib` deliberately stops at the language. There is no `console`, no
+ * `fetch`, and no `setTimeout` in the sandbox, and a bot that reaches for one
+ * should be told here rather than by a failed turn.
+ */
+const tsconfigJson = {
+  compilerOptions: {
+    target: 'es2023',
+    lib: ['es2023'],
+    module: 'esnext',
+    moduleResolution: 'bundler',
+    types: ['@morten-olsen/nova-game/android'],
+    strict: true,
+    noUncheckedIndexedAccess: true,
+    verbatimModuleSyntax: true,
+    isolatedModules: true,
+    skipLibCheck: true,
+    allowJs: true,
+    checkJs: false,
+    noEmit: true,
+  },
+  include: ['bot'],
 };
 
 const agentsGuide = `# Nova Android Factory
@@ -46,14 +88,46 @@ This project contains an autonomous android program for Project: Nova. Your job 
 1. Read \`docs/RULEBOOK.md\` for the current rules and action API.
 2. Read \`docs/ANDROID-BUILDER-MANUAL.md\` for the recommended build-and-test workflow.
 3. Read \`docs/CLI-GUIDE.md\` before running a simulation.
-4. Inspect \`bot/starter-builder.js\`; edit or replace it rather than changing installed packages.
+4. Inspect \`bot/starter-builder.ts\`; edit or replace it rather than changing installed packages.
+
+## Androids are TypeScript
+
+\`upload-script\`, \`host\` and \`join\` compile and bundle the file they are given
+before it reaches the game, so an android is a normal TypeScript project rather
+than one file that has to fit in one file:
+
+- An android is a module whose default export is its turn function. It is called
+  once per round and returns that round's action:
+
+  \`\`\`ts
+  import { chooseTarget } from './lib/targets.js';
+
+  const turn: AndroidTurn = () => ({ type: 'android.move', direction: chooseTarget() });
+  export default turn;
+  \`\`\`
+
+  That is the only accepted shape. A file ending in a bare action expression is
+  refused, so that adding an import to a working android never changes how the
+  file is read.
+- Split an android across as many files as it needs; imports of your own modules
+  are followed and bundled in.
+- Types come from the game itself. \`world\`, \`androidId\`, \`turn\` and
+  \`finalTurn\` are globals, and \`Action\`, \`AndroidTurn\`, \`Tile\` and the rest
+  are in scope without an import. Run \`npm run check\` to type-check without
+  playing.
+- Only import types from \`@morten-olsen/nova-game\`, never values: the package
+  is the engine, and bundling it into an android would spend the whole turn
+  budget on loading it.
+
+The sandbox still has no module loader, no filesystem, no network and no timers.
+Bundling happens here, before upload; nothing is imported at run time.
 
 ## Simulation loop
 
 Run these commands from this directory:
 
 \`\`\`sh
-npx nova upload-script --file game.json --owner player-1 --name <name> --script bot/<file>.js
+npx nova upload-script --file game.json --owner player-1 --name <name> --script bot/<file>.ts
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 npx nova run --file game.json --rounds 10
 npx nova status --file game.json
@@ -68,8 +142,8 @@ An Android can be matched against another player's Android over a peer-to-peer
 connection. One side hosts and shares the invite code it prints:
 
 \`\`\`sh
-npx nova host --script bot/<file>.js --rounds 20 --disclosure full
-npx nova join <invite-code> --script bot/<file>.js
+npx nova host --script bot/<file>.ts --rounds 20 --disclosure full
+npx nova join <invite-code> --script bot/<file>.ts
 \`\`\`
 
 The host chooses the round count and the disclosure mode, which decides what
@@ -90,8 +164,8 @@ an Android that fails a turn records nothing for that round.
 
 ## Boundaries
 
-- Return exactly one valid action object from each script turn; use the rulebook action names and fields.
-- Scripts run in a sandbox with only \`androidId\` and \`world\` globals. Do not use imports, filesystem access, network access, or timers.
+- Return exactly one valid action object from the turn function; use the rulebook action names and fields.
+- A turn reads the world from the \`androidId\`, \`world\`, \`turn\` and \`finalTurn\` globals. It has no filesystem, no network and no timers, and nothing is imported while it runs.
 - Treat the rulebook as the player contract. If it is unclear, inspect \`node_modules/@morten-olsen/nova-game/src/\` for the implemented behavior, then keep bot code independent of that package's internals.
 - Make one behavioral change at a time and validate it with a fresh or understood recording.
 `;
@@ -129,9 +203,13 @@ const copyDocs = async (factoryDirectory: string): Promise<void> => {
 const copyStarterBot = async (factoryDirectory: string): Promise<void> => {
   await mkdir(join(factoryDirectory, 'bot'), { recursive: true });
   await cp(
-    join(docsPackageDirectory, 'examples', 'starter-builder.js'),
-    join(factoryDirectory, 'bot', 'starter-builder.js'),
+    join(docsPackageDirectory, 'examples', 'starter-builder.ts'),
+    join(factoryDirectory, 'bot', 'starter-builder.ts'),
   );
+};
+
+const writeTsconfig = async (factoryDirectory: string): Promise<void> => {
+  await writeFile(join(factoryDirectory, 'tsconfig.json'), `${JSON.stringify(tsconfigJson, null, 2)}\n`);
 };
 
 const installDependencies = async (factoryDirectory: string): Promise<void> => {
@@ -139,16 +217,27 @@ const installDependencies = async (factoryDirectory: string): Promise<void> => {
   await execFileAsync(npm, ['install'], { cwd: factoryDirectory });
 };
 
+const merged = (existing: unknown, additions: Record<string, string>): Record<string, string> => ({
+  ...(typeof existing === 'object' && existing !== null ? (existing as Record<string, string>) : {}),
+  ...additions,
+});
+
 const updatePackageDependencies = async (factoryDirectory: string): Promise<void> => {
   const packagePath = join(factoryDirectory, 'package.json');
   const packageData = JSON.parse(await readFile(packagePath, 'utf8')) as Record<string, unknown>;
-  const dependencies = packageData.dependencies;
 
-  packageData.dependencies = {
-    ...(typeof dependencies === 'object' && dependencies !== null ? dependencies : {}),
-    ...novaDependencies,
-  };
+  packageData.dependencies = merged(packageData.dependencies, novaDependencies);
+  packageData.devDependencies = merged(packageData.devDependencies, factoryDevDependencies);
   await writeFile(packagePath, `${JSON.stringify(packageData, null, 2)}\n`);
+};
+
+const exists = async (path: string): Promise<boolean> => {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 const createFactory = async (options: FactoryOptions): Promise<string> => {
@@ -175,7 +264,7 @@ const createFactory = async (options: FactoryOptions): Promise<string> => {
     writeFile(join(factoryDirectory, '.gitignore'), 'node_modules/\n'),
     writeFile(join(factoryDirectory, 'AGENTS.md'), agentsGuide),
   ]);
-  await Promise.all([copyDocs(factoryDirectory), copyStarterBot(factoryDirectory)]);
+  await Promise.all([copyDocs(factoryDirectory), copyStarterBot(factoryDirectory), writeTsconfig(factoryDirectory)]);
   await installDependencies(factoryDirectory);
 
   return factoryDirectory;
@@ -185,6 +274,12 @@ const updateFactory = async (): Promise<string> => {
   const factoryDirectory = process.cwd();
   await updatePackageDependencies(factoryDirectory);
   await copyDocs(factoryDirectory);
+  // Written only when absent. A factory from before androids were TypeScript
+  // needs one to type-check at all; one that already has a tsconfig may have
+  // been tuned, and refreshing docs is not licence to overwrite that.
+  if (!(await exists(join(factoryDirectory, 'tsconfig.json')))) {
+    await writeTsconfig(factoryDirectory);
+  }
   await installDependencies(factoryDirectory);
   return factoryDirectory;
 };

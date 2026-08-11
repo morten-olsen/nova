@@ -17,11 +17,13 @@ npx nova create-game --file game.json --width 8 --height 8
 Upload a script under a player id. The command prints its script id.
 
 ```sh
-npx nova upload-script --file game.json --owner player-1 --name starter-builder --script bot/starter-builder.js
+npx nova upload-script --file game.json --owner player-1 --name starter-builder --script bot/starter-builder.ts
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 ```
 
 An upload creates a new version; an existing Android continues to use its original `scriptId`. Upload a new version and launch another Android to test it. The number of active Androids cannot exceed the owner's completed charger count.
+
+`upload-script` compiles and bundles the file it is given, so an Android is written as a normal TypeScript project: point it at the entry file, and every module that entry imports is followed and folded into the script that is uploaded. The entry must default-export its turn function — that is the whole contract, and it does not change when the Android grows a second file. `npm run check` type-checks `bot/` without playing a game, and `docs/ANDROID-BUILDER-MANUAL.md` has the details.
 
 ## Run and inspect
 
@@ -45,13 +47,13 @@ Run short batches while developing. `status` reports active Androids, their loca
 connection. One player hosts:
 
 ```sh
-npx nova host --script bot/starter-builder.js --rounds 20 --disclosure full
+npx nova host --script bot/starter-builder.ts --rounds 20 --disclosure full
 ```
 
 `host` prints an invite code and waits. The other player joins with it:
 
 ```sh
-npx nova join YF4D4-MGZKE --script bot/starter-builder.js
+npx nova join YF4D4-MGZKE --script bot/starter-builder.ts
 ```
 
 The code can be typed with or without the dash and in any case. Before anything
@@ -102,7 +104,7 @@ To restart completely, replace the recording with `npx nova create-game --file g
 
 ## Update the factory
 
-Run `npx nova update` from the factory root to pin all Nova packages to the version of the CLI that ran the command, reinstall them, and refresh the files in `docs/`. It intentionally leaves `bot/` and your `AGENTS.md` unchanged.
+Run `npx nova update` from the factory root to pin all Nova packages to the version of the CLI that ran the command, reinstall them, and refresh the files in `docs/`. A factory that predates TypeScript Androids also gets a `tsconfig.json`; an existing one is left as you tuned it, as are `bot/` and your `AGENTS.md`.
 
 ## Commands
 
@@ -111,10 +113,10 @@ nova init [factory-folder]
 nova create-game --file game.json [--width 16 --height 16]
 nova update
 nova status --file game.json
-nova upload-script --file game.json --owner player-1 --name name --script bot/file.js
+nova upload-script --file game.json --owner player-1 --name name --script bot/file.ts
 nova launch-android --file game.json --owner player-1 --script-id script-1
 nova run --file game.json [--rounds 1]
 nova play --file game.json
-nova host --script bot/file.js [--rounds 20] [--disclosure full|recording] [--width 16 --height 16] [--name alice] [--out match.json]
-nova join <invite-code> --script bot/file.js [--name bob] [--yes] [--out match.json]
+nova host --script bot/file.ts [--rounds 20] [--disclosure full|recording] [--width 16 --height 16] [--name alice] [--out match.json]
+nova join <invite-code> --script bot/file.ts [--name bob] [--yes] [--out match.json]
 ```

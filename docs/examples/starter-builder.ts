@@ -1,5 +1,4 @@
-/* eslint-disable complexity */
-/* global androidId, world */
+/* eslint-disable complexity, max-lines-per-function */
 /*
  * Starter android.
  *
@@ -16,31 +15,48 @@
  *   - `tile.scattered` is loose material you can collect. `tile.composition` is
  *     what is in the ground — ore, water, acid, radiation — and it can never be
  *     collected directly. It needs an extractor.
+ *
+ * An android is a module that default-exports its turn function. That function
+ * is called once per round and returns that round's action, so every decision
+ * below is a `return`. Splitting part of it into `bot/lib/` and importing that
+ * back needs no other change: the CLI follows the imports and bundles them in.
+ *
+ * The types — `AndroidTurn`, `Action`, `Tile`, and the `world` and `androidId`
+ * globals — come with the game; nothing here imports them. The CLI compiles this
+ * file before uploading it, so a mistyped action is a compiler error rather than
+ * a lost turn. Run `npm run check` to see them all at once.
  */
-(() => {
+type Memory = {
+  dir?: Direction;
+  charger?: Position;
+  depot?: Position;
+};
+
+const takeTurn: AndroidTurn = () => {
   const self = world.androids.find((a) => a.id === androidId);
   if (!self || !self.active) {
-    return { type: 'android.wait' };
+    return { type: 'android.wait' } satisfies Action;
   }
 
   const CARGO_CAP = 10;
   const DEPOT_COST = 6;
   const CHARGER_COST = 10;
 
-  const key = (p) => p.x + ',' + p.y;
+  const key = (p: Position): string => p.x + ',' + p.y;
   const here = self.position;
   const tiles = new Map(world.tiles.map((t) => [key(t.position), t]));
-  const tileAt = (p) => tiles.get(key(p));
-  const mine = (b) => b && b.ownerId === self.ownerId;
-  const buildingAt = (p) => world.buildings.find((b) => key(b.position) === key(p));
-  const complete = (b) => b && b.remainingConstruction.ticks === 0;
-  const steps = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  const tileAt = (p: Position): Tile | undefined => tiles.get(key(p));
+  const mine = (b: Building | undefined): boolean => !!b && b.ownerId === self.ownerId;
+  const buildingAt = (p: Position): Building | undefined => world.buildings.find((b) => key(b.position) === key(p));
+  const complete = (b: Building | undefined): boolean => !!b && b.remainingConstruction.ticks === 0;
+  const steps = (a: Position, b: Position): number => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
-  const MATERIALS = ['metal', 'electronics', 'polymer', 'ore', 'water', 'acidCanister'];
-  const total = (bundle) => MATERIALS.reduce((sum, k) => sum + ((bundle || {})[k] || 0), 0);
-  const cargo = self.cargo || {};
+  const MATERIALS = ['metal', 'electronics', 'polymer', 'ore', 'water', 'acidCanister'] as const;
+  const total = (bundle: MaterialBundle | undefined): number =>
+    MATERIALS.reduce((sum, k) => sum + (bundle?.[k] ?? 0), 0);
+  const cargo = self.cargo ?? {};
   const carrying = total(cargo);
-  const metal = cargo.metal || 0;
+  const metal = cargo.metal ?? 0;
 
   /*
    * Remembering is not optional. Visibility is recomputed every round, so a tile
@@ -48,13 +64,13 @@
    * five turns ago is simply gone from view. Anything we need to walk back to
    * has to be written down in `memory`.
    */
-  let mem = {};
+  let mem: Memory = {};
   try {
-    mem = JSON.parse(self.memory || '{}');
+    mem = JSON.parse(self.memory || '{}') as Memory;
   } catch {
     mem = {};
   }
-  mem.dir = mem.dir || 'east';
+  mem.dir = mem.dir ?? 'east';
 
   // Re-pin landmarks whenever they are actually in view.
   const seenCharger = world.buildings.find((b) => mine(b) && b.type === 'charger' && complete(b));
@@ -66,16 +82,20 @@
     mem.depot = seenDepot.position;
   }
 
-  const log = (line) => {
+  const log = (line: string): string => {
     const previous = (self.recording || '').split('\n').filter(Boolean);
     // Bounded: recording is capped at 16k, and the last 40 rounds are the
     // interesting ones when working out why a bot stalled.
     return previous
-      .concat('r' + (world.round || 0) + ' ' + line)
+      .concat('r' + (world.round ?? 0) + ' ' + line)
       .slice(-40)
       .join('\n');
   };
-  const act = (action, note) => Object.assign(action, { memory: JSON.stringify(mem), recording: log(note) });
+  const act = (action: Action, note: string): Action => ({
+    ...action,
+    memory: JSON.stringify(mem),
+    recording: log(note),
+  });
 
   /*
    * The most important safety rule: moving off the map fails the turn and
@@ -85,18 +105,23 @@
    * reveals everything within 2 steps of itself, so a neighbouring tile that is
    * still missing from `world.tiles` cannot exist. Absent neighbour means edge.
    */
-  const DIRS = { north: { x: 0, y: -1 }, south: { x: 0, y: 1 }, east: { x: 1, y: 0 }, west: { x: -1, y: 0 } };
-  const stepTo = (dir) => ({ x: here.x + DIRS[dir].x, y: here.y + DIRS[dir].y });
-  const onMap = (dir) => Boolean(tileAt(stepTo(dir)));
+  const DIRS: Record<Direction, Position> = {
+    north: { x: 0, y: -1 },
+    south: { x: 0, y: 1 },
+    east: { x: 1, y: 0 },
+    west: { x: -1, y: 0 },
+  };
+  const stepTo = (dir: Direction): Position => ({ x: here.x + DIRS[dir].x, y: here.y + DIRS[dir].y });
+  const onMap = (dir: Direction): boolean => Boolean(tileAt(stepTo(dir)));
   // Acid costs 0.5 health per point per round and radiation 0.25, so acid is
   // weighted double when choosing between two otherwise equal steps.
-  const hazard = (dir) => {
+  const hazard = (dir: Direction): number => {
     const t = tileAt(stepTo(dir));
-    return t ? (t.composition.acid || 0) * 2 + (t.composition.radiation || 0) : 0;
+    return t ? (t.composition.acid ?? 0) * 2 + (t.composition.radiation ?? 0) : 0;
   };
 
-  const towards = (target) => {
-    const options = [];
+  const towards = (target: Position): Direction | undefined => {
+    const options: Direction[] = [];
     if (target.x > here.x) {
       options.push('east');
     }
@@ -112,11 +137,11 @@
     return options.filter(onMap).sort((a, b) => hazard(a) - hazard(b))[0];
   };
 
-  const move = (dir, note) => act({ type: 'android.move', direction: dir }, note);
+  const move = (dir: Direction, note: string): Action => act({ type: 'android.move', direction: dir }, note);
 
   // 1. Finish what we started. A half-built depot scores nothing.
   const siteHere = buildingAt(here);
-  if (mine(siteHere) && siteHere.remainingConstruction.ticks > 0) {
+  if (siteHere && mine(siteHere) && siteHere.remainingConstruction.ticks > 0) {
     return act({ type: 'android.continue-construction' }, 'building ' + siteHere.type);
   }
 
@@ -137,7 +162,7 @@
   }
 
   // 3. Bank cargo. Stored material is the only material that scores.
-  if (mine(siteHere) && complete(siteHere) && siteHere.type === 'depot' && carrying > 0) {
+  if (mine(siteHere) && complete(siteHere) && siteHere?.type === 'depot' && carrying > 0) {
     return act({ type: 'android.deposit' }, 'deposited ' + carrying);
   }
 
@@ -183,15 +208,18 @@
   }
 
   // 8. Nothing in sight. Explore, turning at the edge instead of walking into it.
-  const preferred = [mem.dir]
+  const preferred = ([mem.dir] as Direction[])
     .concat(['east', 'south', 'west', 'north'])
     .filter(onMap)
     .sort((a, b) => hazard(a) - hazard(b));
-  if (preferred[0]) {
-    mem.dir = preferred[0];
-    return move(preferred[0], 'exploring ' + preferred[0]);
+  const next = preferred[0];
+  if (next) {
+    mem.dir = next;
+    return move(next, 'exploring ' + next);
   }
 
   // Boxed in. Waiting beats failing a turn.
   return act({ type: 'android.wait' }, 'no safe move');
-})();
+};
+
+export default takeTurn;

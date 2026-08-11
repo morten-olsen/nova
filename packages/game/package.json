@@ -7,6 +7,7 @@
     "access": "public"
   },
   "files": [
+    "android.d.ts",
     "dist",
     "src"
   ],
@@ -21,7 +22,11 @@
       "types": "./dist/nova-game.d.ts",
       "import": "./dist/nova-game.js",
       "default": "./dist/nova-game.js"
-    }
+    },
+    "./android": {
+      "types": "./android.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "devDependencies": {
     "@morten-olsen/nova-config": "workspace:*",

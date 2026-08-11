@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-
 import {
   createInviteCode,
   formatInviteCode,
@@ -14,6 +12,7 @@ import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 import { writeGameFile } from './game-file.js';
 import { writeRecordingFile } from './match-files.js';
 import { createMatchHost } from './match-transport.js';
+import { loadAndroidScript } from './android-script.js';
 
 type HostMatchOptions = {
   disclosure: Disclosure;
@@ -51,7 +50,7 @@ const inviteBanner = (code: string, options: HostMatchOptions): string =>
   ].join('\n');
 
 const hostGame = async (options: HostMatchOptions): Promise<HostMatchResult> => {
-  const script = await readFile(options.scriptPath, 'utf8');
+  const script = await loadAndroidScript(options.scriptPath);
 
   const code = createInviteCode();
   const host = await createMatchHost(peerIdForCode(code));

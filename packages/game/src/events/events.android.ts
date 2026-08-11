@@ -122,7 +122,23 @@ const androidEventSchema = z.union([
 
 type AndroidEvent = z.infer<typeof androidEventSchema>;
 
+/**
+ * `Omit` over a union collapses it to the keys every member shares, which for
+ * android events is just `type`. Distributing keeps each variant's own fields.
+ */
+type WithoutAndroidId<T> = T extends unknown ? Omit<T, 'androidId'> : never;
+
+/**
+ * What a script returns: an event with the acting android left off.
+ *
+ * The engine stamps `androidId` on in {@link toAndroidEvent}, because a script
+ * naming an android is a script naming *another* android. Player-facing, and
+ * the type a TypeScript android annotates its turn function with.
+ */
+type AndroidAction = WithoutAndroidId<AndroidEvent>;
+
 export type {
+  AndroidAction,
   AndroidBroadcastEvent,
   AndroidChargeEvent,
   AndroidCleanAcidEvent,
