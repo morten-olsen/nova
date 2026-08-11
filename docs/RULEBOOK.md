@@ -331,7 +331,7 @@ Current building types. Costs and construction times are `rules.buildings[type].
 | `relay-tower`           | 8 metal, 4 electronics               |                  3 | Planned communication infrastructure              |
 | `scanner`               | 8 metal, 6 electronics               |                  4 | Reveals nearby tiles at longer range              |
 | `radar`                 | 14 metal, 10 electronics, 2 polymer  |                  7 | Reveals a radius-5 disc of tiles around itself    |
-| `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Planned victory/readiness infrastructure          |
+| `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Scores 1,000 readiness; victory condition planned |
 
 A building under construction occupies its tile immediately. Buildings have `rules.buildings[type].health` health (`100`).
 

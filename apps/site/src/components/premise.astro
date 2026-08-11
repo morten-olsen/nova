@@ -1,0 +1,69 @@
+---
+/**
+ * The fiction, told once and told early. Everything else on this page — the
+ * trailer, the two doors, the quickstart — assumes the visitor already knows
+ * why there are androids on a planet nobody has landed on, and until this
+ * section existed the hero's two lines were the only place that was said.
+ *
+ * The three items are not lore. They are the rules that make the story a game,
+ * and they are here rather than further down because they are what a programmer
+ * needs in order to picture what they would actually be doing.
+ */
+const contract = [
+  {
+    body: 'Each android runs your script once a round and returns a single action: move, collect, build, salvage, broadcast. That is the whole interface between you and the planet.',
+    label: 'The contract',
+    title: 'One action per round',
+  },
+  {
+    body: 'The fleet is too far out to steer anything. Once a run starts you cannot intervene, so whatever your script does about acid, battery and cargo, it does alone.',
+    label: 'The constraint',
+    title: 'Nobody is at the controls',
+  },
+  {
+    body: 'A game is an event recording. Replay it, scrub to the round it went wrong, and you are looking at the exact decision your code made and the world it made it in.',
+    label: 'The evidence',
+    title: 'Every round is on the record',
+  },
+] as const;
+---
+
+<section class="border-t border-hairline py-20 sm:py-28" aria-labelledby="premise-heading">
+  <div class="mx-auto max-w-[72rem] px-4 sm:px-6">
+    <div class="max-w-[46rem]" data-reveal>
+      <p class="label">The premise</p>
+      <h2 id="premise-heading" class="display-sm mt-4 text-[clamp(1.75rem,3.4vw,2.75rem)] text-ink">
+        The fleet is already on its way
+      </h2>
+      <div class="mt-5 flex flex-col gap-4">
+        <p class="prose-copy">
+          Humanity found a planet worth crossing the void for: resource-rich, unexplored, and hostile to anything with
+          lungs. The colony fleet launched anyway. It arrives whether or not the ground is ready for it.
+        </p>
+        <p class="prose-copy">
+          Nobody can land into acid flats and open radiation, so the machines go first. Androids drop ahead of the fleet
+          with a charger, a battery and no supervision, and everything they will ever know how to do has to be aboard
+          them before they wake up.
+        </p>
+        <p class="prose-copy">
+          That is your job. You never move an android or click a unit. You write the program it runs, launch it, and
+          read back what it actually did — where it walked into acid, where it ran flat two tiles from a charger, where
+          it built the depot in the wrong place. Then you write a better one, and the planet gets a little closer to
+          being somewhere people can live.
+        </p>
+      </div>
+    </div>
+
+    <ul class="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      {
+        contract.map((item, index) => (
+          <li class="panel p-6" data-reveal style={`--reveal-delay: ${String(index * 110)}ms`}>
+            <p class="label !text-[0.6rem]">{item.label}</p>
+            <h3 class="display-sm mt-3 text-lg text-ink">{item.title}</h3>
+            <p class="prose-copy mt-2 text-[0.9375rem]">{item.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
