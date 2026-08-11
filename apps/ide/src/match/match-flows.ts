@@ -12,6 +12,7 @@ import {
 } from '@morten-olsen/nova-match';
 
 import { getScriptRunner } from '../runner/script-runner.ts';
+import { compileScript } from '../editor/monaco-setup.ts';
 
 import { createMatchHost, joinMatch } from './peer-transport.ts';
 import type { MatchResult } from './match-state.ts';
@@ -51,6 +52,9 @@ type JoinFlowOptions = {
  * by the same per-turn CPU, memory and stack limits rather than being trusted.
  */
 const startHosting = async (options: HostFlowOptions, handlers: FlowHandlers): Promise<void> => {
+  // Before the invite code, so a script that does not compile fails here rather
+  // than after someone has joined and waited.
+  const script = await compileScript(options.script);
   const code = createInviteCode();
   const peerHost = await createMatchHost(peerIdForCode(code));
   handlers.onTeardown(() => peerHost.close());
@@ -66,7 +70,7 @@ const startHosting = async (options: HostFlowOptions, handlers: FlowHandlers): P
     playerName: options.playerName,
     report: handlers.onReport,
     rounds: options.rounds,
-    script: options.script,
+    script,
     scriptName: options.scriptName,
     scriptRunner: getScriptRunner(),
     width: options.size,
@@ -83,6 +87,7 @@ const startHosting = async (options: HostFlowOptions, handlers: FlowHandlers): P
 
 /** Joins a match, from either a browser or a terminal host. */
 const startJoining = async (options: JoinFlowOptions, handlers: FlowHandlers): Promise<void> => {
+  const script = await compileScript(options.script);
   const code = normalizeInviteCode(options.code);
   const connection = await joinMatch(peerIdForCode(code));
   handlers.onTeardown(() => connection.close());
@@ -92,7 +97,7 @@ const startJoining = async (options: JoinFlowOptions, handlers: FlowHandlers): P
     connection,
     playerName: options.playerName,
     report: handlers.onReport,
-    script: options.script,
+    script,
     scriptName: options.scriptName,
   });
 

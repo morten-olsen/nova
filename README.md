@@ -173,11 +173,14 @@ npx -p @morten-olsen/nova nova init
 
 Nova asks for a folder name, creates that folder, installs the Nova packages, and adds:
 
-- `bot/starter-builder.js` — a safe first Android to modify
+- `bot/starter-builder.ts` — a safe first Android to modify
+- `tsconfig.json` — points TypeScript at the game's own types, so `world` and every action are typed without an import
 - `docs/RULEBOOK.md` — the current player rules and action API
 - `docs/CLI-GUIDE.md` — how to create, run, and inspect simulations
 - `docs/ANDROID-BUILDER-MANUAL.md` — guidance for evolving Android behavior
 - `AGENTS.md` — instructions for a coding agent working in the factory
+
+Androids are TypeScript. Each one is a module that default-exports its turn function, and the CLI compiles and bundles it on its way into the game — so an Android can be split across as many files as it needs, and a misspelled action is a compiler error rather than a lost turn.
 
 You can also supply the name without a prompt: `npx -p @morten-olsen/nova nova init my-android-factory`.
 
@@ -186,7 +189,7 @@ Enter the new directory and run the starter Android:
 ```sh
 cd my-android-factory
 npx nova create-game --file game.json --width 8 --height 8
-npx nova upload-script --file game.json --owner player-1 --name starter-builder --script bot/starter-builder.js
+npx nova upload-script --file game.json --owner player-1 --name starter-builder --script bot/starter-builder.ts
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 npx nova run --file game.json --rounds 10
 npx nova status --file game.json
@@ -200,8 +203,8 @@ npx nova play --file game.json
 When your Android can hold its own, match it against someone else's over a peer-to-peer connection. One player hosts and shares the invite code that is printed:
 
 ```sh
-npx nova host --script bot/starter-builder.js --rounds 20 --disclosure full
-npx nova join YF4D4-MGZKE --script bot/starter-builder.js
+npx nova host --script bot/starter-builder.ts --rounds 20 --disclosure full
+npx nova join YF4D4-MGZKE --script bot/starter-builder.ts
 ```
 
 The joining player sees the terms — host, rounds, world size, and disclosure mode — and accepts before anything is sent. The host runs the simulation for both Androids and picks what evidence both players keep afterwards:
@@ -213,7 +216,7 @@ That second mode is where the game gets interesting. With no replay to fall back
 
 Because the host executes both scripts, only host a match with someone whose code you are willing to run.
 
-Open the factory in your coding agent and ask it to read `AGENTS.md`, then improve `bot/starter-builder.js`. Make a small change, upload it as a new script version, simulate a few rounds, and use the recording to decide what to change next.
+Open the factory in your coding agent and ask it to read `AGENTS.md`, then improve `bot/starter-builder.ts`. Make a small change, upload it as a new script version, simulate a few rounds, and use the recording to decide what to change next.
 
 ### Keep an existing factory current
 
@@ -223,7 +226,7 @@ Run this from the factory root whenever you want the current game packages and d
 npx -p @morten-olsen/nova nova update
 ```
 
-`update` pins `@morten-olsen/nova`, `@morten-olsen/nova-game`, and `@morten-olsen/nova-docs` to the exact version of the CLI being run, reinstalls dependencies, and refreshes `docs/`. It leaves your Android programs in `bot/` untouched.
+`update` pins `@morten-olsen/nova`, `@morten-olsen/nova-game`, and `@morten-olsen/nova-docs` to the exact version of the CLI being run, reinstalls dependencies, and refreshes `docs/`. It adds a `tsconfig.json` to a factory that predates TypeScript Androids, and leaves an existing one alone. Your Android programs in `bot/` are untouched.
 
 ## Try it locally
 
@@ -232,7 +235,7 @@ Install dependencies, then generate and run a sample game:
 ```sh
 pnpm install
 pnpm nova create-game --file game.json --width 6 --height 6
-pnpm nova upload-script --file game.json --owner player-1 --name starter-builder --script examples/bots/starter-builder.js
+pnpm nova upload-script --file game.json --owner player-1 --name starter-builder --script docs/examples/starter-builder.ts
 pnpm nova launch-android --file game.json --owner player-1 --script-id script-1
 pnpm nova run --file game.json --rounds 35
 pnpm nova status --file game.json

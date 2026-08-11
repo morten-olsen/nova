@@ -107,7 +107,7 @@ describe('the Worker runner', () => {
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
     await expect(runner.execute({ androidId: 'android-1', content: '42', world })).rejects.toThrowError(
-      /must end in an action object/,
+      /must produce an action object/,
     );
   });
 

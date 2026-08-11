@@ -45,8 +45,8 @@ const toAndroidEvent = (options: ToAndroidEventOptions): AndroidEvent => {
   if (typeof result !== 'object' || result === null) {
     const described = result === undefined ? 'undefined' : JSON.stringify(result);
     throw new Error(
-      `Script for ${androidId} must end in an action object, but produced ${described}. ` +
-        "Parenthesise the action so it is the final expression, e.g. ({ type: 'android.wait' });",
+      `Script for ${androidId} must produce an action object, but produced ${described}. ` +
+        "Return one from the android's turn function, e.g. return { type: 'android.wait' };",
     );
   }
   return androidEventSchema.parse({ ...result, androidId });

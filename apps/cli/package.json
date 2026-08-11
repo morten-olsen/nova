@@ -20,6 +20,7 @@
     "@morten-olsen/nova-match": "workspace:*",
     "@morten-olsen/nova-script-runner": "workspace:*",
     "@morten-olsen/nova-web": "workspace:*",
+    "esbuild": "^0.28.2",
     "node-datachannel": "^0.32.3",
     "peerjs": "^1.5.5",
     "ws": "^8.21.3",

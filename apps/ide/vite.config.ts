@@ -3,6 +3,8 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+import { novaDeclarations } from './vite/nova-declarations.ts';
+
 // GitHub Pages serves this app from a repository sub-path rather than the
 // domain root, so CI passes the path reported by actions/configure-pages
 // through here. Unset locally, where dev and preview both serve from the root.
@@ -12,7 +14,7 @@ export default defineConfig({
   // Vite requires a leading and trailing slash; configure-pages reports the
   // path without the trailing one.
   base: pagesBasePath.endsWith('/') ? pagesBasePath : `${pagesBasePath}/`,
-  plugins: [TanStackRouterVite({ quoteStyle: 'single' }), react(), tailwindcss()],
+  plugins: [TanStackRouterVite({ quoteStyle: 'single' }), react(), tailwindcss(), novaDeclarations()],
   // Resolve workspace packages through their `source` export so editing the
   // renderer or the shared replay UI hot-reloads instead of needing a `tsc -b`
   // between every change.

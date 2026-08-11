@@ -15,6 +15,7 @@ import {
   updateGameFileFromLoop,
   writeGameFile,
 } from './game-file.js';
+import { loadAndroidScript } from './android-script.js';
 import { createFactory, updateFactory } from './factory.js';
 import { createPlayServer, listenOnRandomPort } from './play-server.js';
 import { hostGame } from './match-host.js';
@@ -83,14 +84,17 @@ const usage = `Usage:
   nova create-game --file game.json [--width 16 --height 16]
   nova update
   nova status --file game.json
-  nova upload-script --file game.json --owner player-1 --name miner --script ./bot.js
+  nova upload-script --file game.json --owner player-1 --name miner --script bot/android.ts
   nova launch-android --file game.json --owner player-1 --script-id script-1
   nova run --file game.json [--rounds 1]
   nova play --file game.json
-  nova host --script bot/android.js [--rounds 20] [--disclosure full|recording]
-  nova join ABCDE-FGHJK --script bot/android.js
+  nova host --script bot/android.ts [--rounds 20] [--disclosure full|recording]
+  nova join ABCDE-FGHJK --script bot/android.ts
 
 Game files store the generated initial world plus the complete event log.
+
+--script takes the entry file of an Android. It is compiled and bundled before
+it is uploaded, so it may be TypeScript and may import other files.
 
 host and join play one Android against another over a peer-to-peer connection.
 The host picks the rounds and the disclosure mode, and shares the invite code.
@@ -147,7 +151,7 @@ const uploadScript = async (values: Record<string, string | boolean | undefined>
   const ownerId = requireString(values.owner, 'owner');
   const name = requireString(values.name, 'name');
   const scriptPath = resolvePath(requireString(values.script, 'script'));
-  const content = await readFile(scriptPath, 'utf8');
+  const content = await loadAndroidScript(scriptPath);
   const gameFile = await readGameFile(file);
   const loop = createLoopFromGameFile(gameFile);
   const event: Event = {

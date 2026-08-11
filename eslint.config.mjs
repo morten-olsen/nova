@@ -91,6 +91,14 @@ export default tseslint.config(
     },
   },
   {
+    // An android's entry point is defined by its default export: that is what
+    // the CLI bundles a call to, and what the browser lab runs.
+    files: ['docs/examples/**/*.ts'],
+    rules: {
+      'import/no-default-export': 'off',
+    },
+  },
+  {
     // Repo scripts run under Node, not in a browser. Declared inline rather than
     // pulling in `globals` for two names.
     files: ['scripts/**/*.mjs'],

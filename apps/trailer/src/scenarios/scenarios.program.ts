@@ -1,4 +1,5 @@
 import type {
+  AndroidAction,
   AndroidEvent,
   BuildingType,
   Direction,
@@ -14,14 +15,6 @@ import type {
  * like from the outside.
  */
 type Turn = AndroidEvent | undefined;
-
-/**
- * `Omit` over a union collapses it to the keys every member shares, which for
- * Android events is just `type`. Distributing keeps each variant's own fields.
- */
-type WithoutAndroidId<T> = T extends unknown ? Omit<T, 'androidId'> : never;
-
-type AndroidAction = WithoutAndroidId<AndroidEvent>;
 
 /**
  * Author-side view of one Android's run.

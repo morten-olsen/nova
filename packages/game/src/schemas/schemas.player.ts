@@ -7,4 +7,7 @@ const playerSchema = z.object({
   name: z.string(),
 });
 
+type Player = z.infer<typeof playerSchema>;
+
+export type { Player };
 export { playerSchema };

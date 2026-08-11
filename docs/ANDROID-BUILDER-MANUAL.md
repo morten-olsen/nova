@@ -1,37 +1,68 @@
 # Android Builder Manual
 
-An Android is a small JavaScript program that chooses exactly one action each turn. You are building a policy, not issuing a sequence of manual orders. Start with a dependable behavior, simulate it, then use the recording to improve it.
+An Android is a small TypeScript program that chooses exactly one action each turn. You are building a policy, not issuing a sequence of manual orders. Start with a dependable behavior, simulate it, then use the recording to improve it.
 
 ## Script contract
 
-The script runs in a sandbox with four globals:
+An Android is a module whose default export is its turn function. That function is called once per round and returns that round's action:
+
+```ts
+const turn: AndroidTurn = () => ({ type: 'android.move', direction: 'east' });
+export default turn;
+```
+
+It runs in a sandbox with four globals:
 
 - `androidId`: the id of the Android whose turn is running.
 - `world`: a fogged snapshot of the current world. It contains only tiles revealed for this Android's owner, plus the Android's current tile. Androids, buildings, and broadcasts outside those tiles are omitted.
 - `turn`: the turn now being played, counting from 1.
 - `finalTurn`: the turn the match is scheduled to end on, or `undefined` when it has no scheduled end. Compare it against `turn` to know how much time is left — but check for `undefined` first, because most matches do not set one.
 
-Return one valid action object. For example:
-
-```js
-({ type: 'android.move', direction: 'east' });
-```
-
 Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (maximum 4,096 characters) for decisions across turns. `recording` is a player-facing log (maximum 16,384 characters) retained on the Android after it is deactivated. Each value replaces the previous value, so read the current Android's value from `world.androids` when appending to a recording. The `memory` and `recording` of every other Android are `[Redacted]`.
 
-```js
-const android = world.androids.find((candidate) => candidate.id === androidId);
-({
-  type: 'android.move',
-  direction: 'east',
-  memory: JSON.stringify({ destination: { x: 4, y: 2 } }),
-  recording: `${android?.recording ?? ''}Moved east.\n`,
-});
+```ts
+const turn: AndroidTurn = () => {
+  const android = world.androids.find((candidate) => candidate.id === androidId);
+  return {
+    type: 'android.move',
+    direction: 'east',
+    memory: JSON.stringify({ destination: { x: 4, y: 2 } }),
+    recording: `${android?.recording ?? ''}Moved east.\n`,
+  };
+};
+export default turn;
 ```
 
-Scripts cannot import modules, read files, make network calls, or retain state between turns. Derive decisions from the visible part of `world`, including Android position, cargo, buildings, tiles, and messages. Do not treat a missing tile or entity as proof that it does not exist; it may be in the fog. See the rulebook for every action and its required fields.
+A running script cannot import modules, read files, make network calls, or retain state between turns. Derive decisions from the visible part of `world`, including Android position, cargo, buildings, tiles, and messages. Do not treat a missing tile or entity as proof that it does not exist; it may be in the fog. See the rulebook for every action and its required fields.
 
 The action you return travels back as JSON, so it must be a plain object. Values JSON cannot carry — functions, class instances, circular references — fail the turn.
+
+## TypeScript, and more than one file
+
+Nothing is compiled while an Android plays. Both places an Android is written compile it first, and hand the sandbox the JavaScript that comes out.
+
+The browser lab compiles the one file it is editing. The CLI also bundles: `upload-script`, `host` and `join` follow the imports of the file you point them at, so an Android in a factory can be as many files as it needs, and adding the first import to a working Android changes nothing about how it runs.
+
+```ts
+import { chooseTarget } from './lib/targets.js';
+
+const turn: AndroidTurn = () => ({ type: 'android.move', direction: chooseTarget() });
+export default turn;
+```
+
+There is exactly one shape, and no exception for the simple case. An Android that ends in a bare action expression is refused, in the lab and in the CLI, with the change it needs — because the alternative is a file that means one thing until you import something and another thing afterwards, and that failure would arrive as an Android that waits every round rather than as an error.
+
+Older Androids, written before this, end in a bare action expression. To bring one forward, put its body in a turn function, `return` where it used to end in an expression, and export the function.
+
+Types come from the game. `Action`, `World`, `Tile`, `Android` and the rest are in scope without an import, as are the four globals, because the factory's `tsconfig.json` points at the engine's declarations:
+
+```json
+"types": ["@morten-olsen/nova-game/android"]
+```
+
+They are the engine's own types rather than a copy, so an action added to the game is offered by the editor as soon as the package is updated. Run `npm run check` in a factory to type-check every Android without playing one.
+
+Import _types_ from `@morten-olsen/nova-game` if you want to name one explicitly, never values: the package is the engine itself, and bundling it into an Android would spend the turn budget on loading it.
 
 ## Sandbox and limits
 
@@ -50,7 +81,7 @@ The CPU budget is counted in interpreter ticks rather than milliseconds, so a sc
 
 ## Recommended first strategy
 
-Use `bot/starter-builder.js` as a starting point. Its broad loop is:
+Use `bot/starter-builder.ts` as a starting point. Its broad loop is:
 
 1. Find the current Android and tile.
 2. Finish owned construction on its tile.

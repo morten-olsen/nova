@@ -9,7 +9,15 @@
     "ANDROID-BUILDER-MANUAL.md",
     "examples"
   ],
+  "scripts": {
+    "check": "tsc -b --pretty false"
+  },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@morten-olsen/nova-config": "workspace:*",
+    "@morten-olsen/nova-game": "workspace:*",
+    "typescript": "^5.9.2"
   }
 }
