@@ -209,7 +209,7 @@ npx nova join YF4D4-MGZKE --script bot/starter-builder.ts
 
 The joining player sees the terms — host, rounds, world size, and disclosure mode — and accepts before anything is sent. The host runs the simulation for both Androids and picks what evidence both players keep afterwards:
 
-- `--disclosure full` gives both players the complete recording, replayable with `nova play`, including each other's script.
+- `--disclosure full` gives both players a replayable recording of the whole match, so each can watch what the other Android did round by round. Script source and the other Android's `memory` and `recording` are redacted: what it did is disclosed, how it decided is not.
 - `--disclosure recording` gives each player only what their own Android wrote to its `recording` field, plus the final scores.
 
 That second mode is where the game gets interesting. With no replay to fall back on, whatever your Android wrote down is your only account of what happened — so what it chooses to record becomes part of its design. See the [CLI guide](./docs/CLI-GUIDE.md#play-another-player) for the details.

@@ -11,3 +11,6 @@
 __pycache__/
 .DS_Store
 out/
+
+# Astro generates these per build
+apps/site/.astro/

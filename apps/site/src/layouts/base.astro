@@ -1,0 +1,53 @@
+---
+import archivoDisplay from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2';
+import jetbrainsMono from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2';
+
+import shareCard from '@media/nova-trailer-banner.jpg';
+
+import '../styles/site.css';
+
+type Props = {
+  description: string;
+  title: string;
+};
+
+const { description, title } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareCardUrl = new URL(shareCard.src, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+
+    {/* The display face sets the page title, so it is on the critical path. */}
+    <link rel="preload" href={archivoDisplay} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={jetbrainsMono} as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={shareCardUrl.href} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#050816" />
+  </head>
+  <body>
+    <a href="#main" class="btn sr-only px-3 py-2 focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50">
+      Skip to content
+    </a>
+    <slot />
+    <script>
+      import { startCopyCommand } from '../page/copy-command.ts';
+      import { startReveal } from '../page/reveal.ts';
+
+      startReveal();
+      startCopyCommand();
+    </script>
+  </body>
+</html>

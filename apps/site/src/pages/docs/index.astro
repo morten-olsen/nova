@@ -1,0 +1,89 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import SiteFooter from '../../components/site-footer.astro';
+import SiteHeader from '../../components/site-header.astro';
+import { docPages } from '../../docs/doc-pages.ts';
+import BaseLayout from '../../layouts/base.astro';
+import { siteLinks } from '../../site-links.ts';
+
+const base = import.meta.env.BASE_URL;
+
+/**
+ * Documents about changing the game rather than playing it. They are not
+ * published here because they are aimed at the repository, and half their links
+ * point at source files this site does not serve.
+ */
+const contributorDocs = [
+  {
+    blurb: 'The colour language, the board as an object, terrain, fog, and how a piece is supposed to read.',
+    href: `${siteLinks.repository}/blob/main/docs/visual-design.md`,
+    title: 'Visual design language',
+  },
+  {
+    blurb: 'Adding a building type end to end: rules, mechanics, model, and renderer.',
+    href: `${siteLinks.repository}/blob/main/docs/ADDING-BUILDINGS.md`,
+    title: 'Adding a building',
+  },
+  {
+    blurb: 'Driving the renderer frame by frame from code, which is how the trailer is made.',
+    href: `${siteLinks.repository}/blob/main/docs/PROGRAMMATIC-PLAYBACK.md`,
+    title: 'Programmatic playback',
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Documentation: Project Nova"
+  description="The rulebook, the CLI guide, and the android builder manual: the same documents nova init copies into your factory."
+>
+  <SiteHeader />
+  <main id="main" class="mx-auto max-w-[72rem] px-4 pt-28 pb-24 sm:px-6 lg:pt-32">
+    <a class="inline-flex items-center gap-1.5 text-[0.875rem] text-ink-dim hover:text-ink" href={base}>
+      <Icon name="ph:arrow-left" class="size-3.5" aria-hidden="true" />
+      Project Nova
+    </a>
+    <h1 class="display mt-3 text-[clamp(1.875rem,4vw,3rem)] text-ink">Documentation</h1>
+    <p class="prose-copy mt-4">
+      These are the files <code class="font-mono text-[0.9375rem] text-ink-dim">nova init</code> copies into your factory.
+      Reading them here and reading them there gets you the same thing, which is also what your coding agent works from.
+    </p>
+
+    <ul class="mt-12 flex flex-col">
+      {
+        docPages.map((page) => (
+          <li class="border-t border-hairline">
+            <a class="group flex items-baseline gap-6 py-6" href={`${base}docs/${page.slug}/`}>
+              <span class="min-w-0 flex-1">
+                <span class="display-sm block text-lg text-ink group-hover:text-system">{page.title}</span>
+                <span class="mt-2 block max-w-[68ch] text-[0.9375rem] text-ink-dim">{page.blurb}</span>
+              </span>
+              <Icon
+                name="ph:arrow-right"
+                class="size-4 shrink-0 text-ink-faint transition-colors group-hover:text-system"
+                aria-hidden="true"
+              />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2 class="display-sm mt-20 text-xl text-ink">Changing the game itself</h2>
+    <p class="prose-copy mt-3 text-[0.9375rem]">These live in the repository, next to the code they describe.</p>
+    <ul class="mt-6 flex flex-col gap-4">
+      {
+        contributorDocs.map((doc) => (
+          <li>
+            <a class="group inline-flex items-baseline gap-2" href={doc.href}>
+              <span class="text-[0.9375rem] text-ink group-hover:text-system">{doc.title}</span>
+              <Icon name="ph:arrow-up-right" class="size-3.5 shrink-0 text-ink-faint" aria-hidden="true" />
+            </a>
+            <p class="mt-1 text-[0.875rem] text-ink-dim">{doc.blurb}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+  <SiteFooter />
+</BaseLayout>

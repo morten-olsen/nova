@@ -1,0 +1,43 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import { linkTo, siteLinks } from '../site-links.ts';
+
+const base = import.meta.env.BASE_URL;
+const ide = linkTo(siteLinks.ide);
+---
+
+{/* Floats over the board rather than sitting above it, like the replay HUD. */}
+<header class="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4">
+  <div class="mx-auto flex max-w-[100rem] items-center justify-between gap-4">
+    <a
+      class="hud pointer-events-auto flex items-center gap-2.5 rounded-[0.625rem] px-3 py-2 text-ink"
+      href={base}
+      aria-label="Project Nova, home"
+    >
+      <span aria-hidden="true" class="text-sm text-system">◆</span>
+      <span class="display-sm text-[0.8125rem] leading-none">Project Nova</span>
+    </a>
+
+    <nav class="hud pointer-events-auto flex items-center gap-1 rounded-[0.625rem] p-1.5" aria-label="Main">
+      {
+        /* One entry rather than one per document: the documentation index is a
+          real page now, and it introduces them better than a nav row can. */
+      }
+      <a
+        class="hidden rounded-[0.4375rem] px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink sm:block"
+        href={linkTo(siteLinks.docs)}
+      >
+        Docs
+      </a>
+      <a
+        class="flex items-center gap-1.5 rounded-[0.4375rem] px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink"
+        href={linkTo(siteLinks.repository)}
+      >
+        <Icon name="ph:github-logo" class="size-4" aria-hidden="true" />
+        <span class="sr-only sm:not-sr-only">GitHub</span>
+      </a>
+      <a class="btn ml-1 px-3 py-1.5" href={ide}>Open the IDE</a>
+    </nav>
+  </div>
+</header>

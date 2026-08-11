@@ -163,6 +163,7 @@ export default tseslint.config(
     // `out/` is Remotion's render target: video, stills, and a full webpack
     // bundle. Linting a bundle's single-line output is what makes an otherwise
     // fast lint look like it has hung.
-    ignores: ['**/node_modules/', '**/dist/', '**/.task/', '**/out/'],
+    // `.astro/` is the site's generated type surface, regenerated on every build.
+    ignores: ['**/node_modules/', '**/dist/', '**/.task/', '**/out/', '**/.astro/'],
   },
 );

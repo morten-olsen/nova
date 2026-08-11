@@ -1,0 +1,60 @@
+---
+import { linkTo, siteLinks } from '../site-links.ts';
+
+/**
+ * The rulebook's eight phases, read as the three problems they actually pose.
+ * Phases blend into each other by design, so this is a timeline rather than a
+ * set of levels.
+ */
+const acts = [
+  {
+    body: 'Find the material Earth scattered, carry what fits, and get back to the charger before the battery runs out. Collection becomes a logistics problem the moment a depot is worth building.',
+    title: 'Scavenge',
+  },
+  {
+    body: 'Loose material runs out. Extractors work the ground itself, processors turn ore into metal, and an acid plant lets your androids start cleaning a planet that is trying to dissolve them.',
+    title: 'Produce',
+  },
+  {
+    body: 'There is one colony claim. Broadcasts are public and nothing stops them being false, salvage works on infrastructure that is not yours, and no rule enforces an alliance you agree to.',
+    title: 'Contest',
+  },
+] as const;
+---
+
+<section class="border-t border-hairline py-20 sm:py-28" aria-labelledby="arc-heading">
+  <div class="mx-auto max-w-[72rem] px-4 sm:px-6">
+    <div class="max-w-[44rem]" data-reveal>
+      <h2 id="arc-heading" class="display-sm text-[clamp(1.75rem,3.4vw,2.75rem)] text-ink">
+        It starts with scrap metal
+      </h2>
+      <p class="prose-copy mt-4">
+        A first android that picks up loose metal is an afternoon's work. A program that still makes good decisions once
+        the loose metal is gone, the acid is spreading and someone else wants the same site is the actual game.
+      </p>
+    </div>
+
+    <ol class="mt-14 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-3">
+      {
+        acts.map((act, index) => (
+          <li data-reveal style={`--reveal-delay: ${String(index * 110)}ms`}>
+            {/* The rail runs across all three: the phases blend rather than gate. */}
+            <div class="flex items-center gap-2" aria-hidden="true">
+              <span class="size-1.5 shrink-0 rounded-full bg-system" />
+              <span class="h-px flex-1 bg-gradient-to-r from-system/50 to-hairline" />
+            </div>
+            <h3 class="display-sm mt-4 text-lg text-ink">{act.title}</h3>
+            <p class="prose-copy mt-2 text-[0.9375rem]">{act.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="mt-14 max-w-[44rem] text-[0.9375rem] text-ink-dim" data-reveal>
+      Today's ruleset covers all three: exploration, cargo and battery limits, extraction and processing, acid cleanup,
+      public broadcasts, and salvage against hostile infrastructure. Relay towers and colony modules are modelled and
+      buildable, but their mechanics are still being designed, and
+      <a class="text-system hover:underline" href={linkTo(siteLinks.rulebook)}>the rulebook</a> says which is which.
+    </p>
+  </div>
+</section>

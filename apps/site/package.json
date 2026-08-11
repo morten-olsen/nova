@@ -1,0 +1,37 @@
+{
+  "name": "@morten-olsen/nova-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "description": "Project Nova landing page, served alongside the browser IDE",
+  "scripts": {
+    "check": "astro check",
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@morten-olsen/nova-docs": "workspace:*",
+    "@morten-olsen/nova-game": "workspace:*",
+    "@morten-olsen/nova-renderer": "workspace:*",
+    "@morten-olsen/nova-replay-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@fontsource-variable/archivo": "^5.2.6",
+    "@fontsource-variable/jetbrains-mono": "^5.2.6",
+    "@iconify-json/ph": "^1.2.2",
+    "@morten-olsen/nova-config": "workspace:*",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/hast": "^3.0.5",
+    "astro": "^5.16.0",
+    "astro-icon": "^1.1.5",
+    "sharp": "^0.34.5",
+    "shiki": "^4.4.3",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.2",
+    "unist-util-visit": "^5.1.0",
+    "vite": "^6.4.1"
+  }
+}

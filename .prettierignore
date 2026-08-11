@@ -7,3 +7,4 @@ out
 pnpm-lock.yaml
 apps/web/src/routeTree.gen.ts
 apps/ide/src/routeTree.gen.ts
+.astro

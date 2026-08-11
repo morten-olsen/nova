@@ -8,7 +8,7 @@
     "lint:eslint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "tsc -b --pretty false",
+    "check": "tsc -b --pretty false && pnpm --filter @morten-olsen/nova-site check",
     "build": "pnpm run -r build",
     "test": "vitest run",
     "nova": "pnpm --filter @morten-olsen/nova-cli start",
@@ -18,7 +18,10 @@
     "trailer:studio": "pnpm --filter @morten-olsen/nova-trailer studio",
     "trailer:render": "pnpm --filter @morten-olsen/nova-trailer render",
     "dev:ide": "pnpm --filter @morten-olsen/nova-ide dev",
-    "build:ide": "pnpm --filter @morten-olsen/nova-ide build"
+    "build:ide": "pnpm --filter @morten-olsen/nova-ide build",
+    "dev:site": "pnpm --filter @morten-olsen/nova-site dev",
+    "build:site": "pnpm --filter @morten-olsen/nova-site build",
+    "preview:site": "pnpm --filter @morten-olsen/nova-site preview"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -31,6 +34,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.4.26",
     "prettier": "^3.6.2",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.46.4",
     "vitest": "^3.2.3"

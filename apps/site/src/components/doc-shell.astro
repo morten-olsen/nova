@@ -1,0 +1,94 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import { docPages } from '../docs/doc-pages.ts';
+import { linkTo, siteLinks } from '../site-links.ts';
+
+type Heading = {
+  depth: number;
+  slug: string;
+  text: string;
+};
+
+type Props = {
+  /** Section headings of the current document, for the contents rail. */
+  headings?: Heading[];
+  /** Slug of the document being read, or undefined on the index. */
+  current?: string;
+  title: string;
+};
+
+const { current, headings = [], title } = Astro.props;
+const base = import.meta.env.BASE_URL;
+// Only top-level sections. The rulebook has enough third-level headings to turn
+// a full outline into a second copy of the document.
+const sections = headings.filter((heading) => heading.depth === 2);
+---
+
+<div class="mx-auto flex max-w-[80rem] flex-col gap-10 px-4 pt-28 pb-24 sm:px-6 lg:flex-row lg:gap-14 lg:pt-32">
+  <div class="lg:w-[15rem] lg:shrink-0">
+    {/* Sticky on desktop only: on a phone it would eat a third of the screen. */}
+    <div class="flex flex-col gap-8 lg:sticky lg:top-28">
+      <nav aria-label="Documents">
+        <p class="label">Documents</p>
+        <ul class="mt-3 flex flex-col gap-1">
+          {
+            docPages.map((page) => (
+              <li>
+                <a
+                  class:list={[
+                    'block rounded-[0.4375rem] px-2.5 py-1.5 text-[0.9375rem] transition-colors',
+                    page.slug === current
+                      ? 'bg-panel-raised text-ink'
+                      : 'text-ink-dim hover:bg-panel-raised/60 hover:text-ink',
+                  ]}
+                  aria-current={page.slug === current ? 'page' : undefined}
+                  href={`${base}docs/${page.slug}/`}
+                >
+                  {page.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      {
+        sections.length > 1 && (
+          <nav aria-label="On this page">
+            <p class="label">On this page</p>
+            <ul class="mt-3 flex max-h-[50vh] flex-col gap-1.5 overflow-y-auto pr-1">
+              {sections.map((heading) => (
+                <li>
+                  <a class="block text-[0.8125rem] leading-snug text-ink-dim hover:text-ink" href={`#${heading.slug}`}>
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+
+      <p class="border-t border-hairline pt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
+        These are the same files <code class="font-mono text-ink-dim">nova init</code> copies into your factory, so your coding
+        agent reads exactly this.
+      </p>
+    </div>
+  </div>
+
+  <main id="main" class="min-w-0 flex-1">
+    <a class="inline-flex items-center gap-1.5 text-[0.875rem] text-ink-dim hover:text-ink" href={base}>
+      <Icon name="ph:arrow-left" class="size-3.5" aria-hidden="true" />
+      Project Nova
+    </a>
+    <h1 class="display mt-3 text-[clamp(1.75rem,3.4vw,2.5rem)] text-ink">{title}</h1>
+    <div class="doc-prose mt-8">
+      <slot />
+    </div>
+    <p class="mt-16 border-t border-hairline pt-6 text-[0.875rem] text-ink-faint">
+      Found something wrong? These documents live in
+      <a class="text-system hover:underline" href={linkTo(siteLinks.repository)}>the repository</a>.
+    </p>
+  </main>
+</div>

@@ -1,0 +1,112 @@
+name: Deploy site and IDE to GitHub Pages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Tag or branch to deploy (defaults to the branch this run was started from)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Pages serves a single site, so overlapping deploys race for it. Queue rather
+# than cancel, so a release deploy is never dropped in favour of a later run.
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site and IDE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.ref || github.ref }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Reports where Pages will serve this repository from. Both builds bake
+      # their asset URLs at build time, so the path has to be known before they
+      # run.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      # configure-pages reports the path without a trailing slash, and reports a
+      # bare `/` for a user or organisation site. Normalising once here keeps both
+      # cases from turning into `//ide/`.
+      - name: Resolve base paths
+        id: paths
+        run: |
+          base="${{ steps.pages.outputs.base_path }}"
+          base="${base%/}"
+          echo "site=${base}/" >> "$GITHUB_OUTPUT"
+          echo "ide=${base}/ide/" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The trailing `...` selects the app *and its workspace dependencies*, in
+      # topological order. The node-side tsconfigs resolve workspace packages
+      # through their `types` condition (dist), not the `source` one the app
+      # configs use, so those packages must be built first — on a fresh checkout
+      # there is no dist to fall back on.
+      - name: Build IDE
+        run: pnpm --filter "@morten-olsen/nova-ide..." --if-present build
+        env:
+          PAGES_BASE_PATH: ${{ steps.paths.outputs.ide }}
+
+      - name: Build site
+        run: pnpm --filter "@morten-olsen/nova-site..." --if-present build
+        env:
+          PAGES_BASE_PATH: ${{ steps.paths.outputs.site }}
+          PAGES_ORIGIN: ${{ steps.pages.outputs.origin }}
+
+      # The site owns the root and the IDE is mounted beneath it, so one Pages
+      # deploy serves both. The IDE has a single route, so it needs no SPA
+      # fallback: the site's own 404 page can stay the 404 page.
+      - name: Assemble Pages artifact
+        run: |
+          rm -rf pages-dist
+          mkdir -p pages-dist
+          cp -R apps/site/dist/. pages-dist/
+          mkdir -p pages-dist/ide
+          cp -R apps/ide/dist/. pages-dist/ide/
+          # Astro emits `_astro/`, which Jekyll would strip. The Actions deploy
+          # path does not run Jekyll, but this costs nothing and removes the
+          # question.
+          touch pages-dist/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
