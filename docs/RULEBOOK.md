@@ -122,7 +122,9 @@ At round end:
 - radiation damages androids by `radiation * 0.25`
 - acid damages androids by `acid * 0.5`
 
-Androids with health at or below 0, or battery at or below 0, are destroyed and removed from active play.
+A failed turn — a refused action, a script error, an exhausted turn budget — costs the android `10` health on top of the round it lost. One bad edge case is survivable; a script that keeps making the same mistake wears its android out.
+
+Androids with health at or below 0, or battery at or below 0, are destroyed at round end. A destroyed android is deactivated rather than removed: it takes no further turns and no longer holds charger capacity, but it stays in the world as a wreck, so its owner can still read the `memory` and `recording` it left behind. Deactivated androids take no further decay or hazard damage, and are not drawn on the board.
 
 ## 6. Chargers and Android Capacity
 
@@ -149,7 +151,7 @@ Players may upload improved script versions during the game. Existing androids d
 
 To use a new script version, a player must launch a new android with that script id, or dismantle/free capacity and launch a replacement.
 
-Dismantling is voluntary. It destroys the android and frees charger capacity. It currently returns no material.
+Dismantling is voluntary. It deactivates the android and frees charger capacity. It currently returns no material. As with any destroyed android, the dismantled one stays in the world as a wreck.
 
 An android on one of its owner's completed chargers can also dismantle another android of the same owner, so a fleet can retire and replace its own members without the player intervening. An android can never dismantle another player's android, and can never name itself as the target — self-destruction is the untargeted form of the same action.
 
@@ -157,7 +159,7 @@ An android on one of its owner's completed chargers can also dismantle another a
 
 An android script's turn function must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
 
-Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material — the turn becomes a failed turn and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
+Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material — the turn becomes a failed turn, the Android loses `10` health, and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
 
 In a peer match played with `--disclosure recording` (see the [CLI guide](CLI-GUIDE.md#play-another-player)), `recording` is the only account of the match the player receives, alongside the final scores. Under that mode what an Android writes down is part of its design, not a debugging aid.
 
@@ -179,7 +181,7 @@ const action: Action = { type: 'android.wait' };
 
 ### Move
 
-Move one tile north, south, east, or west. Moving outside the map fails the turn and deactivates the android.
+Move one tile north, south, east, or west. Moving outside the map fails the turn, which costs the android its round and `10` health.
 
 ```ts
 const action: Action = { type: 'android.move', direction: 'east' };
@@ -395,6 +397,8 @@ Sight range is measured two different ways, and the difference is deliberate:
 A radar therefore sees roughly twice the ground a scanner does — about 81 tiles against 41 — for roughly twice the cost and almost twice the construction time. It is the mid-game answer to mapping a region, where the scanner is the early-game answer to seeing past your own Androids.
 
 Each script receives a fogged world projection for its Android's owner. It includes the tiles that owner can currently see, as well as the acting Android's current tile so it can always inspect itself. Androids, buildings, and broadcasts are included only when their position is on an included tile. Other players' scripts and player records are omitted. The acting Android retains its `memory` and `recording`; those fields are `[Redacted]` on every other Android.
+
+Deactivated Androids stay in `world.androids` as wrecks on the tile where they fell, so a script counting company should filter on `active`.
 
 Sight is not memory: once your Androids move out of range, or a scanner or radar is salvaged, a tile drops out of the projection again. Scripts that need to remember the map must persist it themselves in Android `memory` or share it through broadcasts.
 

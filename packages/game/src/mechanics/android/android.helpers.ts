@@ -77,9 +77,10 @@ const requireOperatingCharger = (world: World, android: Android): Building => {
 };
 
 /**
- * Ids stay stable across a replay because they are derived from the world, but
- * destroyed androids leave the array, so the count alone would reissue an id
- * that is still in use.
+ * Ids stay stable across a replay because they are derived from the world.
+ * Destroyed androids stay in the array as deactivated wrecks, but a hand-written
+ * or migrated world can still have gaps, so the count alone would reissue an id
+ * that is already taken.
  */
 const nextAndroidId = (world: World): string => {
   const taken = new Set(world.androids.map((android) => android.id));

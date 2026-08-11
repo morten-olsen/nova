@@ -8,6 +8,11 @@ const gameMechanicsDamageAcid: Mechanic = {
     }
 
     for (const android of world.androids) {
+      // Acid has nothing left to take from a deactivated Android.
+      if (!android.active) {
+        continue;
+      }
+
       const tile = world.tiles.find(
         (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,
       );

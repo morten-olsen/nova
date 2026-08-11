@@ -236,7 +236,7 @@ const TileDetail = ({
                 <EntityChip
                   key={android.id}
                   accent={faction.accent}
-                  detail={`${Math.round(android.battery)}%`}
+                  detail={android.active ? `${Math.round(android.battery)}%` : 'offline'}
                   glyph={faction.glyph}
                   name={android.id}
                   onSelect={() => onSelect({ id: android.id, kind: 'android' })}

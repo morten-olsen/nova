@@ -99,7 +99,8 @@ That is intentionally simple. Improve it by making one observable decision at a 
 - Respect cargo capacity (10 units), battery, health, map edges, and one-building-per-tile rules.
 - Prefer collecting material into cargo before starting construction. Construction consumes supplied resources.
 - Check the tile's `composition` for acid and radiation before treating it as safe. Loose `scattered` material and ground composition are different resources.
-- A failed action can deactivate an Android for that turn. Do not blindly move beyond the map boundary.
+- A failed action costs the turn and `10` health. A single mistake is survivable, but a policy that fails every round destroys the Android in ten. Do not blindly move beyond the map boundary.
+- `world.androids` includes deactivated wrecks on tiles you can see. Filter on `active` when you count Androids or pick a target.
 
 ## Evolve, do not overwrite blindly
 
@@ -114,6 +115,6 @@ An Android standing on one of its owner's completed chargers is at a deployment 
 
 Both are held to the rules a player launch is held to. A launch needs spare capacity — the owner's active Androids must number fewer than their completed chargers — and because the launching Android is itself active, one charger is never enough to launch from. A dismantle can only target the same owner's Androids, and never the Android acting: to self-destruct, omit `targetAndroidId`.
 
-This makes a self-sustaining fleet possible: a script that builds chargers can fill them, and one that recognizes an obsolete generation can retire it. Count capacity from `world.buildings` before launching — a refused launch is a failed turn, which deactivates the Android that tried. A newly launched Android takes its first turn in the following round.
+This makes a self-sustaining fleet possible: a script that builds chargers can fill them, and one that recognizes an obsolete generation can retire it. Count capacity from `world.buildings` before launching — a refused launch is a failed turn, which costs the Android that tried its round and `10` health. A newly launched Android takes its first turn in the following round.
 
 The rulebook is the player-facing contract. When its wording does not answer an implementation question, inspect `node_modules/@morten-olsen/nova-game/src/` to understand the current engine. Do not import those files from a bot: they are reference material, not part of the sandbox API.
