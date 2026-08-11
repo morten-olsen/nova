@@ -279,6 +279,17 @@ type ActorFrame = {
   selectedId: string | undefined;
 };
 
+/**
+ * Radius of a piece's base plate, in model units.
+ *
+ * Leaning rotates the model about its origin, which sits at the centre of the
+ * base plate on the ground plane, so the leading rim swings *below* the board by
+ * `radius * sin(angle)`. At full lean that is around a tenth of a tile — clearly
+ * visible as the piece cutting into the ground mid-stride — so the lean has to be
+ * paid for with a matching lift.
+ */
+const basePlateRadius = 0.35;
+
 /** Idle bob, travel lean, and selection lift all ride on the model, not the root. */
 const animateVisual = (actor: Actor, elapsed: number, positionAlpha: number): void => {
   const visual = actor.root.children[0];
@@ -297,7 +308,9 @@ const animateVisual = (actor: Actor, elapsed: number, positionAlpha: number): vo
   visual.rotation.x = Math.min(0.28, actor.travel * 0.16);
   // Rights an android caught mid-topple by a replay scrubbing backwards.
   visual.rotation.z = THREE.MathUtils.lerp(visual.rotation.z, 0, positionAlpha);
-  visual.position.y = bob + actor.lift;
+  // The lean's lift comes first: without it the base plate's leading rim dips
+  // through the board, and the faster the android travels the deeper it cuts.
+  visual.position.y = basePlateRadius * Math.sin(visual.rotation.x) + bob + actor.lift;
 };
 
 /**
@@ -414,4 +427,6 @@ const getConstructionEmitters = (actors: Map<string, Actor>): ParticleEmitter[] 
 };
 
 export type { Actor, PuffRequest };
-export { animateActors, getConstructionEmitters, updateActors };
+// `basePlateRadius` is exported so the test asserting the lean's lift cannot
+// drift from the value the lift is actually computed with.
+export { animateActors, basePlateRadius, getConstructionEmitters, updateActors };

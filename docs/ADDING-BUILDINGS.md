@@ -87,38 +87,40 @@ None of these are required, and none of them will fail to compile if you skip th
 
 ## 5. Design and build the piece
 
-Read [visual-design.md](visual-design.md) first, particularly _Piece language_ and _Gameplay silhouettes_. The binding constraints are that the piece must be identifiable by outline alone at replay distance, must stay inside its plinth (radius `0.41`), and must stay below `0.9` tile units tall unless it is deliberately narrow.
+Read [visual-design.md](visual-design.md) first, particularly _The base plate_, _Surface language_, and _Gameplay silhouettes_. The binding constraints are that the piece must be identifiable by outline alone at replay distance, must stay inside its base plate (radius `0.41`) with **nothing overhanging the rim**, and must stay below `0.9` tile units tall unless it is deliberately narrow.
 
 The hard part is silhouette distinctness within a role. The relay tower is a narrow mast and the scanner is a round dish, so the radar had to be neither: it became a flat rectangular array slab on a squat rotator turret. When a new piece joins an existing family, take the primitive none of its siblings uses.
 
-Add a builder to `packages/renderer/blender/scripts/generate-nova-pieces.py`, assembled from the shared helpers in `nova_kit.py` so the piece reads as part of the family, and register it in `PIECE_BUILDERS`:
+Add a builder to `packages/renderer/blender/scripts/generate-nova-pieces.py`, assembled from the shared helpers in `nova_kit.py` so the piece reads as part of the family, and register it in `PIECES` with its base radius:
 
 ```python
 def build_radar(materials: Materials) -> None:
-    add_plinth(materials)
     add_collar(materials, (0, 0, 0.16), 0.26)
+    add_rounded_box("Array slab", (0, 0, 0.62), (0.66, 0.34, 0.07), materials["Ceramic"])
     # …
 
-PIECE_BUILDERS = {
+PIECES = {
     # …
-    "radar": build_radar,
+    "radar": (build_radar, BASE_RADIUS),
 }
 ```
 
-Use `FactionAccent` for the ownership read — the renderer tints it per player, so never export one model per faction. Keep the geometry deterministic; the generator is the source of truth and is committed alongside its output.
+Builders own **geometry only**. The base plate is added for you from the radius in `PIECES`; materials come from `nova_surfaces.py`; and unwrapping, baking, preview rendering, and export all come from `nova_build.py`, so no piece can be exported under different rules from the rest of the set. Address materials by surface class — `Graphite`, `Chassis`, `Ceramic` — and use `add_rounded_box` for hull forms so they read as moulded rather than as chamfered cubes.
+
+Use `FactionAccent` for the ownership read — the renderer tints it per player, so never export one model per faction, and never rename it: `tabletop-assets.ts` finds it *by material name*. Spend at most three accents on one piece. Keep the geometry deterministic; the generator is the source of truth and is committed alongside its output.
 
 Export the piece:
 
 ```sh
-blender --background --python packages/renderer/blender/scripts/generate-nova-pieces.py -- --only radar
+blender --background --factory-startup --python packages/renderer/blender/scripts/generate-nova-pieces.py -- --only radar
 ```
 
-That writes three files: `assets/models/radar.glb`, `assets/previews/radar.png`, and `blender/source/radar.blend`. Commit all three.
+That writes three files: `assets/models/radar.glb`, `assets/previews/radar.png`, and `blender/source/radar.blend`. Commit all three. The command also prints the piece's triangle count, draw calls, and GLB size — this is a browser game, so check them against the budget table in visual-design.md.
 
 Then judge the piece against the set, not on its own:
 
 ```sh
-blender --background --python packages/renderer/blender/scripts/generate-nova-pieces.py -- --contact-sheet
+blender --background --factory-startup --python packages/renderer/blender/scripts/generate-nova-pieces.py -- --contact-sheet
 ```
 
 The contact sheet renders every piece in one orthographic row, which is the view that exposes a silhouette collision. It is a review artifact — look at it, then leave it uncommitted.

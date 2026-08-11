@@ -2,7 +2,7 @@ import type { World } from '@morten-olsen/nova-game';
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
-import { animateActors, updateActors, type Actor, type PuffRequest } from '../src/tabletop-actors.js';
+import { animateActors, basePlateRadius, updateActors, type Actor, type PuffRequest } from '../src/tabletop-actors.js';
 import { createPieceLayouts } from '../src/tabletop-layout.js';
 
 // Models are fetched over the network, which a headless test has no business
@@ -12,7 +12,7 @@ vi.mock('../src/tabletop-assets.js', async (importOriginal) => ({
   loadPieceModel: () => Promise.resolve(undefined),
 }));
 
-const createWorld = (active: boolean): World => ({
+const createWorld = (active: boolean, position = { x: 0, y: 0 }): World => ({
   tiles: [{ position: { x: 0, y: 0 }, composition: { acid: 0 } }],
   scripts: [],
   buildings: [],
@@ -21,7 +21,7 @@ const createWorld = (active: boolean): World => ({
       id: 'android-1',
       ownerId: 'player-1',
       scriptId: 'script-1',
-      position: { x: 0, y: 0 },
+      position,
       battery: 100,
       health: active ? 100 : 0,
       active,
@@ -66,6 +66,34 @@ const createBoard = (): Board => {
 };
 
 const toppleOf = (actor: Actor | undefined): number => actor?.root.children[0]?.rotation.z ?? 0;
+
+describe('a travelling android', () => {
+  /**
+   * The lean rotates the model about its origin, which sits at the centre of the
+   * base plate on the ground plane, so the leading rim swings below the board
+   * unless the lean is paid for with a lift.
+   */
+  it('leans into travel without dipping its base plate through the board', () => {
+    const board = createBoard();
+    board.show(createWorld(true));
+    board.advance(1);
+
+    // Several tiles at once, so the smoothed travel speed reaches full lean.
+    board.show(createWorld(true, { x: 6, y: 0 }));
+    board.advance(0.3);
+
+    const visual = board.actors.get('android-1')?.root.children[0];
+    expect(visual).toBeDefined();
+    // Precondition: it really is leaning, so the assertion below is not vacuous.
+    expect(visual!.rotation.x).toBeGreaterThan(0.2);
+
+    // The rim sits `radius * sin(lean)` below the model origin; the gait bob can
+    // take a further 0.028 off at its trough. Both have to stay above the board.
+    const rimHeight = visual!.position.y - basePlateRadius * Math.sin(visual!.rotation.x);
+    expect(rimHeight).toBeGreaterThan(-0.03);
+    expect(visual!.position.y).toBeGreaterThan(0);
+  });
+});
 
 describe('deactivated androids', () => {
   it('take no place on the board', () => {
