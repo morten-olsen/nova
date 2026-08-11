@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from 'astro:content';
+
+import DocShell from '../../components/doc-shell.astro';
+import SiteFooter from '../../components/site-footer.astro';
+import SiteHeader from '../../components/site-header.astro';
+import { docPages } from '../../docs/doc-pages.ts';
+import BaseLayout from '../../layouts/base.astro';
+
+export const getStaticPaths = async () => {
+  const entries = await getCollection('docs');
+  // Driven by docPages rather than by the glob, so adding a markdown file to the
+  // docs package does not silently publish it here. A document reaches the site
+  // when someone writes its title and blurb.
+  return docPages.map((page) => {
+    // Ids come from `generateId` in content.config.ts, which maps a filename to
+    // exactly this slug.
+    const entry = entries.find((candidate) => candidate.id === page.slug);
+    if (!entry) {
+      throw new Error(
+        `No document found for ${page.file}. Was it renamed in @morten-olsen/nova-docs, or dropped from its published files?`,
+      );
+    }
+    return { params: { slug: page.slug }, props: { entry, page } };
+  });
+};
+
+const { entry, page } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<BaseLayout title={`${page.title}: Project Nova`} description={page.blurb}>
+  <SiteHeader />
+  <DocShell title={page.title} current={page.slug} headings={headings}>
+    <Content />
+  </DocShell>
+  <SiteFooter />
+</BaseLayout>

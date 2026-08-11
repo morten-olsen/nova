@@ -104,17 +104,23 @@ the only rule the offer negotiates — `--rules` applies to `create-game`, not t
 The host chooses what evidence both players keep when the match ends. Both
 players are treated the same way; hosting is not an information advantage.
 
-| `--disclosure` | What each player receives                                                                                                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `full`         | The complete recording, replayable with `nova play`. Includes both Androids, every round, and the other player's script.                         |
-| `recording`    | Only what that player's own Android wrote to its `recording` field, plus the final scores. No replay, and nothing about how the opponent played. |
+| `--disclosure` | What each player receives                                                                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `full`         | A replayable recording of the whole match: both Androids, every round, and every action either took. The other player's script source and their Androids' `memory` and `recording` are `[Redacted]`. |
+| `recording`    | Only what that player's own Android wrote to its `recording` field, plus the final scores. No replay, and nothing about how the opponent played.                                                     |
 
 `full` is the default and the right choice while learning: both players can
-replay the match and read each other's script. `recording` is the competitive
-mode, and it changes how an Android should be written. What the Android chose to
-write down is the player's whole account of the match, so a competitive Android
-should record deliberately. A rejected action is discarded in full, including its
-`recording` write, so a failed turn leaves no note behind.
+replay the match and watch what the other Android actually did, one round at a
+time. What it did is disclosed; how it decided is not. A script is never handed
+to an opponent, so a match cannot be used to harvest someone else's code. See
+[visibility and information](RULEBOOK.md#14-visibility-and-information) for the
+exact fields.
+
+`recording` is the competitive mode, and it changes how an Android should be
+written. What the Android chose to write down is the player's whole account of
+the match, so a competitive Android should record deliberately. A rejected action
+is discarded in full, including its `recording` write, so a failed turn leaves no
+note behind.
 
 Results are written to `match.json` under `full` and `match-recording.json`
 under `recording`; use `--out` to choose the path. A match needs internet access

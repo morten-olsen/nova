@@ -1,0 +1,151 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+
+import keyArt from '@media/nova-trailer-banner.jpg';
+import recordingUrl from '@recordings/trailer-colony-race.json?url';
+
+import { linkTo, siteLinks } from '../site-links.ts';
+
+const ide = linkTo(siteLinks.ide);
+
+/** Reserved width so a ticking counter never reflows the panel. */
+const readouts = [
+  { field: 'androids', label: 'Androids' },
+  { field: 'structures', label: 'Structures' },
+  { field: 'readiness', label: 'Readiness' },
+] as const;
+---
+
+<section
+  class="group relative isolate flex min-h-[100dvh] flex-col justify-end overflow-hidden md:justify-center"
+  data-board-stage
+  data-recording={recordingUrl}
+>
+  {
+    /*
+    Three states, because the same image is doing two different jobs.
+
+    While the board is still loading it is softened and dim, so the trailer's own
+    burned-in overlays read as texture rather than as a second HUD competing with
+    the panels. Once the board is declined outright (reduced motion, no WebGL,
+    data saver) nothing is coming to replace it, so the blur is dropped and it
+    stands as what it is: a real frame of the game. When the board does start, it
+    fades away under it.
+  */
+  }
+  <div class="absolute inset-0 -z-20 hidden md:block" aria-hidden="true">
+    <Image
+      src={keyArt}
+      alt=""
+      widths={[1200, 1600]}
+      sizes="100vw"
+      loading="eager"
+      class="size-full scale-105 object-cover opacity-45 blur-[3px] transition-[opacity,filter] duration-700 group-data-[board-stage=declined]:opacity-70 group-data-[board-stage=declined]:blur-none group-data-[board-stage=running]:opacity-0"
+    />
+  </div>
+
+  {
+    /* The board itself. Never interactive: the tiles do nothing on this page, so
+      a pointer cursor over them would promise something it cannot deliver. */
+  }
+  <div
+    class="pointer-events-none absolute inset-0 -z-10 hidden opacity-0 transition-opacity duration-1000 group-data-[board-stage=running]:opacity-100 md:block"
+    data-board-host
+    aria-hidden="true"
+  >
+  </div>
+
+  {
+    /*
+    Grounds the copy without flattening the board. Edges only: the top so the
+    floating nav stays legible, the bottom so the board resolves into the section
+    below it instead of being cut off, and the left where the copy panel sits. The
+    middle is left alone, because that is where the pieces are.
+  */
+  }
+  <div
+    class="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--color-void)_88%,transparent)_0%,transparent_16%,transparent_62%,var(--color-void)_100%)]"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    class="absolute inset-0 -z-10 hidden bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-void)_78%,transparent)_0%,transparent_52%)] md:block"
+    aria-hidden="true"
+  >
+  </div>
+
+  {/* Mobile hero: key art presented as key art, at full fidelity. */}
+  <div class="px-4 pt-24 md:hidden">
+    <Image
+      src={keyArt}
+      alt="An android on an alien board, its script open beside it and a hull-integrity warning below."
+      widths={[640, 960]}
+      sizes="100vw"
+      loading="eager"
+      class="w-full rounded-[0.625rem] border border-hairline"
+    />
+  </div>
+
+  <div class="relative mx-auto flex w-full max-w-[100rem] flex-col gap-6 px-4 pt-8 pb-12 sm:px-6 md:pt-24 md:pb-20">
+    <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+      <div class="hud max-w-[46rem] rounded-[0.625rem] p-6 sm:p-7">
+        {
+          /* Sized so each sentence holds one line: broken mid-clause, the title
+            stops reading as two instructions. */
+        }
+        <h1 class="display text-[clamp(1.75rem,3vw,2.5rem)] text-ink">
+          Program the androids.<br />Prepare the planet.
+        </h1>
+        <p class="prose-copy mt-5 text-[1.0625rem]">
+          Humanity cannot land until the world is ready. You do not command the androids. You write the code they run.
+        </p>
+        <div class="mt-7 flex flex-col gap-2.5 sm:flex-row">
+          <a class="btn border-system/60 px-4 py-2.5 text-[0.9375rem] hover:border-system" href="#start">
+            <Icon name="ph:terminal-window" class="size-4" aria-hidden="true" />
+            Get the CLI
+          </a>
+          <a class="btn border-system/60 px-4 py-2.5 text-[0.9375rem] hover:border-system" href={ide}>
+            <Icon name="ph:cursor-click" class="size-4" aria-hidden="true" />
+            Open the IDE
+          </a>
+        </div>
+      </div>
+
+      {
+        /*
+        Live telemetry, read off the recording playing behind it through the same
+        scoring function `nova status` uses. Hidden by the mount script whenever
+        the board is not running, so it never sits on a frozen count.
+      */
+      }
+      <aside class="hud hidden w-[15rem] rounded-[0.625rem] p-4 md:block" data-board-telemetry>
+        <div class="flex items-baseline justify-between gap-3">
+          <p class="label !text-[0.6rem]">Round</p>
+          <p class="readout text-2xl leading-none text-ink" data-readout="round">00</p>
+        </div>
+        <dl class="mt-3 flex flex-col gap-2 border-t border-hairline pt-3">
+          {
+            readouts.map((readout) => (
+              <div class="flex items-baseline justify-between gap-3">
+                <dt class="text-[0.8125rem] text-ink-dim">{readout.label}</dt>
+                <dd class="readout text-[0.9375rem] text-ink" data-readout={readout.field}>
+                  0
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="mt-3 border-t border-hairline pt-3 font-mono text-[0.6875rem] leading-relaxed text-ink-faint">
+          Replaying trailer-colony-race.json, the same file <code class="text-ink-dim">nova play</code> opens.
+        </p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { scheduleBoard } from '../board/board-mount.ts';
+
+  scheduleBoard();
+</script>

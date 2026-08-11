@@ -1,0 +1,105 @@
+---
+import { linkTo, siteLinks } from '../site-links.ts';
+
+/**
+ * The order is load-bearing: a script cannot be launched before it is uploaded,
+ * and nothing can be inspected before a round has run. That is why these are
+ * numbered and the other sections on this page are not.
+ */
+const steps = [
+  {
+    body: 'Node 24 or newer. Nova asks for a folder name, installs its packages, and writes a starter android, the rulebook, the CLI guide, and an AGENTS.md for your coding agent.',
+    command: 'npx -p @morten-olsen/nova nova init',
+    title: 'Create the factory',
+  },
+  {
+    body: 'Open the new folder with your coding agent and describe the behaviour you want. AGENTS.md already tells it where the rules live, that an android is a module with a default-exported turn function, and to read numbers from the rules global rather than the rulebook.',
+    prompt:
+      'Read AGENTS.md, then change bot/starter-builder.ts so it collects metal within three tiles, refuses to step onto acid, and returns to the charger below 30% battery.',
+    title: 'Hand the folder to your agent',
+  },
+  {
+    body: 'Create a world, upload the script, launch an android against your charger capacity, and run a short batch of rounds.',
+    commands: [
+      'npx nova create-game --file game.json --width 8 --height 8',
+      'npx nova upload-script --file game.json --owner player-1 \\',
+      '  --name starter-builder --script bot/starter-builder.ts',
+      'npx nova launch-android --file game.json --owner player-1 --script-id script-1',
+      'npx nova run --file game.json --rounds 10',
+    ],
+    title: 'Run a simulation',
+  },
+  {
+    body: 'The status command reports every android, its battery and location, and the colony-readiness score with its contributors. The play command opens the recording in the replay viewer, one round at a time, so you can watch the turn where it went wrong.',
+    commands: ['npx nova status --file game.json', 'npx nova play --file game.json'],
+    title: 'Read what actually happened',
+  },
+] as const;
+---
+
+<section id="start" class="border-t border-hairline bg-abyss py-20 sm:py-28" aria-labelledby="start-heading">
+  <div class="mx-auto max-w-[72rem] px-4 sm:px-6">
+    <div class="max-w-[44rem]" data-reveal>
+      <h2 id="start-heading" class="display-sm text-[clamp(1.75rem,3.4vw,2.75rem)] text-ink">Get up and running</h2>
+      <p class="prose-copy mt-4">
+        Four steps from nothing to a replay you can pick apart. The loop after that is always the same: change one
+        behaviour, run a short batch, and keep the change only if the recording supports it.
+      </p>
+    </div>
+
+    <ol class="mt-12 flex flex-col">
+      {
+        steps.map((step, index) => (
+          <li
+            class="grid grid-cols-1 gap-x-8 gap-y-4 border-t border-hairline py-8 sm:grid-cols-[3rem_1fr] lg:grid-cols-[3rem_22rem_1fr]"
+            data-reveal
+          >
+            <p class="readout text-[1.375rem] leading-none text-system" aria-hidden="true">
+              {(index + 1).toString().padStart(2, '0')}
+            </p>
+            <div>
+              <h3 class="display-sm text-lg text-ink">{step.title}</h3>
+              <p class="prose-copy mt-2 text-[0.9375rem]">{step.body}</p>
+            </div>
+            <div class="flex flex-col gap-3 sm:col-start-2 lg:col-start-3">
+              {'command' in step && (
+                <div class="command">
+                  <span class="prompt" aria-hidden="true">
+                    $
+                  </span>
+                  <code>{step.command}</code>
+                  <button class="btn shrink-0 px-2 py-1 text-[0.75rem]" type="button" data-copy>
+                    <span data-copy-label>Copy</span>
+                  </button>
+                </div>
+              )}
+              {'commands' in step && (
+                <div class="command-block">
+                  <button class="btn absolute top-2.5 right-2.5 px-2 py-1 text-[0.75rem]" type="button" data-copy>
+                    <span data-copy-label>Copy</span>
+                  </button>
+                  <code set:text={step.commands.join('\n')} />
+                </div>
+              )}
+              {/* Caption first: read the other way round, the reader meets an
+                  unattributed instruction before learning who it is aimed at. */}
+              {'prompt' in step && (
+                <figure class="rounded-[0.625rem] border border-hairline border-l-2 border-l-system/60 bg-void/70 p-4">
+                  <figcaption class="label !text-[0.6rem]">What you might ask for</figcaption>
+                  <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim italic">{step.prompt}</p>
+                </figure>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="mt-8 text-[0.9375rem] text-ink-dim">
+      The full command reference is in the <a class="text-system hover:underline" href={linkTo(siteLinks.cliGuide)}
+        >CLI guide</a
+      >, and <a class="text-system hover:underline" href={linkTo(siteLinks.androidManual)}>the builder manual</a> covers evolving
+      an android past its first version.
+    </p>
+  </div>
+</section>

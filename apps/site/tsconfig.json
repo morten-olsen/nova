@@ -1,0 +1,14 @@
+{
+  "extends": "astro/tsconfigs/strictest",
+  "compilerOptions": {
+    // Matches the other apps: workspace packages resolve through their `source`
+    // export so the site type-checks against renderer and engine source rather
+    // than a possibly stale `dist`.
+    "customConditions": ["source"],
+    "types": ["astro/client"],
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}

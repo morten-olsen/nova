@@ -1,0 +1,27 @@
+---
+import CampaignArc from '../components/campaign-arc.astro';
+import FactoryQuickstart from '../components/factory-quickstart.astro';
+import HeroBoard from '../components/hero-board.astro';
+import PieceCatalogue from '../components/piece-catalogue.astro';
+import SiteFooter from '../components/site-footer.astro';
+import SiteHeader from '../components/site-header.astro';
+import TrailerAct from '../components/trailer-act.astro';
+import TwoWaysIn from '../components/two-ways-in.astro';
+import BaseLayout from '../layouts/base.astro';
+---
+
+<BaseLayout
+  title="Project Nova: program the androids that prepare a planet"
+  description="A programming strategy game. Write the code your androids run, launch them into a simulated hostile world, and study what they actually did. Built for players who work with coding agents."
+>
+  <SiteHeader />
+  <main id="main">
+    <HeroBoard />
+    <TwoWaysIn />
+    <FactoryQuickstart />
+    <TrailerAct />
+    <CampaignArc />
+    <PieceCatalogue />
+  </main>
+  <SiteFooter />
+</BaseLayout>

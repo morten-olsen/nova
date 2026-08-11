@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+
+import ideLab from '@media/nova-ide-lab.jpg';
+
+import { linkTo, siteLinks } from '../site-links.ts';
+
+const ide = linkTo(siteLinks.ide);
+---
+
+<section class="border-t border-hairline py-20 sm:py-28" aria-labelledby="ways-heading">
+  <div class="mx-auto max-w-[72rem] px-4 sm:px-6">
+    <h2 id="ways-heading" class="display-sm max-w-[36rem] text-[clamp(1.75rem,3.4vw,2.75rem)] text-ink" data-reveal>
+      Two ways in
+    </h2>
+
+    {
+      /* Deliberately uneven: both doors are open, but only one of them is where a
+        colony program actually gets written. `items-start` so each panel ends
+        where its content does, rather than stretching to leave a hole above the
+        shorter one's button. */
+    }
+    <div class="mt-10 grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+      <div class="panel flex flex-col gap-5 p-6 sm:p-8 lg:col-span-7" data-reveal>
+        <div>
+          <h3 class="display-sm text-xl text-ink">A factory on your machine</h3>
+          <p class="prose-copy mt-3">
+            <code class="font-mono text-[0.9375rem] text-ink-dim">nova init</code> writes a TypeScript project with a starter
+            android, the rulebook, and an <code class="font-mono text-[0.9375rem] text-ink-dim">AGENTS.md</code>
+            that tells a coding agent how the game works and how to test a change. Point your agent at the folder and describe
+            the behaviour you want.
+          </p>
+        </div>
+        <div class="command">
+          <span class="prompt" aria-hidden="true">$</span>
+          <code>npx -p @morten-olsen/nova nova init</code>
+          <button class="btn shrink-0 px-2 py-1 text-[0.75rem]" type="button" data-copy>
+            <span data-copy-label>Copy</span>
+          </button>
+        </div>
+        <p class="text-[0.9375rem] text-ink-dim">
+          This is the path to start on. Writing an android that survives contact with acid, battery limits and a rival
+          is real programming, and an agent that can read the rulebook is a fast way to get there.
+        </p>
+        <a class="btn self-start px-4 py-2.5 text-[0.9375rem]" href="#start">
+          <Icon name="ph:terminal-window" class="size-4" aria-hidden="true" />
+          Get up and running
+        </a>
+      </div>
+
+      <div
+        class="panel flex flex-col gap-5 overflow-hidden p-6 sm:p-8 lg:col-span-5"
+        data-reveal
+        style="--reveal-delay: 90ms"
+      >
+        <div>
+          <h3 class="display-sm text-xl text-ink">The browser lab</h3>
+          <p class="prose-copy mt-3">
+            An editor, the sandbox and the board in one page. Nothing to install, and your scripts stay in your browser.
+            The quickest way to see what an android actually does.
+          </p>
+        </div>
+        <Image
+          src={ideLab}
+          alt="The browser lab: the starter android open in the editor, and the board it produced after 24 rounds beside it."
+          widths={[480, 800, 960]}
+          sizes="(min-width: 1024px) 26rem, 100vw"
+          loading="lazy"
+          class="w-full rounded-[0.625rem] border border-hairline"
+        />
+        <a class="btn self-start px-4 py-2.5 text-[0.9375rem]" href={ide}>
+          <Icon name="ph:cursor-click" class="size-4" aria-hidden="true" />
+          Open the IDE
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

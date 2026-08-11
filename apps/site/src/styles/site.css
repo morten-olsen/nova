@@ -1,0 +1,341 @@
+/*
+ * The landing page and the game share one visual language, so the palette comes
+ * from the same file the renderer and the replay HUD read. Change a colour in
+ * packages/renderer/src/nova-palette.ts first; this file only adds what a
+ * marketing page needs on top and never redefines a game colour.
+ */
+@import '@morten-olsen/nova-replay-ui/theme.css';
+
+/* Tailwind does not scan node_modules, and the theme's own @source only covers
+   the shared React components. */
+@source '../**/*.astro';
+@source '../**/*.ts';
+
+/* Both axes of Archivo in one file: the display role uses the width axis, which
+   the fixed-width `standard` build cannot reach. */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/jetbrains-mono';
+
+@theme {
+  /*
+   * The in-game HUD uses the platform UI font on purpose: it reads as
+   * instrument chrome rather than as a typeface. A landing page has no
+   * surrounding application to belong to, so the same stack just reads as an
+   * unstyled developer tool. Archivo carries it instead, and its width axis
+   * gives the display role the stencilled-signage feel the board's hardware has.
+   */
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  body {
+    /* Archivo runs a little small at the same pixel size as system UI. */
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  /*
+   * Display type. Wide, uppercase and tightly tracked: the lettering stencilled
+   * onto powder-coated machinery, not a sci-fi costume face. Used for the page
+   * title and section headings only, never for body copy or labels.
+   */
+  .display {
+    font-family: var(--font-sans);
+    font-stretch: 118%;
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* Section headings sit a step down from the page title but keep the width. */
+  .display-sm {
+    font-family: var(--font-sans);
+    font-stretch: 112%;
+    font-weight: 650;
+    line-height: 1.05;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* Body copy sits at a normal width so paragraphs stay readable. */
+  .prose-copy {
+    max-width: 54ch;
+    color: var(--color-ink-dim);
+    text-wrap: pretty;
+  }
+
+  /*
+   * Telemetry readout. The digits come from a running recording, so they change
+   * width as they tick; tabular figures and a reserved column keep the panel
+   * from reflowing on every round.
+   */
+  .readout {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+    font-weight: 500;
+  }
+
+  /* A shell command the reader is meant to copy, not a code sample to study. */
+  .command {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.625rem;
+    background: color-mix(in oklab, var(--color-void) 70%, transparent);
+    padding: 0.6875rem 0.75rem 0.6875rem 0.875rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .command > code {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    color: var(--color-ink);
+    /* The scrollbar on a one-line command is noise; the text still pans. */
+    scrollbar-width: none;
+  }
+
+  .command > code::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The shell prompt is decoration around the part worth copying, so it is
+     hidden from assistive tech and excluded from the copied text. */
+  .command > .prompt {
+    user-select: none;
+    color: var(--color-ink-faint);
+  }
+
+  /*
+   * A sequence that has to be run in order, so it is one block with one copy
+   * button rather than a stack of separately copyable lines.
+   */
+  .command-block {
+    position: relative;
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.625rem;
+    background: color-mix(in oklab, var(--color-void) 70%, transparent);
+  }
+
+  /*
+   * A `code` carrying its own `white-space: pre` rather than a `pre` element.
+   * The lines are set from an expression, and a `pre` would also preserve the
+   * template's own indentation around the tag, which the formatter is free to
+   * change.
+   */
+  .command-block > code {
+    display: block;
+    overflow-x: auto;
+    padding: 0.875rem 1rem;
+    /* Clears the copy button, which floats in the top right corner. */
+    padding-right: 5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    white-space: pre;
+    color: var(--color-ink);
+  }
+
+  /*
+   * Rendered markdown.
+   *
+   * These documents are reference material read at length, so this is set for
+   * reading: one measure, headings that separate by weight and space rather than
+   * by size alone, and tables that stay legible at rulebook width.
+   */
+  .doc-prose {
+    color: var(--color-ink-dim);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .doc-prose > * + * {
+    margin-top: 1.125rem;
+  }
+
+  .doc-prose :is(h2, h3, h4) {
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    text-wrap: balance;
+  }
+
+  .doc-prose h2 {
+    margin-top: 3rem;
+    border-top: 1px solid var(--color-hairline);
+    padding-top: 1.75rem;
+    font-size: 1.375rem;
+    font-stretch: 112%;
+    font-weight: 650;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .doc-prose h3 {
+    margin-top: 2.25rem;
+    font-size: 1.0625rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+  }
+
+  .doc-prose h4 {
+    margin-top: 1.75rem;
+    font-size: 0.9375rem;
+    font-weight: 650;
+  }
+
+  /* The anchor a heading id makes reachable. Visible on hover only: a permalink
+     glyph beside every heading in a 19-section rulebook is clutter. */
+  .doc-prose :is(h2, h3, h4):hover > a[href^='#'] {
+    opacity: 1;
+  }
+
+  .doc-prose p {
+    max-width: 74ch;
+  }
+
+  .doc-prose :is(ul, ol) {
+    max-width: 74ch;
+    padding-left: 1.25rem;
+  }
+
+  .doc-prose ul {
+    list-style: disc;
+  }
+
+  .doc-prose ol {
+    list-style: decimal;
+  }
+
+  .doc-prose li + li {
+    margin-top: 0.375rem;
+  }
+
+  .doc-prose li::marker {
+    color: var(--color-ink-faint);
+  }
+
+  .doc-prose a {
+    color: var(--color-system);
+    text-decoration-color: color-mix(in oklab, var(--color-system) 40%, transparent);
+    text-underline-offset: 0.2em;
+  }
+
+  .doc-prose a:hover {
+    text-decoration-line: underline;
+  }
+
+  .doc-prose strong {
+    color: var(--color-ink);
+    font-weight: 650;
+  }
+
+  /* Inline code. Boxed rather than merely recoloured, because these documents use
+     it for action names and rule paths in the middle of sentences. */
+  .doc-prose :not(pre) > code {
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.3125rem;
+    background: color-mix(in oklab, var(--color-void) 60%, transparent);
+    padding: 0.075em 0.3em;
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  .doc-prose pre {
+    overflow-x: auto;
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.625rem;
+    padding: 1rem 1.125rem;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+
+  .doc-prose blockquote {
+    border-left: 2px solid color-mix(in oklab, var(--color-system) 60%, transparent);
+    padding-left: 1rem;
+    color: var(--color-ink-dim);
+  }
+
+  .doc-prose hr {
+    border: 0;
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  /* Added by the markdown pipeline around every table, so a wide one scrolls
+     inside its own column instead of widening the page. */
+  .doc-prose .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--color-hairline);
+    border-radius: 0.625rem;
+  }
+
+  .doc-prose table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.875rem;
+  }
+
+  .doc-prose :is(th, td) {
+    padding: 0.5rem 0.875rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .doc-prose th {
+    background: color-mix(in oklab, var(--color-panel-raised) 70%, transparent);
+    color: var(--color-ink);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  /* Rows separated by a single hairline below each, never boxed on all sides. */
+  .doc-prose tbody tr + tr :is(th, td) {
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  .doc-prose td > code {
+    white-space: nowrap;
+  }
+
+  /* Copy feedback. The label text changes too, so this is reinforcement rather
+     than the only signal, and it survives a colour-blind reader. */
+  [data-copy-state='copied'] {
+    border-color: color-mix(in oklab, var(--color-acid) 60%, var(--color-hairline-bright));
+    color: var(--color-acid);
+  }
+
+  [data-copy-state='failed'] {
+    border-color: color-mix(in oklab, var(--color-warning) 60%, var(--color-hairline-bright));
+    color: var(--color-warning);
+  }
+}
+
+/*
+ * Entry and scroll reveal. Driven by a `data-reveal` attribute an
+ * IntersectionObserver flips, so nothing animates until it is on screen and
+ * everything is visible with no JavaScript at all.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  [data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+}

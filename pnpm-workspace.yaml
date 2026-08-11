@@ -9,6 +9,11 @@ packages:
 # node-datachannel is the WebRTC implementation behind `nova host`/`nova join`.
 # Node has no built-in WebRTC, so peer matches need this native module; its
 # install script fetches the prebuilt binary for the current platform.
+#
+# sharp backs Astro's build-time image optimisation for the landing page. Without
+# its binary Astro falls back to shipping the originals untouched, which for the
+# piece renders and screenshots is most of the page weight.
 onlyBuiltDependencies:
   - esbuild
   - node-datachannel
+  - sharp
