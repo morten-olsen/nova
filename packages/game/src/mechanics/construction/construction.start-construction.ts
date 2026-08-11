@@ -1,4 +1,13 @@
-import { hasMaterials, materialKeys, subtractMaterials, type MaterialBundle } from '../../schemas/schemas.resources.js';
+import type { Android } from '../../schemas/schemas.android.js';
+import type { BuildingType } from '../../schemas/schemas.building.js';
+import {
+  hasMaterials,
+  materialKeys,
+  normalizeMaterials,
+  subtractMaterials,
+  type MaterialBundle,
+} from '../../schemas/schemas.resources.js';
+import type { World } from '../../schemas/schemas.world.js';
 import type { Mechanic } from '../mechanics.base.js';
 import { getAndroid, getBuildingAt, getTileAt, takeFromAndroidCargo } from '../android/android.helpers.js';
 
@@ -11,6 +20,51 @@ const compactMaterials = (materials: MaterialBundle): MaterialBundle => {
     }
   }
   return compact;
+};
+
+/**
+ * Refuses material the building has no use for.
+ *
+ * A cost is a list of what a building is made of, not a total to be reached with
+ * anything to hand: material the cost does not mention used to be accepted and
+ * quietly burned, and — because what a site still owes is measured as a total
+ * across every material — enough of it drove that total below zero, which is a
+ * depot bought with ten units of worthless ore and no metal at all.
+ */
+const requireCostMaterials = (buildingType: BuildingType, cost: MaterialBundle, supplied: MaterialBundle): void => {
+  for (const material of materialKeys) {
+    if ((supplied[material] ?? 0) > (cost[material] ?? 0)) {
+      throw new Error(`A ${buildingType} does not need that much ${material}`);
+    }
+  }
+};
+
+/** Takes the payment out of cargo, or off the ground the android is standing on. */
+const paySupplied = (world: World, android: Android, supplied: MaterialBundle): void => {
+  if (hasMaterials(android.cargo, supplied)) {
+    takeFromAndroidCargo(android, supplied);
+    return;
+  }
+
+  const tile = getTileAt(world, android.position);
+  if (!tile) {
+    throw new Error('Android is not on a tile');
+  }
+
+  if (hasMaterials(tile.scattered, supplied)) {
+    tile.scattered = subtractMaterials(tile.scattered, supplied);
+    return;
+  }
+
+  const legacyComposition = tile.composition as { metal?: number };
+  const requiredLegacyMetal = supplied.metal ?? 0;
+  if ((legacyComposition.metal ?? 0) >= requiredLegacyMetal) {
+    legacyComposition.metal = (legacyComposition.metal ?? 0) - requiredLegacyMetal;
+    return;
+  }
+
+  // Throws, and says which material is missing rather than which store was empty.
+  takeFromAndroidCargo(android, supplied);
 };
 
 const constructionMechanicsStartConstruction: Mechanic = {
@@ -26,27 +80,10 @@ const constructionMechanicsStartConstruction: Mechanic = {
     }
 
     const building = rules.buildings[event.buildingType];
+    const cost = normalizeMaterials(building.cost);
     const supplied = event.resources ?? {};
-    if (hasMaterials(android.cargo, supplied)) {
-      takeFromAndroidCargo(android, supplied);
-    } else {
-      const tile = getTileAt(world, android.position);
-      if (!tile) {
-        throw new Error('Android is not on a tile');
-      }
-
-      if (hasMaterials(tile.scattered, supplied)) {
-        tile.scattered = subtractMaterials(tile.scattered, supplied);
-      } else {
-        const legacyComposition = tile.composition as { metal?: number };
-        const requiredLegacyMetal = supplied.metal ?? 0;
-        if ((legacyComposition.metal ?? 0) >= requiredLegacyMetal) {
-          legacyComposition.metal = (legacyComposition.metal ?? 0) - requiredLegacyMetal;
-        } else {
-          takeFromAndroidCargo(android, supplied);
-        }
-      }
-    }
+    requireCostMaterials(event.buildingType, cost, supplied);
+    paySupplied(world, android, supplied);
 
     world.buildings.push({
       id: `building-${world.buildings.length + 1}`,
@@ -60,7 +97,7 @@ const constructionMechanicsStartConstruction: Mechanic = {
       initial: false,
       remainingConstruction: {
         ticks: building.ticks,
-        resources: compactMaterials(subtractMaterials(building.cost, supplied)),
+        resources: compactMaterials(subtractMaterials(cost, supplied)),
       },
     });
   },

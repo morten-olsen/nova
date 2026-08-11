@@ -1,6 +1,6 @@
-import { hasMaterials, subtractMaterials } from '../../schemas/schemas.resources.js';
+import { hasMaterials, materialAmount, subtractMaterials } from '../../schemas/schemas.resources.js';
 import type { Mechanic } from '../mechanics.base.js';
-import { getAndroid, getBuildingAt, materialAmount, takeFromAndroidCargo } from '../android/android.helpers.js';
+import { getAndroid, getBuildingAt, takeFromAndroidCargo } from '../android/android.helpers.js';
 
 const constructionMechanicsContinueConstruction: Mechanic = {
   name: 'construction.continue-construction',

@@ -48,11 +48,17 @@ describe('starter script', () => {
     expect(failures.map((failure) => failure.error.message)).toEqual([]);
   });
 
-  it('keeps its android alive and charged', async () => {
+  it('keeps an android in the field, charged, for the whole game', async () => {
     const { world } = await play(60);
-    const android = world.androids[0];
-    expect(android?.active).toBe(true);
-    expect(android?.battery).toBeGreaterThan(0);
+    // Not necessarily the *first* android: they decay, and a colony that has been
+    // running for sixty rounds is expected to have replaced one. What matters is
+    // that the player still has a working android, and that nothing it did ran
+    // its battery to nothing.
+    const own = world.androids.filter((android) => android.ownerId === 'player-1');
+    expect(own.some((android) => android.active)).toBe(true);
+    for (const android of own) {
+      expect(android.battery).toBeGreaterThan(0);
+    }
   });
 
   it('scores by banking material into completed buildings', async () => {

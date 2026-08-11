@@ -1,4 +1,5 @@
 import { hasMaterials, subtractMaterials } from '../../schemas/schemas.resources.js';
+import { isBuildingComplete } from '../../utils/utils.building.js';
 import type { Mechanic } from '../mechanics.base.js';
 
 import { addToAndroidCargo, getAndroid, getBuildingAt } from './android.helpers.js';
@@ -13,8 +14,8 @@ const androidMechanicsWithdraw: Mechanic = {
     const android = getAndroid(world, event.androidId);
     const building = getBuildingAt(world, android.position);
     const storage = building ? rules.buildings[building.type].storage : null;
-    if (!building || building.ownerId !== android.ownerId || !storage?.withdraw) {
-      throw new Error('Android must be on an owned storage-capable building to withdraw');
+    if (!building || building.ownerId !== android.ownerId || !storage?.withdraw || !isBuildingComplete(building)) {
+      throw new Error('Android must be on an owned completed storage-capable building to withdraw');
     }
 
     if (!hasMaterials(building.storage, event.resources)) {

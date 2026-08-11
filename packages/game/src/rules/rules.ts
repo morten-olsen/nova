@@ -23,6 +23,21 @@ const matchRulesSchema = z.object({
    * differently from one with no arrival date.
    */
   finalRound: z.int().min(1).nullable().default(null),
+  /**
+   * Whether a player left with no active Androids is sent a replacement at the
+   * start of the next round, launched from their charger capacity with their
+   * newest script.
+   *
+   * On, because Androids are meant to be lost — they decay, hazards eat them, and
+   * a bad edge case wears one out — and a match hands out exactly one Android per
+   * player with nobody at the controls afterwards. Without a replacement the
+   * first fatal mistake is elimination rather than a setback, and a strategy that
+   * cannot afford to lose an Android is a strategy that never leaves its charger.
+   *
+   * Off is an elimination game: attrition is permanent, and keeping an Android
+   * alive is the whole of the skill.
+   */
+  replaceLostAndroids: z.boolean().default(true),
 });
 
 type MatchRules = z.infer<typeof matchRulesSchema>;

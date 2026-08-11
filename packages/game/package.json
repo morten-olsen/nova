@@ -14,7 +14,8 @@
   "scripts": {
     "check": "tsc -b --pretty false",
     "build": "tsc -b --pretty false",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench": "pnpm build && node --experimental-strip-types ./bench/balance.ts"
   },
   "exports": {
     ".": {

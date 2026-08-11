@@ -77,7 +77,7 @@ describe('the QuickJS runner and the script contract', () => {
 
   it('exposes the rules the match is played under', async () => {
     await expect(run("({ type: 'android.wait', memory: String(rules.android.cargoCapacity) })")).resolves.toMatchObject(
-      { memory: '10' },
+      { memory: String(defaultRules.android.cargoCapacity) },
     );
     // Not the shipped numbers: whatever this match was tuned to.
     await expect(

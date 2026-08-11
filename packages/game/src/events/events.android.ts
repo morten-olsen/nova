@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 import { directionSchema, idSchema } from '../schemas/schemas.base.js';
-import { buildingResourcesSchema, buildingTypeSchema } from '../schemas/schemas.building.js';
+import { buildingTypeSchema } from '../schemas/schemas.building.js';
+import { materialRequestSchema } from '../schemas/schemas.resources.js';
 
 /**
  * The fields every android action carries.
@@ -37,21 +38,21 @@ type AndroidChargeEvent = z.infer<typeof androidChargeEventSchema>;
 
 const androidCollectEventSchema = androidSchema.extend({
   type: z.literal('android.collect'),
-  resources: buildingResourcesSchema.optional(),
+  resources: materialRequestSchema.optional(),
 });
 
 type AndroidCollectEvent = z.infer<typeof androidCollectEventSchema>;
 
 const androidDepositEventSchema = androidSchema.extend({
   type: z.literal('android.deposit'),
-  resources: buildingResourcesSchema.optional(),
+  resources: materialRequestSchema.optional(),
 });
 
 type AndroidDepositEvent = z.infer<typeof androidDepositEventSchema>;
 
 const androidWithdrawEventSchema = androidSchema.extend({
   type: z.literal('android.withdraw'),
-  resources: buildingResourcesSchema,
+  resources: materialRequestSchema,
 });
 
 type AndroidWithdrawEvent = z.infer<typeof androidWithdrawEventSchema>;
@@ -59,14 +60,14 @@ type AndroidWithdrawEvent = z.infer<typeof androidWithdrawEventSchema>;
 const androidStartConstructionEventSchema = androidSchema.extend({
   type: z.literal('android.start-construction'),
   buildingType: buildingTypeSchema,
-  resources: buildingResourcesSchema.optional(),
+  resources: materialRequestSchema.optional(),
 });
 
 type AndroidStartConstructionEvent = z.infer<typeof androidStartConstructionEventSchema>;
 
 const androidContinueConstructionEventSchema = androidSchema.extend({
   type: z.literal('android.continue-construction'),
-  resources: buildingResourcesSchema.optional(),
+  resources: materialRequestSchema.optional(),
 });
 
 type AndroidContinueConstructionEvent = z.infer<typeof androidContinueConstructionEventSchema>;
@@ -76,6 +77,12 @@ const androidSalvageEventSchema = androidSchema.extend({
 });
 
 type AndroidSalvageEvent = z.infer<typeof androidSalvageEventSchema>;
+
+const androidRepairEventSchema = androidSchema.extend({
+  type: z.literal('android.repair'),
+});
+
+type AndroidRepairEvent = z.infer<typeof androidRepairEventSchema>;
 
 const androidDismantleEventSchema = androidSchema.extend({
   type: z.literal('android.dismantle'),
@@ -120,6 +127,7 @@ const androidEventSchema = z.union([
   androidStartConstructionEventSchema,
   androidContinueConstructionEventSchema,
   androidSalvageEventSchema,
+  androidRepairEventSchema,
   androidDismantleEventSchema,
   androidLaunchEventSchema,
   androidBroadcastEventSchema,
@@ -155,6 +163,7 @@ export type {
   AndroidEvent,
   AndroidLaunchEvent,
   AndroidMoveEvent,
+  AndroidRepairEvent,
   AndroidSalvageEvent,
   AndroidStartConstructionEvent,
   AndroidWaitEvent,
@@ -171,6 +180,7 @@ export {
   androidEventSchema,
   androidLaunchEventSchema,
   androidMoveEventSchema,
+  androidRepairEventSchema,
   androidSalvageEventSchema,
   androidStartConstructionEventSchema,
   androidWaitEventSchema,

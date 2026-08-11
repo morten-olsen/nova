@@ -4,6 +4,7 @@ import {
   type MaterialBundle,
   type TileComposition,
 } from '../../schemas/schemas.resources.js';
+import { isBuildingComplete } from '../../utils/utils.building.js';
 import type { Mechanic } from '../mechanics.base.js';
 
 /**
@@ -31,7 +32,7 @@ const gameMechanicsExtractResources: Mechanic = {
 
     for (const building of world.buildings) {
       const { extraction } = rules.buildings[building.type];
-      if (!extraction || building.remainingConstruction.ticks > 0) {
+      if (!extraction || !isBuildingComplete(building)) {
         continue;
       }
 
