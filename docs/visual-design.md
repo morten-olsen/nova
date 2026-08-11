@@ -15,13 +15,13 @@ The presentation must make one-tile actions, ownership, hazards, and infrastruct
 
 ## Source of truth
 
-| What | Lives in |
-| --- | --- |
-| Runtime colour language | `packages/renderer/src/nova-palette.ts` |
-| Surface classes and the bake | `packages/renderer/blender/scripts/nova_surfaces.py` |
-| Geometry primitives and motifs | `packages/renderer/blender/scripts/nova_kit.py` |
-| Bake, render, and export machinery | `packages/renderer/blender/scripts/nova_build.py` |
-| Tailwind theme tokens | `apps/web/src/app.css` |
+| What                               | Lives in                                             |
+| ---------------------------------- | ---------------------------------------------------- |
+| Runtime colour language            | `packages/renderer/src/nova-palette.ts`              |
+| Surface classes and the bake       | `packages/renderer/blender/scripts/nova_surfaces.py` |
+| Geometry primitives and motifs     | `packages/renderer/blender/scripts/nova_kit.py`      |
+| Bake, render, and export machinery | `packages/renderer/blender/scripts/nova_build.py`    |
+| Tailwind theme tokens              | `apps/web/src/app.css`                               |
 
 Change the palette first, then let the others follow. A piece on the board and its row in the scoreboard must never disagree about who owns what.
 
@@ -72,7 +72,7 @@ Visibility is **current line of sight, not permanent discovery**. A tile is visi
 
 ## The base plate
 
-Every built piece stands on a base plate. It is the thing that makes a model read as a *game piece* rather than as scenery, and it is built by `add_base_plate` in `nova_kit.py` so no two pieces invent their own:
+Every built piece stands on a base plate. It is the thing that makes a model read as a _game piece_ rather than as scenery, and it is built by `add_base_plate` in `nova_kit.py` so no two pieces invent their own:
 
 - a **chamfered graphite rim** from `z = 0` to `0.060`, and a slate lip to `0.078`
 - a **recessed ground inset** whose top sits at `z = 0.070`, below the lip, so the rim reads as a frame containing ground
@@ -86,7 +86,7 @@ Radii: `BASE_RADIUS` (0.41) for buildings, 0.345 for the android, 0.32 for the r
 
 ## Surface language
 
-The first iteration of this set was flat-shaded colour blocks, which read as moulded plastic — because a uniform base colour under a uniform roughness *is* what plastic looks like. Surfaces now carry the four things a miniature painter does by hand, applied procedurally in `nova_surfaces.py`:
+The first iteration of this set was flat-shaded colour blocks, which read as moulded plastic — because a uniform base colour under a uniform roughness _is_ what plastic looks like. Surfaces now carry the four things a miniature painter does by hand, applied procedurally in `nova_surfaces.py`:
 
 1. **Panel lining** — a 3D grid of thin seams, so every face of every part reads as assembled from panels. Three axis-aligned band sets combined; one alone smears into stripes on faces it does not face across.
 2. **Recess shading** — ambient occlusion darkens where surfaces meet, the equivalent of a shade wash.
@@ -96,22 +96,22 @@ The first iteration of this set was flat-shaded colour blocks, which read as mou
 Read in that order, the numbers in `SURFACE_CLASSES` are a paint recipe rather than a pile of constants. Two rules govern them:
 
 - **Weathering stays restrained on the model and concentrated on the base.** A display piece is clean; its base is dirty. Caking the hull in dust makes a piece look abandoned rather than deployed.
-- **Metallic stays low.** These are *painted* surfaces. High metallic throws away the base colour in favour of whatever the environment reflects, which collapses graphite, slate, and ceramic into one bright silver and destroys the value separation below.
+- **Metallic stays low.** These are _painted_ surfaces. High metallic throws away the base colour in favour of whatever the environment reflects, which collapses graphite, slate, and ceramic into one bright silver and destroys the value separation below.
 
 ### Surface classes
 
 Materials sit at **clearly separated values**. When slate and ceramic drift close together the pieces read as uniformly white plastic instead of hardware.
 
-| Class | Hex | Metallic | Use |
-| --- | --- | --- | --- |
-| `Graphite` | `#252d3d` | 0.18 | structural mass, plinths, seams |
-| `Chassis` | `#66788f` | 0.22 | machinery, exposed panels, readable edges |
-| `Ceramic` | `#e6dece` | 0.0 | pressure hulls |
-| `Basing` | `#5c4a34` | 0.0 | the base plate's ground only; no panel seams |
+| Class      | Hex       | Metallic | Use                                          |
+| ---------- | --------- | -------- | -------------------------------------------- |
+| `Graphite` | `#252d3d` | 0.18     | structural mass, plinths, seams              |
+| `Chassis`  | `#66788f` | 0.22     | machinery, exposed panels, readable edges    |
+| `Ceramic`  | `#e6dece` | 0.0      | pressure hulls                               |
+| `Basing`   | `#5c4a34` | 0.0      | the base plate's ground only; no panel seams |
 
 Emissive accents are `FactionAccent`, `Energy`, `HazardAcid`, `ResourceOre`, and `Warning`. Emission strength stays low (0.22) — the renderer's bloom pass does the glowing, and anything higher washes the accent out to a pale tint in engine.
 
-**Do not spend more than three accents on one piece.** The android carries faction cyan, energy amber, and ore orange; a fourth competes with the visor for attention, and acid lime on an android reads as acid *damage* rather than as the tool that removes it.
+**Do not spend more than three accents on one piece.** The android carries faction cyan, energy amber, and ore orange; a fourth competes with the visor for attention, and acid lime on an android reads as acid _damage_ rather than as the tool that removes it.
 
 Use `add_rounded_box` for hull and machinery forms: a multi-segment chamfer with angle-limited smooth shading reads as a moulded, tooled shell, where a single-segment bevel is a hard 45° cut.
 
@@ -119,21 +119,21 @@ Use `add_rounded_box` for hull and machinery forms: a multi-segment chamfer with
 
 These are contracts, not preferences. Breaking either one breaks the board rather than merely looking wrong.
 
-**`FactionAccent` must survive the export by name.** `tabletop-assets.ts` finds the owner's colour by looking up the material *named* `FactionAccent` and drives low-battery pulses through its emissive. Accent materials are therefore held **out of the bake** and keep their names. Bake an accent in and you get a permanently cyan android for every player.
+**`FactionAccent` must survive the export by name.** `tabletop-assets.ts` finds the owner's colour by looking up the material _named_ `FactionAccent` and drives low-battery pulses through its emissive. Accent materials are therefore held **out of the bake** and keep their names. Bake an accent in and you get a permanently cyan android for every player.
 
-**The lean must be paid for with a lift.** Androids rotate about their model origin, which sits at the centre of the base plate on the ground plane, so leaning into travel swings the leading rim *below* the board by `radius × sin(angle)` — about a tenth of a tile at full lean. `basePlateRadius` in `tabletop-actors.ts` compensates, and a test guards it.
+**The lean must be paid for with a lift.** Androids rotate about their model origin, which sits at the centre of the base plate on the ground plane, so leaning into travel swings the leading rim _below_ the board by `radius × sin(angle)` — about a tenth of a tile at full lean. `basePlateRadius` in `tabletop-actors.ts` compensates, and a test guards it.
 
 ## Texture pipeline
 
 glTF carries image textures, not Blender node graphs, so the procedural surfaces are **baked**. Every part of a piece is joined per surface class, unwrapped into one shared atlas, and baked to three maps:
 
-| Map | Size | Notes |
-| --- | --- | --- |
-| Base colour | 1024² | carries the detail the eye reads |
-| Roughness | 512² | low frequency, halves cleanly |
-| Normal | 512² | captures the procedural seams and micro relief |
+| Map         | Size  | Notes                                          |
+| ----------- | ----- | ---------------------------------------------- |
+| Base colour | 1024² | carries the detail the eye reads               |
+| Roughness   | 512²  | low frequency, halves cleanly                  |
+| Normal      | 512²  | captures the procedural seams and micro relief |
 
-**Metallic has no Cycles bake type**, so it cannot go in the atlas. Each surface class instead keeps its own material sampling the *shared* atlas and carries its own `metallicFactor` — a mesh only ever samples its own UV islands, so several materials over one atlas costs three textures, not nine.
+**Metallic has no Cycles bake type**, so it cannot go in the atlas. Each surface class instead keeps its own material sampling the _shared_ atlas and carries its own `metallicFactor` — a mesh only ever samples its own UV islands, so several materials over one atlas costs three textures, not nine.
 
 Textures export as **WebP** at quality 92, which roughly halves the payload against PNG at a quality nobody can see on a piece a couple of hundred pixels tall. This is safe because three.js's `GLTFLoader` implements `EXT_texture_webp`. Backface culling is on: these are closed solids, so a back face is never visible, and leaving it off makes Blender write `doubleSided` and three.js dutifully draw both sides.
 
@@ -141,11 +141,11 @@ Textures export as **WebP** at quality 92, which roughly halves the payload agai
 
 This is a browser game, not a desktop engine, and the budget is part of the design:
 
-| | Per piece | Whole set |
-| --- | --- | --- |
-| Triangles | 700 – 9,600 | ~34,000 |
-| Draw calls | 5 – 7 | — |
-| GLB size | 188 – 728 KiB | **4.5 MB across 11 pieces** |
+|            | Per piece     | Whole set                   |
+| ---------- | ------------- | --------------------------- |
+| Triangles  | 700 – 9,600   | ~34,000                     |
+| Draw calls | 5 – 7         | —                           |
+| GLB size   | 188 – 728 KiB | **4.5 MB across 11 pieces** |
 
 Draw calls matter as much as triangles, because the renderer clones materials per piece: a board of twenty androids costs twenty times one android. Joining parts per surface class is what keeps sixty greebles down to four hull meshes plus accents.
 
@@ -155,19 +155,19 @@ If the set grows enough that per-piece atlases stop fitting the budget, the next
 
 Each piece must be identifiable by outline alone at replay distance.
 
-| Game entity | Silhouette and key read | Accent |
-| --- | --- | --- |
-| Android | Compact two-legged worker, wide stance, visor, rear pack, hip ore panniers, gripper and nozzle arms | faction visor |
-| Charger | U-shaped gantry over a circular pad — reads as a gate | energy + faction |
-| Depot | Asymmetric stack of sealed crates | faction panel |
-| Extractor | Drill derrick, four converging legs, triangular read | ore |
-| Processor | Squared plant with twin tall stacks | energy |
-| Acid processing plant | Contained cylindrical tank with external pipework | acid hazard + chevrons |
-| Relay tower | Thin braced lattice mast with an offset dish | faction/signal |
-| Scanner | Low pedestal dominated by a wide tilted dish | cyan scan light |
-| Radar | Squat rotator turret under a wide flat rectangular array slab | faction emitter strips |
-| Colony module | Hero piece: geodesic habitat plus annex, corridor, beacon | faction + warm colony light |
-| Loose material cache | Low cargo tray, crate, canister, and mineral sample; no base plate | material-specific signal |
+| Game entity           | Silhouette and key read                                                                             | Accent                      |
+| --------------------- | --------------------------------------------------------------------------------------------------- | --------------------------- |
+| Android               | Compact two-legged worker, wide stance, visor, rear pack, hip ore panniers, gripper and nozzle arms | faction visor               |
+| Charger               | U-shaped gantry over a circular pad — reads as a gate                                               | energy + faction            |
+| Depot                 | Asymmetric stack of sealed crates                                                                   | faction panel               |
+| Extractor             | Drill derrick, four converging legs, triangular read                                                | ore                         |
+| Processor             | Squared plant with twin tall stacks                                                                 | energy                      |
+| Acid processing plant | Contained cylindrical tank with external pipework                                                   | acid hazard + chevrons      |
+| Relay tower           | Thin braced lattice mast with an offset dish                                                        | faction/signal              |
+| Scanner               | Low pedestal dominated by a wide tilted dish                                                        | cyan scan light             |
+| Radar                 | Squat rotator turret under a wide flat rectangular array slab                                       | faction emitter strips      |
+| Colony module         | Hero piece: geodesic habitat plus annex, corridor, beacon                                           | faction + warm colony light |
+| Loose material cache  | Low cargo tray, crate, canister, and mineral sample; no base plate                                  | material-specific signal    |
 
 Pieces that share a role are the hardest to keep apart, so each one carries a different primitive. The three sight pieces are the worked example: the relay tower is a **narrow mast**, the scanner is a **round dish**, and the radar is a **flat rectangular slab**. When a new piece joins an existing family, pick the primitive none of its siblings already uses rather than restyling one of theirs.
 
@@ -177,16 +177,16 @@ Construction sites are not separate finished models: render the piece reduced, w
 
 A worker whose shape does not explain its job is decoration. Every element of the android maps to something it actually does in `packages/game/src/rules/rules.android.ts`:
 
-| Feature | Rule |
-| --- | --- |
-| Wide-stance legs, heavy feet | `moveBatteryCost` |
-| Open hip panniers with ore showing | `cargoCapacity` |
-| Exposed cells on the rear pack | `batteryCapacity` |
-| Chest status monitor | `startingHealth` |
-| Nozzle arm | `cleanAcidBatteryCost`, construction |
-| Gripper arm | collecting, depositing, dismantling |
-| Wide sensor visor | `sight` |
-| Antenna and beacon | `broadcastLimit` |
+| Feature                            | Rule                                 |
+| ---------------------------------- | ------------------------------------ |
+| Wide-stance legs, heavy feet       | `moveBatteryCost`                    |
+| Open hip panniers with ore showing | `cargoCapacity`                      |
+| Exposed cells on the rear pack     | `batteryCapacity`                    |
+| Chest status monitor               | `startingHealth`                     |
+| Nozzle arm                         | `cleanAcidBatteryCost`, construction |
+| Gripper arm                        | collecting, depositing, dismantling  |
+| Wide sensor visor                  | `sight`                              |
+| Antenna and beacon                 | `broadcastLimit`                     |
 
 The first version of the android had nowhere to put the ore it spends the whole game carrying. Cargo rides on the **sides**, open to the sky: the board camera is a fixed three-quarter view and androids turn to face where they are walking, so a rear-mounted tray spends most of the game hidden behind the torso.
 
@@ -196,31 +196,31 @@ Arms are deliberately **asymmetric** — a gripper on one side, a nozzle on the 
 
 Use these as a starting palette. UI text and status must still meet contrast requirements against `Void`.
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| Void | `#050816` | page and deep-space background |
-| Fog | `#070b18` | unexplored ground |
-| Board | `#1f2937` | neutral terrain and panels |
-| Structure dark | `#334155` | plinths, seams, inactive hardware |
-| Structure light | `#94a3b8` | exposed panels and readable edges |
-| System cyan | `#38bdf8` | UI and system accent — never a player |
-| Energy amber | `#fbbf24` | chargers and active processing |
-| Acid lime | `#a3e635` | acid and cleanup systems |
-| Ore orange | `#fb923c` | ore/extraction |
-| Warning coral | `#fb7185` | danger, damage, and invalid actions |
+| Token           | Hex       | Use                                   |
+| --------------- | --------- | ------------------------------------- |
+| Void            | `#050816` | page and deep-space background        |
+| Fog             | `#070b18` | unexplored ground                     |
+| Board           | `#1f2937` | neutral terrain and panels            |
+| Structure dark  | `#334155` | plinths, seams, inactive hardware     |
+| Structure light | `#94a3b8` | exposed panels and readable edges     |
+| System cyan     | `#38bdf8` | UI and system accent — never a player |
+| Energy amber    | `#fbbf24` | chargers and active processing        |
+| Acid lime       | `#a3e635` | acid and cleanup systems              |
+| Ore orange      | `#fb923c` | ore/extraction                        |
+| Warning coral   | `#fb7185` | danger, damage, and invalid actions   |
 
 ### Faction accents
 
 Factions are assigned by seat order, so they read in the same order the scoreboard lists them. Hues are spaced to stay clear of the semantic colours above — no faction accent may sit near acid lime, ore orange, energy amber, or warning coral, or it can be mistaken for a hazard read.
 
-| Faction | Hex | Glyph |
-| --- | --- | --- |
-| Cyan | `#38bdf8` | ◆ |
-| Fuchsia | `#e879f9` | ● |
-| Emerald | `#34d399` | ▲ |
-| Indigo | `#818cf8` | ■ |
-| Pink | `#f472b6` | ◇ |
-| Teal | `#2dd4bf` | ▼ |
+| Faction | Hex       | Glyph |
+| ------- | --------- | ----- |
+| Cyan    | `#38bdf8` | ◆     |
+| Fuchsia | `#e879f9` | ●     |
+| Emerald | `#34d399` | ▲     |
+| Indigo  | `#818cf8` | ■     |
+| Pink    | `#f472b6` | ◇     |
+| Teal    | `#2dd4bf` | ▼     |
 
 Never convey owner, active/inactive state, or hazard solely with colour. Every place an accent identifies a player, its **glyph** appears with it. Pair state with a silhouette, icon, material treatment, or motion/light change.
 
@@ -261,13 +261,13 @@ The renderer can be driven frame by frame instead of from its own animation loop
 
 The pipeline is three modules and two generators, split so a piece cannot be exported under different rules from the rest of the set:
 
-| File | Owns |
-| --- | --- |
-| `nova_kit.py` | geometry primitives, family motifs, the base plate |
-| `nova_surfaces.py` | surface classes, accents, and the bake |
-| `nova_build.py` | scene setup, review lighting, render, export, budget report, shared CLI |
-| `generate-nova-pieces.py` | the ten buildings and the material cache — geometry only |
-| `generate-android.py` | the android's parametric design and its unchosen variants |
+| File                      | Owns                                                                    |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `nova_kit.py`             | geometry primitives, family motifs, the base plate                      |
+| `nova_surfaces.py`        | surface classes, accents, and the bake                                  |
+| `nova_build.py`           | scene setup, review lighting, render, export, budget report, shared CLI |
+| `generate-nova-pieces.py` | the ten buildings and the material cache — geometry only                |
+| `generate-android.py`     | the android's parametric design and its unchosen variants               |
 
 - Editable Blender sources live in `packages/renderer/blender/source/`.
 - Runtime assets are named in kebab case and exported as individual GLB files to `packages/renderer/assets/models/`.

@@ -29,7 +29,11 @@ const ownerId = 'player-1';
  */
 const runSandbox = async (options: SandboxOptions): Promise<SandboxResult> => {
   const { content, height, rounds, width } = options;
-  const ruleset = createBaseRuleset({ world: { width, height } });
+  // The round count is handed to the script as `finalTurn`: a sandbox run plays
+  // exactly these rounds and there is no continuing it, so from the android's
+  // point of view that is when the humans land. Editing the round count and
+  // running again is how a bot's endgame is tested.
+  const ruleset = createBaseRuleset({ world: { width, height }, match: { finalRound: rounds } });
   const loop = new Loop({ ruleset, scriptRunner: getScriptRunner() });
 
   loop.applyEvents([

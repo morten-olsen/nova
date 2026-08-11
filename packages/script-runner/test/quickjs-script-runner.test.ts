@@ -110,9 +110,8 @@ describe('per-turn resource limits', () => {
   });
 
   it('stops a script that asks for more heap than its turn is allowed', async () => {
-    const runner = createQuickJsScriptRunner({ limits: { memoryBytes: 4 * 1024 * 1024 } });
     await expect(
-      runner.execute({ androidId: 'android-1', content: "const hog = 'x'.repeat(50000000); hog.length", world }),
+      run("const hog = 'x'.repeat(50000000); hog.length", {}, { script: { memoryBytes: 4 * 1024 * 1024 } }),
     ).rejects.toThrowError(/out of memory/i);
   });
 
@@ -120,15 +119,25 @@ describe('per-turn resource limits', () => {
     // Allocation churn thrashes the collector, so this spends seconds in very
     // few bytecode operations — the case the tick budget alone cannot catch.
     const started = Date.now();
-    const runner = createQuickJsScriptRunner({ limits: { timeoutMs: 300, memoryBytes: 64 * 1024 * 1024 } });
     await expect(
-      runner.execute({
-        androidId: 'android-1',
-        content: 'const hog = []; while (true) { hog.push(new Array(10000).fill("x")); }',
-        world,
-      }),
+      run(
+        'const hog = []; while (true) { hog.push(new Array(10000).fill("x")); }',
+        {},
+        {
+          script: { timeoutMs: 300, memoryBytes: 64 * 1024 * 1024 },
+        },
+      ),
     ).rejects.toThrowError(/turn budget/);
     expect(Date.now() - started).toBeLessThan(1_500);
+  });
+
+  it('takes each budget from the rules the game is played under', async () => {
+    // The rules travel with the game, so a turn is bounded by the budget the
+    // match was created with rather than by whatever the host prefers.
+    await expect(run('while (true) {}', {}, { script: { fuel: 2_000 } })).rejects.toThrowError(/2000-tick CPU budget/);
+    await expect(
+      run("({ type: 'android.wait', memory: String(rules.script.fuel) })", {}, { script: { fuel: 2_000 } }),
+    ).resolves.toMatchObject({ memory: '2000' });
   });
 
   it('reports runaway recursion as a script error rather than crashing the sandbox', async () => {
@@ -136,24 +145,31 @@ describe('per-turn resource limits', () => {
   });
 
   it('clamps a stack limit large enough to take the WebAssembly module down with it', async () => {
-    // The clamp is the only thing standing between a bot author's typo and an
-    // aborted module, so it is asserted through the public option rather than
-    // trusted to `resolveLimits`.
-    const runner = createQuickJsScriptRunner({ limits: { stackBytes: 8 * 1024 * 1024 } });
+    // The clamp is the only thing standing between a host's typo and an aborted
+    // module, so it is asserted through the public option rather than trusted to
+    // `resolveLimits`. The stack is the one budget that is not a rule, because
+    // its ceiling is a property of this WebAssembly build.
+    const runner = createQuickJsScriptRunner({ stackBytes: 8 * 1024 * 1024 });
     await expect(
-      runner.execute({ androidId: 'android-1', content: 'const f = () => f(); f();', world }),
+      runner.execute({ androidId: 'android-1', content: 'const f = () => f(); f();', world, rules: defaultRules }),
     ).rejects.toThrowError(/stack overflow|call stack/i);
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
     ).resolves.toMatchObject({ type: 'android.wait' });
   });
 
   it('hands the next turn a clean slate after a script exhausts its memory', async () => {
-    const runner = createQuickJsScriptRunner({ limits: { memoryBytes: 4 * 1024 * 1024 } });
-    const hog = { androidId: 'android-1', content: 'const a = []; while (true) { a.push(new Array(1000)); }', world };
+    const runner = createQuickJsScriptRunner();
+    const rules = resolveRules({ script: { memoryBytes: 4 * 1024 * 1024 } });
+    const hog = {
+      androidId: 'android-1',
+      content: 'const a = []; while (true) { a.push(new Array(1000)); }',
+      world,
+      rules,
+    };
     await expect(runner.execute(hog)).rejects.toThrowError(/./);
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules }),
     ).resolves.toMatchObject({ type: 'android.wait' });
   });
 });
@@ -165,12 +181,14 @@ describe('isolation between turns', () => {
       androidId: 'android-1',
       content: "globalThis.sneaky = 1; ({ type: 'android.wait' })",
       world,
+      rules: defaultRules,
     });
     await expect(
       runner.execute({
         androidId: 'android-1',
         content: "({ type: 'android.wait', memory: String(typeof globalThis.sneaky) })",
         world,
+        rules: defaultRules,
       }),
     ).resolves.toMatchObject({ memory: 'undefined' });
   });

@@ -21,6 +21,29 @@ A good android strategy should focus on:
 - keeping androids charged and alive
 - leaving useful broadcasts and recordings for future script improvements
 
+### 1.1 When the Humans Arrive
+
+A game may have an arrival date: the round the colonists are expected to land on,
+set by `rules.match.finalRound` and read by a script as the `finalTurn` global.
+
+It is a deadline, not a mechanic. Nothing happens to the world on that round —
+the engine does not stop the game or score it differently, because it is the host
+that decides how many rounds to run. What it changes is how an Android should
+play: a colony that will be inspected on round 20 is worth building differently
+from one with no arrival date, and readiness banked after the humans land is
+readiness that arrived too late to count.
+
+Two ways to play set it for you, because in both the round count is a real
+deadline rather than a suggestion — neither can be continued once it has run:
+
+- A peer match, `nova host --rounds 20` or Match › Host in the browser lab. The
+  arrival is the round count the host offered.
+- A run in the browser lab, where the arrival is the round count in the Run
+  panel.
+
+A game created with `nova create-game` has no arrival unless its rules file gives
+it one, because `nova run` can always be asked for more rounds.
+
 ## 2. Core Loop
 
 Players repeat this loop:
@@ -45,7 +68,10 @@ The turn function runs with these globals:
 - `world` — the fogged world snapshot visible to the script runner
 - `rules` — every number this game is played with (see [Rules](#18-rules))
 - `turn` — the round now being played, counting from 1
-- `finalTurn` — the round the match is scheduled to end on, or `undefined`
+- `finalTurn` — the round the humans are expected to land on, or `undefined` when
+  no arrival is scheduled. Nothing happens on that round mechanically; it is the
+  deadline the colony is being built to, and a script that reads it can pace
+  itself against the time it has left
 
 The scripts stored in a game are the compiled result. A factory Android is written in TypeScript, across as many files as it needs, and the CLI compiles and bundles it into one script on upload. The action shapes below are what the turn function returns.
 
@@ -161,6 +187,20 @@ To use a new script version, a player must launch a new android with that script
 Dismantling is voluntary. It deactivates the android and frees charger capacity. It currently returns no material. As with any destroyed android, the dismantled one stays in the world as a wreck.
 
 An android on one of its owner's completed chargers can also dismantle another android of the same owner, so a fleet can retire and replace its own members without the player intervening. An android can never dismantle another player's android, and can never name itself as the target — self-destruction is the untargeted form of the same action.
+
+### 7.1 What a Turn May Spend
+
+A turn runs under three budgets, and they are rules like any other, so a script can read its own allowance from `rules.script`:
+
+| Rule                       | Default | What exhausts it                                                      |
+| -------------------------- | ------- | --------------------------------------------------------------------- |
+| `rules.script.fuel`        | 10,000  | Infinite loops, and searches that never terminate                     |
+| `rules.script.timeoutMs`   | 1,000   | Work that is slow without being long, such as allocating relentlessly |
+| `rules.script.memoryBytes` | 16 MB   | Building enormous arrays or strings                                   |
+
+Exceeding any of them is a failed turn: it costs the round and `rules.android.failedTurnHealthPenalty` health, and leaves the next turn unaffected. `fuel` is counted in interpreter ticks rather than milliseconds, so a script is cut off at the same point on every machine — which is what lets two peers replay the same match and agree on the outcome. A normal bot is nowhere near any of these; the shipped starter builder finishes a turn without spending a single tick.
+
+The call stack is bounded too, at 128 KB, but it is not a rule: its ceiling is a property of the sandbox build rather than a design choice.
 
 ## 8. Android Action API
 
@@ -493,7 +533,8 @@ The groups:
 | `buildings` | Per type: cost, construction ticks, health, charging, android capacity, sight, storage, extraction, conversion, acid cleaning |
 | `salvage`   | Salvage damage and the share of build cost returned                                                                           |
 | `scoring`   | What each completed building and each stored material is worth                                                                |
-| `match`     | The scheduled final round, if the match has one                                                                               |
+| `script`    | What one Android turn may spend: CPU ticks, wall clock, and heap                                                              |
+| `match`     | The round the humans are expected to arrive on, if the game has one                                                           |
 
 Two conventions are worth knowing when writing a rules file:
 
@@ -532,7 +573,8 @@ played with.
 
 A peer match is played under the host's rules, and the recording each player
 keeps carries them. The board size is currently the only rule the match offer
-negotiates.
+negotiates; the host's round count is not negotiated but is written into the
+rules as `match.finalRound`, so both Androids know when the humans land.
 
 ## 19. Not Yet Implemented / Expected Future Work
 

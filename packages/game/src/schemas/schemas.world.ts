@@ -16,12 +16,13 @@ const worldSchema = z.object({
   messages: messageSchema.array().optional(),
   round: z.number().optional(),
   /**
-   * The round the match is scheduled to end on, counted the same way as
-   * {@link round}.
+   * The round the humans are expected to arrive on, which is the round the match
+   * is scheduled to end on. Counted the same way as {@link round}.
    *
    * Written at setup from `rules.match.finalRound`, and absent when that rule is
-   * `null` — which is how most matches are played. It lives in the world rather
-   * than only in the rules because scripts read it as the `finalTurn` global.
+   * `null` — a match with no arrival date, which is how an open-ended sandbox
+   * game is played. It lives in the world rather than only in the rules because
+   * scripts read it as the `finalTurn` global.
    */
   finalRound: z.number().optional(),
 });

@@ -107,7 +107,7 @@ PIECES = {
 
 Builders own **geometry only**. The base plate is added for you from the radius in `PIECES`; materials come from `nova_surfaces.py`; and unwrapping, baking, preview rendering, and export all come from `nova_build.py`, so no piece can be exported under different rules from the rest of the set. Address materials by surface class — `Graphite`, `Chassis`, `Ceramic` — and use `add_rounded_box` for hull forms so they read as moulded rather than as chamfered cubes.
 
-Use `FactionAccent` for the ownership read — the renderer tints it per player, so never export one model per faction, and never rename it: `tabletop-assets.ts` finds it *by material name*. Spend at most three accents on one piece. Keep the geometry deterministic; the generator is the source of truth and is committed alongside its output.
+Use `FactionAccent` for the ownership read — the renderer tints it per player, so never export one model per faction, and never rename it: `tabletop-assets.ts` finds it _by material name_. Spend at most three accents on one piece. Keep the geometry deterministic; the generator is the source of truth and is committed alongside its output.
 
 Export the piece:
 

@@ -103,6 +103,10 @@ declare global {
    * it — so an android that asks is one that still works on a smaller board or
    * with smaller hands.
    *
+   * `rules.script` is this turn's own resource budget: CPU ticks, wall clock and
+   * heap. A plan expensive enough to be worth budgeting should be sized from
+   * there rather than from the numbers in the manual.
+   *
    * ```ts
    * const capacity = rules.android.cargoCapacity;
    * const depotCost = rules.buildings.depot.cost.metal ?? 0;
@@ -115,8 +119,18 @@ declare global {
   const turn: number;
 
   /**
-   * The turn the match is scheduled to end on, or `undefined` when it has no
-   * scheduled end. Compare against `turn` to know how much time is left.
+   * The turn the humans are expected to land on, or `undefined` when the game has
+   * no arrival date.
+   *
+   * A deadline rather than a mechanic: nothing happens to the world on that turn,
+   * but readiness banked after it arrived too late to matter. Compare against
+   * `turn` to know how much time is left, and check for `undefined` first — an
+   * open-ended game does not set one.
+   *
+   * ```ts
+   * const turnsLeft = finalTurn === undefined ? Infinity : finalTurn - turn;
+   * const canFinish = (type: BuildingType) => rules.buildings[type].ticks <= turnsLeft;
+   * ```
    */
   const finalTurn: number | undefined;
 }

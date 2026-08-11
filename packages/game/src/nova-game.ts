@@ -10,6 +10,7 @@ export * from './rules/rules.android.js';
 export * from './rules/rules.buildings.js';
 export * from './rules/rules.js';
 export * from './rules/rules.scoring.js';
+export * from './rules/rules.script.js';
 export * from './rules/rules.sight.js';
 export * from './rules/rules.world.js';
 export * from './ruleset/ruleset.base.js';

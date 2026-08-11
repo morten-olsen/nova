@@ -12,6 +12,8 @@ import { readFile } from 'node:fs/promises';
 
 // From the build rather than from source: Node's type stripping does not
 // resolve the `.js` specifiers the sources use, so `pnpm bench` builds first.
+import { defaultRules } from '@morten-olsen/nova-game';
+
 import { loadQuickJs, runInSandbox, resolveLimits } from '../dist/nova-script-runner.js';
 
 const world = {
@@ -34,8 +36,14 @@ const world = {
   round: 1,
 };
 
-const inputJson = JSON.stringify({ androidId: 'android-1', world, turn: 1, finalTurn: undefined });
-const limits = resolveLimits();
+const inputJson = JSON.stringify({
+  androidId: 'android-1',
+  world,
+  rules: defaultRules,
+  turn: 1,
+  finalTurn: undefined,
+});
+const limits = resolveLimits(defaultRules);
 
 const time = (label: string, iterations: number, body: () => void): void => {
   const started = performance.now();

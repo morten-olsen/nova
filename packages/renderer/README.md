@@ -22,13 +22,13 @@ Pieces are display-quality miniatures on base plates, textured by baking
 procedural surfaces down to images. The pipeline is split so that a piece cannot
 be exported under different rules from the rest of the set:
 
-| File | Owns |
-| --- | --- |
-| `blender/scripts/nova_kit.py` | geometry primitives, family motifs, the base plate |
-| `blender/scripts/nova_surfaces.py` | surface classes, emissive accents, and the bake |
-| `blender/scripts/nova_build.py` | scene setup, review lighting, render, export, budget report |
-| `blender/scripts/generate-nova-pieces.py` | the ten buildings and the material cache |
-| `blender/scripts/generate-android.py` | the android and its unchosen design variants |
+| File                                      | Owns                                                        |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| `blender/scripts/nova_kit.py`             | geometry primitives, family motifs, the base plate          |
+| `blender/scripts/nova_surfaces.py`        | surface classes, emissive accents, and the bake             |
+| `blender/scripts/nova_build.py`           | scene setup, review lighting, render, export, budget report |
+| `blender/scripts/generate-nova-pieces.py` | the ten buildings and the material cache                    |
+| `blender/scripts/generate-android.py`     | the android and its unchosen design variants                |
 
 A generator describes geometry; everything after modelling is uniform. Parts are
 joined per surface class, unwrapped into one shared UV atlas, baked to base

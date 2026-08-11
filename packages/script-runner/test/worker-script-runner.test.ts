@@ -1,4 +1,4 @@
-import { defaultRules, type World } from '@morten-olsen/nova-game';
+import { defaultRules, resolveRules, type World } from '@morten-olsen/nova-game';
 import { describe, expect, it } from 'vitest';
 
 import { loadQuickJs } from '../src/quickjs/quickjs-module.js';
@@ -149,21 +149,23 @@ describe('the Worker runner', () => {
     const healthy = createStubWorker();
     let spawns = 0;
     const runner = createWorkerScriptRunner({
-      limits: { timeoutMs: 50 },
       graceMs: 10,
       createWorker: () => {
         spawns += 1;
         return spawns === 1 ? wedged.worker : healthy.worker;
       },
     });
+    // The watchdog is sized from the turn's own wall-clock rule, so shortening
+    // the game's budget is what makes a wedged worker detectable quickly.
+    const rules = resolveRules({ script: { timeoutMs: 50 } });
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules }),
     ).rejects.toThrowError(/turn budget/);
     expect(wedged.terminations()).toBe(1);
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules }),
     ).resolves.toMatchObject({ type: 'android.wait' });
   });
 

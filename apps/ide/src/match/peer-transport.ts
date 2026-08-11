@@ -1,5 +1,8 @@
 import { createMatchConnection, type MatchConnection } from '@morten-olsen/nova-match';
-import Peer, { type DataConnection } from 'peerjs';
+// The named export rather than the default: `peerjs` publishes the same class as
+// both, and importing the default under the name of an existing named export is
+// the one thing that reads as a mistake even when it is not.
+import { Peer, type DataConnection } from 'peerjs';
 
 /**
  * The browser half of the match transport.
