@@ -1,4 +1,11 @@
-import { createBaseRuleset, Loop, type World } from '@morten-olsen/nova-game';
+import {
+  createBaseRuleset,
+  defaultRules,
+  Loop,
+  resolveRules,
+  type RulesInput,
+  type World,
+} from '@morten-olsen/nova-game';
 import { describe, expect, it } from 'vitest';
 
 import { createQuickJsScriptRunner } from '../src/runner/quickjs-script-runner.js';
@@ -22,8 +29,13 @@ const world: World = {
   round: 3,
 };
 
-const run = (content: string, overrides: Partial<World> = {}) =>
-  createQuickJsScriptRunner().execute({ androidId: 'android-1', content, world: { ...world, ...overrides } });
+const run = (content: string, overrides: Partial<World> = {}, rules: RulesInput | undefined = undefined) =>
+  createQuickJsScriptRunner().execute({
+    androidId: 'android-1',
+    content,
+    world: { ...world, ...overrides },
+    rules: rules === undefined ? defaultRules : resolveRules(rules),
+  });
 
 describe('the QuickJS runner and the script contract', () => {
   it('takes the final expression as the action', async () => {
@@ -61,6 +73,20 @@ describe('the QuickJS runner and the script contract', () => {
     await expect(
       run("({ type: 'android.wait', memory: String(finalTurn - turn) })", { finalRound: 10 }),
     ).resolves.toMatchObject({ memory: '7' });
+  });
+
+  it('exposes the rules the match is played under', async () => {
+    await expect(run("({ type: 'android.wait', memory: String(rules.android.cargoCapacity) })")).resolves.toMatchObject(
+      { memory: '10' },
+    );
+    // Not the shipped numbers: whatever this match was tuned to.
+    await expect(
+      run(
+        "({ type: 'android.wait', memory: String(rules.android.cargoCapacity) })",
+        {},
+        { android: { cargoCapacity: 3 } },
+      ),
+    ).resolves.toMatchObject({ memory: '3' });
   });
 
   it('explains a script that does not end in an action object', async () => {

@@ -12,8 +12,8 @@ import { ScriptExecuteOptions, ScriptRunner, toAndroidEvent } from '../src/nova-
  * that package's `vm-parity` tests, not here.
  */
 const createTestScriptRunner = (timeoutMs = 100): ScriptRunner => ({
-  execute: async ({ androidId, content, world }: ScriptExecuteOptions) => {
-    const context = createContext({ androidId, world });
+  execute: async ({ androidId, content, world, rules }: ScriptExecuteOptions) => {
+    const context = createContext({ androidId, world, rules, turn: world.round ?? 0, finalTurn: world.finalRound });
     const result = runInContext(content, context, { timeout: timeoutMs });
     return toAndroidEvent({ androidId, result });
   },

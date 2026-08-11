@@ -1,9 +1,14 @@
-import { calculateColonyScores, type PlayerScore, type World } from '@morten-olsen/nova-game';
+import { calculateColonyScores, type PlayerScore, type Rules, type World } from '@morten-olsen/nova-game';
 import { getFaction } from '@morten-olsen/nova-renderer';
 import { useState } from 'react';
 
 type ScoreboardProps = {
   world: World;
+  /**
+   * The rules the recording was played under, so a retuned match is not scored
+   * against the shipped table. Defaults to the shipped one when omitted.
+   */
+  rules?: Rules;
 };
 
 type PlayerRowProps = {
@@ -75,9 +80,9 @@ const PlayerRow = ({ accent, expanded, glyph, leading, onToggle, score, share }:
  * Collapsed by default: the score is the headline, and the breakdown is a detail
  * you ask for. Showing every contributor at once crowded out the board.
  */
-const Scoreboard = ({ world }: ScoreboardProps): React.ReactNode => {
+const Scoreboard = ({ rules, world }: ScoreboardProps): React.ReactNode => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const scores = calculateColonyScores(world);
+  const scores = calculateColonyScores(world, rules);
   const best = Math.max(1, ...scores.map((score) => score.total));
 
   return (

@@ -4,7 +4,14 @@ import { isAbsolute, resolve, basename } from 'node:path';
 import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
-import { calculateColonyScores, createBaseRuleset, Loop, type Event } from '@morten-olsen/nova-game';
+import {
+  calculateColonyScores,
+  createBaseRuleset,
+  Loop,
+  rulesSchema,
+  type Event,
+  type Rules,
+} from '@morten-olsen/nova-game';
 import { disclosureSchema, type Disclosure } from '@morten-olsen/nova-match';
 import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 
@@ -70,6 +77,7 @@ const getOptions = () => {
       name: { type: 'string' },
       script: { type: 'string' },
       'script-id': { type: 'string' },
+      rules: { type: 'string' },
       rounds: { type: 'string', short: 'r' },
       disclosure: { type: 'string' },
       out: { type: 'string', short: 'o' },
@@ -81,7 +89,7 @@ const getOptions = () => {
 
 const usage = `Usage:
   nova init [factory-folder]
-  nova create-game --file game.json [--width 16 --height 16]
+  nova create-game --file game.json [--width 16 --height 16] [--rules rules.json]
   nova update
   nova status --file game.json
   nova upload-script --file game.json --owner player-1 --name miner --script bot/android.ts
@@ -91,7 +99,13 @@ const usage = `Usage:
   nova host --script bot/android.ts [--rounds 20] [--disclosure full|recording]
   nova join ABCDE-FGHJK --script bot/android.ts
 
-Game files store the generated initial world plus the complete event log.
+Game files store the generated initial world, the rules it is played under, and
+the complete event log.
+
+--rules takes a JSON file holding any subset of the game's rules; everything left
+out keeps its default. The resolved rules are stored in the game file, so every
+later command replays it under the same numbers, and androids can read them from
+the "rules" global.
 
 --script takes the entry file of an Android. It is compiled and bundled before
 it is uploaded, so it may be TypeScript and may import other files.
@@ -100,18 +114,43 @@ host and join play one Android against another over a peer-to-peer connection.
 The host picks the rounds and the disclosure mode, and shares the invite code.
 `;
 
+/**
+ * Rules read off a JSON file, if one was named.
+ *
+ * Any subset is a complete rules file — `{ "android": { "cargoCapacity": 4 } }`
+ * is the shipped game with smaller hands — and it is validated here so a typo is
+ * reported against the file rather than discovered mid-simulation.
+ */
+const readRulesFile = async (value: string | boolean | undefined): Promise<Rules | undefined> => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const path = resolvePath(requireString(value, 'rules'));
+  return rulesSchema.parse(JSON.parse(await readFile(path, 'utf8')));
+};
+
 const createGame = async (values: Record<string, string | boolean | undefined>): Promise<CommandResult> => {
   const file = resolvePath(requireString(values.file, 'file'));
-  const width = optionalNumber(values.width, 16);
-  const height = optionalNumber(values.height, 16);
+  const fileRules = await readRulesFile(values.rules);
+  // `--width`/`--height` are the same two rules spelled on the command line, so
+  // they override the file — but only when actually given, or a rules file's
+  // board would be silently replaced by the flag defaults.
+  const ruleset = createBaseRuleset({
+    ...fileRules,
+    world: {
+      ...fileRules?.world,
+      ...(values.width === undefined ? {} : { width: optionalNumber(values.width, 16) }),
+      ...(values.height === undefined ? {} : { height: optionalNumber(values.height, 16) }),
+    },
+  });
   const loop = new Loop({
-    ruleset: createBaseRuleset({
-      world: { width, height },
-    }),
+    ruleset,
     scriptRunner: createQuickJsScriptRunner(),
   });
+  const { width, height } = ruleset.rules.world;
 
-  await writeGameFile(file, createGameFile(loop.world));
+  await writeGameFile(file, createGameFile(loop.world, ruleset.rules));
   return { message: `Created ${file} with ${width}x${height} world.` };
 };
 
@@ -125,7 +164,7 @@ const status = async (values: Record<string, string | boolean | undefined>): Pro
   const androidLines = world.androids.map((android) => {
     return `  ${android.id}: owner=${android.ownerId} position=${android.position.x},${android.position.y} battery=${android.battery} active=${android.active}`;
   });
-  const scoreLines = calculateColonyScores(world).flatMap((score) => [
+  const scoreLines = calculateColonyScores(world, gameFile.rules).flatMap((score) => [
     `  ${score.playerName} (${score.playerId}): ${score.total}`,
     ...score.contributors.map(
       (contributor) => `    ${contributor.label}: ${contributor.quantity} = ${contributor.points}`,

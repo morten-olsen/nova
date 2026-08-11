@@ -4,18 +4,19 @@ import { getAndroid, getBuildingAt } from './android.helpers.js';
 
 const androidMechanicsCharge: Mechanic = {
   name: 'android.charge',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.charge') {
       return;
     }
 
     const android = getAndroid(world, event.androidId);
     const building = getBuildingAt(world, android.position);
-    if (!building || building.ownerId !== android.ownerId || building.type !== 'charger') {
+    const charge = building ? rules.buildings[building.type].charge : 0;
+    if (!building || building.ownerId !== android.ownerId || charge <= 0) {
       throw new Error('Android must be on an owned charger to charge');
     }
 
-    android.battery = Math.min(100, android.battery + 25);
+    android.battery = Math.min(rules.android.batteryCapacity, android.battery + charge);
   },
 };
 

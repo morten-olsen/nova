@@ -6,6 +6,7 @@
 
 - `world` — the current world snapshot
 - `androidId` — the android executing the script
+- `rules` — every number this game is played with
 
 The android demonstrates the current base ruleset by:
 
@@ -14,6 +15,11 @@ The android demonstrates the current base ruleset by:
 - collecting enough metal for an extra charger
 - building and finishing that charger
 - recharging when it returns to owned charger infrastructure
+
+Not one game constant is written into it. Cargo capacity, build costs, the board's
+bounds, what a charge is worth and what a hazard costs are all read from `rules`,
+so the same file plays a retuned game correctly — which is also why it survives
+the 3x3 board its tests put it on.
 
 Recreate the committed sample recording with:
 
@@ -25,7 +31,10 @@ pnpm nova run --file examples/games/starter-builder-sample.json --rounds 35
 pnpm nova status --file examples/games/starter-builder-sample.json
 ```
 
-The committed sample game has run 35 rounds on a 6x6 world.
+The committed sample game has run 35 rounds on a 6x6 world. Like every game file
+it stores the rules it was created with, so `status`, `run` and `play` all
+continue it under the same numbers — pass `--rules rules.json` to `create-game` to
+try a retuned one.
 
 ## Later-stage tabletop scenario
 

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { createContext, runInContext } from 'node:vm';
 
-import { toAndroidEvent } from '@morten-olsen/nova-game';
+import { defaultRules, rulesForWorld, toAndroidEvent, type World } from '@morten-olsen/nova-game';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
@@ -37,13 +37,16 @@ const world = {
   round: 1,
 };
 
+/** Measured from the stub world above, exactly as the loop measures it. */
+const rules = rulesForWorld(defaultRules, world as World);
+
 const runViaVm = (content: string): unknown =>
-  runInContext(content, createContext({ androidId: 'android-1', world, turn: 1, finalTurn: undefined }), {
+  runInContext(content, createContext({ androidId: 'android-1', world, rules, turn: 1, finalTurn: undefined }), {
     timeout: 1000,
   });
 
 const runViaQuickJs = (content: string) =>
-  createQuickJsScriptRunner().execute({ androidId: 'android-1', content, world });
+  createQuickJsScriptRunner().execute({ androidId: 'android-1', content, world: world as World, rules });
 
 /** What `node:vm` produced, put through the same validator the runners use. */
 const expectedEvent = (content: string) => toAndroidEvent({ androidId: 'android-1', result: runViaVm(content) });

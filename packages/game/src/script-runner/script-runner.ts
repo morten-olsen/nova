@@ -1,3 +1,4 @@
+import type { Rules } from '../rules/rules.js';
 import type { World } from '../schemas/schemas.world.js';
 import { androidEventSchema, type AndroidEvent } from '../events/events.android.js';
 
@@ -9,6 +10,15 @@ type ScriptExecuteOptions = {
    * `world` global verbatim; they must not be handed the unprojected world.
    */
   world: World;
+  /**
+   * The resolved rules of this match, exposed to the script as the `rules`
+   * global so an Android can adapt to the game it is in rather than to the
+   * numbers that were current when it was written.
+   *
+   * Passed through {@link rulesForWorld} by the loop, so the board dimensions
+   * describe the world actually being played.
+   */
+  rules: Rules;
 };
 
 /**

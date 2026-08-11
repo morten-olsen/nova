@@ -85,7 +85,9 @@ This project contains an autonomous android program for Project: Nova. Your job 
 
 ## Start here
 
-1. Read \`docs/RULEBOOK.md\` for the current rules and action API.
+1. Read \`docs/RULEBOOK.md\` for the current rules and action API. Every number in it
+   is a default; the game you are playing hands the real ones to your bot in the
+   \`rules\` global.
 2. Read \`docs/ANDROID-BUILDER-MANUAL.md\` for the recommended build-and-test workflow.
 3. Read \`docs/CLI-GUIDE.md\` before running a simulation.
 4. Inspect \`bot/starter-builder.ts\`; edit or replace it rather than changing installed packages.
@@ -111,10 +113,21 @@ than one file that has to fit in one file:
   file is read.
 - Split an android across as many files as it needs; imports of your own modules
   are followed and bundled in.
-- Types come from the game itself. \`world\`, \`androidId\`, \`turn\` and
-  \`finalTurn\` are globals, and \`Action\`, \`AndroidTurn\`, \`Tile\` and the rest
-  are in scope without an import. Run \`npm run check\` to type-check without
-  playing.
+- Types come from the game itself. \`world\`, \`androidId\`, \`rules\`, \`turn\` and
+  \`finalTurn\` are globals, and \`Action\`, \`AndroidTurn\`, \`Tile\`, \`Rules\` and
+  the rest are in scope without an import. Run \`npm run check\` to type-check
+  without playing.
+- Read numbers from \`rules\`, never from the rulebook. Cargo capacity, build
+  costs, battery costs, hazard damage, sight ranges, what scores and the board's
+  \`width\`/\`height\` are all in there, resolved for this game:
+
+  \`\`\`ts
+  const capacity = rules.android.cargoCapacity;
+  const onMap = (p: Position) => p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;
+  \`\`\`
+
+  A bot with the rulebook's numbers baked in is a bot that breaks the moment the
+  game is tuned — and \`nova create-game --rules rules.json\` tunes it.
 - Only import types from \`@morten-olsen/nova-game\`, never values: the package
   is the engine, and bundling it into an android would spend the whole turn
   budget on loading it.
@@ -127,6 +140,7 @@ Bundling happens here, before upload; nothing is imported at run time.
 Run these commands from this directory:
 
 \`\`\`sh
+npx nova create-game --file game.json [--width 16 --height 16] [--rules rules.json]
 npx nova upload-script --file game.json --owner player-1 --name <name> --script bot/<file>.ts
 npx nova launch-android --file game.json --owner player-1 --script-id script-1
 npx nova run --file game.json --rounds 10
@@ -165,7 +179,8 @@ an Android that fails a turn records nothing for that round.
 ## Boundaries
 
 - Return exactly one valid action object from the turn function; use the rulebook action names and fields.
-- A turn reads the world from the \`androidId\`, \`world\`, \`turn\` and \`finalTurn\` globals. It has no filesystem, no network and no timers, and nothing is imported while it runs.
+- A turn reads the world from the \`androidId\`, \`world\`, \`rules\`, \`turn\` and \`finalTurn\` globals. It has no filesystem, no network and no timers, and nothing is imported while it runs.
+- Do not hardcode a game constant. If a number describes the game, it is in \`rules\`; if it describes your strategy, name it in the bot.
 - Treat the rulebook as the player contract. If it is unclear, inspect \`node_modules/@morten-olsen/nova-game/src/\` for the implemented behavior, then keep bot code independent of that package's internals.
 - Make one behavioral change at a time and validate it with a fresh or understood recording.
 `;

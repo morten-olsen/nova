@@ -1,18 +1,25 @@
 import { z } from 'zod';
 
 import { eventSchema, type Event } from '../events/events.js';
+import { rulesSchema } from '../rules/rules.js';
 import { createBaseRuleset } from '../ruleset/ruleset.base.js';
 import type { Ruleset } from '../ruleset/ruleset.js';
 import { worldSchema, type World } from '../schemas/schemas.world.js';
 
 /**
- * The on-disk and over-the-wire form of a played game: a starting world plus
- * every event that followed. The CLI writes it, the replay viewer and the IDE
- * read it, so it is defined once here rather than per consumer.
+ * The on-disk and over-the-wire form of a played game: a starting world, the
+ * rules it was played under, and every event that followed. The CLI writes it,
+ * the replay viewer and the IDE read it, so it is defined once here rather than
+ * per consumer.
+ *
+ * `rules` defaults rather than being required, so a recording written before
+ * rules were data still opens — it was played under the shipped numbers, which
+ * is exactly what the default resolves to.
  */
 const gameRecordingSchema = z.object({
   version: z.literal(1),
   initialWorld: worldSchema,
+  rules: rulesSchema.prefault({}),
   events: eventSchema.array(),
 });
 
@@ -32,11 +39,15 @@ type TimelineFrame = {
 /**
  * Replays a recording into one frame per completed round.
  *
- * The ruleset is a parameter because a recording is only events — replaying it
- * under different mechanics than produced it yields a different world, so the
- * caller has to supply the one the game was played with.
+ * The ruleset is still a parameter because a recording is only events, and
+ * replaying it under different mechanics than produced it yields a different
+ * world. It defaults to the base mechanics under the recording's own rules,
+ * which is the reconstruction a viewer wants.
  */
-const createTimeline = (recording: GameRecording, ruleset: Ruleset = createBaseRuleset()): TimelineFrame[] => {
+const createTimeline = (
+  recording: GameRecording,
+  ruleset: Ruleset = createBaseRuleset(recording.rules),
+): TimelineFrame[] => {
   let world = structuredClone(recording.initialWorld);
   const frames: TimelineFrame[] = [
     { events: [], index: 0, label: `Round ${world.round ?? 0}`, round: world.round ?? 0, world },

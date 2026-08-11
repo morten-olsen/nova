@@ -5,14 +5,14 @@ import { ensurePlayer } from './user.helpers.js';
 
 const userMechanicsLaunchAndroid: Mechanic = {
   name: 'user.launch-android',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'user.launch-android') {
       return;
     }
 
-    ensurePlayer(world, event.ownerId);
+    ensurePlayer(world, event.ownerId, rules);
 
-    launchAndroid({ world, ownerId: event.ownerId, scriptId: event.scriptId });
+    launchAndroid({ world, ownerId: event.ownerId, scriptId: event.scriptId, rules });
   },
 };
 

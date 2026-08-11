@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
-import type { Building, BuildingType } from '../schemas/schemas.building.js';
-import { materialKeys, type MaterialBundle } from '../schemas/schemas.resources.js';
+import { defaultRules, type Rules } from '../rules/rules.js';
+import type { ScoreRules } from '../rules/rules.scoring.js';
+import type { Building } from '../schemas/schemas.building.js';
+import { materialKeys } from '../schemas/schemas.resources.js';
 import type { World } from '../schemas/schemas.world.js';
 
 const scoreContributorSchema = z.object({
@@ -22,33 +24,12 @@ const playerScoreSchema = z.object({
 
 type PlayerScore = z.infer<typeof playerScoreSchema>;
 
-type BuildingScore = {
-  label: string;
-  points: number;
-};
-
-const buildingScores: Partial<Record<BuildingType, BuildingScore>> = {
-  charger: { label: 'Power and Android capacity', points: 25 },
-  depot: { label: 'Secured storage', points: 40 },
-  extractor: { label: 'Resource extraction', points: 80 },
-  processor: { label: 'Material processing', points: 100 },
-  'acid-processing-plant': { label: 'Environmental protection', points: 120 },
-  'colony-module': { label: 'Colony modules', points: 1_000 },
-};
-
-const materialScores: Record<keyof MaterialBundle, BuildingScore> = {
-  metal: { label: 'Stored metal', points: 2 },
-  electronics: { label: 'Stored electronics', points: 3 },
-  polymer: { label: 'Stored polymer', points: 3 },
-  ore: { label: 'Stored ore', points: 1 },
-  water: { label: 'Stored water', points: 2 },
-  acidCanister: { label: 'Stored acid canisters', points: 2 },
-};
-
 const isComplete = (building: Building): boolean => building.remainingConstruction.ticks === 0;
 
-const addContributor = (contributors: Map<string, ScoreContributor>, score: BuildingScore, quantity: number): void => {
-  if (quantity <= 0) {
+const addContributor = (contributors: Map<string, ScoreContributor>, score: ScoreRules, quantity: number): void => {
+  // A rule worth no points earns no row: that is how the sight and
+  // communication buildings stay named but unscored.
+  if (quantity <= 0 || score.points === 0) {
     return;
   }
 
@@ -82,9 +63,15 @@ const playerIds = (world: World): string[] => {
  * Measures present colony readiness. Only completed, functioning infrastructure
  * and materials safely held in that infrastructure count; exploration, scripts,
  * broadcasts, loose materials, and Androids do not.
+ *
+ * `rules` decides what anything is worth. It defaults to the shipped game so a
+ * caller holding nothing but a world — a renderer, a scoreboard — still gets an
+ * answer; a caller with a recording should pass `recording.rules`, because a
+ * match tuned for different stakes was not scored by this table.
  */
-const calculateColonyScores = (world: World): PlayerScore[] => {
+const calculateColonyScores = (world: World, rules: Rules = defaultRules): PlayerScore[] => {
   const names = new Map(world.players?.map((player) => [player.id, player.name]));
+  const { buildings: buildingScores, materials: materialScores } = rules.scoring;
 
   return playerIds(world)
     .map((playerId) => {
@@ -94,10 +81,7 @@ const calculateColonyScores = (world: World): PlayerScore[] => {
           continue;
         }
 
-        const buildingScore = buildingScores[building.type];
-        if (buildingScore) {
-          addContributor(contributors, buildingScore, 1);
-        }
+        addContributor(contributors, buildingScores[building.type], 1);
 
         for (const material of materialKeys) {
           addContributor(contributors, materialScores[material], building.storage?.[material] ?? 0);

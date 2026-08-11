@@ -4,6 +4,7 @@ import {
   projectRecordingForPlayer,
   type Event,
   type GameRecording,
+  type Ruleset,
   type ScriptRunner,
   type World,
 } from '@morten-olsen/nova-game';
@@ -102,16 +103,19 @@ const negotiate = async (options: HostMatchOptions): Promise<GuestEntry> => {
 const simulate = async (
   options: HostMatchOptions,
   guest: GuestEntry,
-): Promise<{ game: GameRecording; world: World }> => {
+): Promise<{ game: GameRecording; world: World; ruleset: Ruleset }> => {
   const { connection, scriptRunner } = options;
+  // One ruleset for the whole match: it builds the world, plays it, scores it,
+  // and its rules are what the recording stores. The board the host offered is
+  // the only rule a match currently negotiates.
+  const ruleset = createBaseRuleset({ world: { width: options.width, height: options.height } });
   const initialWorld = createMatchWorld({
     guestName: guest.playerName,
-    height: options.height,
     hostName: options.playerName,
+    ruleset,
     scriptRunner,
-    width: options.width,
   });
-  const loop = new Loop({ ruleset: createBaseRuleset(), initWorld: initialWorld, scriptRunner });
+  const loop = new Loop({ ruleset, initWorld: initialWorld, scriptRunner });
 
   const setup: Event[] = [
     { type: 'user.upload-android-script', ownerId: hostPlayerId, name: options.scriptName, content: options.script },
@@ -131,7 +135,7 @@ const simulate = async (
     connection.send({ type: 'progress', round, rounds: options.rounds });
   }
 
-  return { game: { version: 1, initialWorld, events: loop.events }, world: loop.world };
+  return { game: { version: 1, initialWorld, rules: ruleset.rules, events: loop.events }, world: loop.world, ruleset };
 };
 
 /**
@@ -145,9 +149,10 @@ const deliverResult = (
   options: HostMatchOptions,
   game: GameRecording,
   world: World,
+  ruleset: Ruleset,
 ): Omit<HostMatchOutcome, 'guestName'> => {
   const { connection } = options;
-  const scores = finalScoresOf(world);
+  const scores = finalScoresOf(world, ruleset);
   const shared = { disclosure: options.disclosure, rounds: options.rounds, scores };
 
   if (options.disclosure === 'full') {
@@ -182,8 +187,8 @@ const runHostMatch = async (options: HostMatchOptions): Promise<HostMatchOutcome
   const guest = await negotiate(options);
   options.report(`${guest.playerName} accepted with "${guest.scriptName}". Running ${options.rounds} rounds…`);
 
-  const { game, world } = await simulate(options, guest);
-  const outcome = deliverResult(options, game, world);
+  const { game, world, ruleset } = await simulate(options, guest);
+  const outcome = deliverResult(options, game, world, ruleset);
 
   // Give the result time to reach the guest before the channel is torn down.
   await new Promise((resolve) => setTimeout(resolve, resultFlushMs));

@@ -2,7 +2,7 @@ import type { Mechanic } from '../mechanics.base.js';
 
 const gameMechanicsDecayAndroids: Mechanic = {
   name: 'game.decay-androids',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'game.round-end') {
       return;
     }
@@ -16,9 +16,9 @@ const gameMechanicsDecayAndroids: Mechanic = {
       const tile = world.tiles.find(
         (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,
       );
-      const radiationDamage = tile?.composition.radiation ?? 0;
+      const radiation = tile?.composition.radiation ?? 0;
 
-      android.health -= 0.1 + radiationDamage * 0.25;
+      android.health -= rules.android.decayPerRound + radiation * rules.android.radiationDamagePerPoint;
     }
   },
 };

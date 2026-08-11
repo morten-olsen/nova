@@ -1,6 +1,6 @@
 // The android script contract, as TypeScript sees it.
 //
-// The sandbox injects `world` and its three companions as globals, so no import
+// The sandbox injects `world` and its four companions as globals, so no import
 // can introduce them and no module can declare them: an android is compiled
 // against this file instead. It is opt-in through the `./android` export rather
 // than part of the package's main types, because a global named `world` is the
@@ -17,19 +17,22 @@
 // sandbox.
 //
 // Every model type is an alias of the engine's own, so an action added to the
-// game arrives here with the package. Only the four globals are written by
+// game arrives here with the package. Only the five globals are written by
 // hand, and they are fixed by the sandbox bootstrap rather than by the rules.
 
 import type {
   Android as NovaAndroid,
   AndroidAction,
+  AndroidRules as NovaAndroidRules,
   Building as NovaBuilding,
+  BuildingRules as NovaBuildingRules,
   BuildingType as NovaBuildingType,
   Direction as NovaDirection,
   MaterialBundle as NovaMaterialBundle,
   Message as NovaMessage,
   Player as NovaPlayer,
   Position as NovaPosition,
+  Rules as NovaRules,
   Script as NovaScript,
   Tile as NovaTile,
   TileComposition as NovaTileComposition,
@@ -48,6 +51,11 @@ declare global {
   type Message = NovaMessage;
   type Player = NovaPlayer;
   type Script = NovaScript;
+
+  /** Every number this match is played with. See the `rules` global. */
+  type Rules = NovaRules;
+  type AndroidRules = NovaAndroidRules;
+  type BuildingRules = NovaBuildingRules;
 
   /**
    * The world as this android can see it. Tiles your owner has not revealed are
@@ -84,6 +92,24 @@ declare global {
 
   /** A fogged snapshot of the world for this turn. */
   const world: World;
+
+  /**
+   * Every number this match is played with: cargo capacity, battery costs,
+   * hazard damage, build costs and times, sight ranges, salvage rates, what
+   * scores, and the board's `width` and `height`.
+   *
+   * Read from here rather than copying a number out of the rulebook. Nothing in
+   * this object is guaranteed to match the defaults — a host can retune any of
+   * it — so an android that asks is one that still works on a smaller board or
+   * with smaller hands.
+   *
+   * ```ts
+   * const capacity = rules.android.cargoCapacity;
+   * const depotCost = rules.buildings.depot.cost.metal ?? 0;
+   * const onMap = (p: Position) => p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;
+   * ```
+   */
+  const rules: Rules;
 
   /** The turn now being played, counting from 1. */
   const turn: number;

@@ -1,4 +1,4 @@
-import type { World } from '@morten-olsen/nova-game';
+import { defaultRules, type World } from '@morten-olsen/nova-game';
 import { describe, expect, it } from 'vitest';
 
 import { loadQuickJs } from '../src/quickjs/quickjs-module.js';
@@ -89,7 +89,7 @@ describe('the Worker runner', () => {
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
     ).resolves.toEqual({ type: 'android.wait', androidId: 'android-1' });
   });
 
@@ -98,7 +98,12 @@ describe('the Worker runner', () => {
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait', memory: String(turn) })", world }),
+      runner.execute({
+        androidId: 'android-1',
+        content: "({ type: 'android.wait', memory: String(turn) })",
+        world,
+        rules: defaultRules,
+      }),
     ).resolves.toMatchObject({ memory: '2' });
   });
 
@@ -106,9 +111,9 @@ describe('the Worker runner', () => {
     const stub = createStubWorker();
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
-    await expect(runner.execute({ androidId: 'android-1', content: '42', world })).rejects.toThrowError(
-      /must produce an action object/,
-    );
+    await expect(
+      runner.execute({ androidId: 'android-1', content: '42', world, rules: defaultRules }),
+    ).rejects.toThrowError(/must produce an action object/);
   });
 
   it('keeps turns apart when several are in flight', async () => {
@@ -116,9 +121,24 @@ describe('the Worker runner', () => {
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
     const results = await Promise.all([
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait', memory: 'a' })", world }),
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait', memory: 'b' })", world }),
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait', memory: 'c' })", world }),
+      runner.execute({
+        androidId: 'android-1',
+        content: "({ type: 'android.wait', memory: 'a' })",
+        world,
+        rules: defaultRules,
+      }),
+      runner.execute({
+        androidId: 'android-1',
+        content: "({ type: 'android.wait', memory: 'b' })",
+        world,
+        rules: defaultRules,
+      }),
+      runner.execute({
+        androidId: 'android-1',
+        content: "({ type: 'android.wait', memory: 'c' })",
+        world,
+        rules: defaultRules,
+      }),
     ]);
 
     expect(results.map((result) => ('memory' in result ? result.memory : undefined))).toEqual(['a', 'b', 'c']);
@@ -138,12 +158,12 @@ describe('the Worker runner', () => {
     });
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
     ).rejects.toThrowError(/turn budget/);
     expect(wedged.terminations()).toBe(1);
 
     await expect(
-      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world }),
+      runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world, rules: defaultRules }),
     ).resolves.toMatchObject({ type: 'android.wait' });
   });
 
@@ -151,7 +171,12 @@ describe('the Worker runner', () => {
     const stub = createStubWorker({ silent: true });
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
-    const turn = runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world });
+    const turn = runner.execute({
+      androidId: 'android-1',
+      content: "({ type: 'android.wait' })",
+      world,
+      rules: defaultRules,
+    });
     stub.fail('the worker exploded');
 
     await expect(turn).rejects.toThrowError(/the worker exploded/);
@@ -176,7 +201,12 @@ describe('the Worker runner', () => {
     const stub = createStubWorker({ silent: true });
     const runner = createWorkerScriptRunner({ createWorker: () => stub.worker });
 
-    const turn = runner.execute({ androidId: 'android-1', content: "({ type: 'android.wait' })", world });
+    const turn = runner.execute({
+      androidId: 'android-1',
+      content: "({ type: 'android.wait' })",
+      world,
+      rules: defaultRules,
+    });
     runner.dispose();
 
     await expect(turn).rejects.toThrowError(/disposed/);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createBaseRuleset,
-  failedTurnHealthPenalty,
+  defaultRules,
   Loop,
   projectRecordingForPlayer,
   projectWorldForAndroid,
@@ -162,6 +162,7 @@ describe('game engine', () => {
       androidId: 'owner-android',
       content: "({ type: world.tiles.length === 2 ? 'android.wait' : 'android.move', direction: 'east' })",
       world: fogged,
+      rules: defaultRules,
     });
     expect(event.type).toBe('android.wait');
   });
@@ -373,7 +374,15 @@ describe('game engine', () => {
     await loop.run();
 
     expect(loop.world.androids[0]).toEqual(
-      expect.objectContaining({ active: true, health: expect.closeTo(100 - failedTurnHealthPenalty - 0.1, 5) }),
+      expect.objectContaining({
+        active: true,
+        health: expect.closeTo(
+          defaultRules.android.startingHealth -
+            defaultRules.android.failedTurnHealthPenalty -
+            defaultRules.android.decayPerRound,
+          5,
+        ),
+      }),
     );
 
     for (let round = 0; round < 9; round += 1) {

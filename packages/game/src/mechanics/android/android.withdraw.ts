@@ -5,18 +5,15 @@ import { addToAndroidCargo, getAndroid, getBuildingAt } from './android.helpers.
 
 const androidMechanicsWithdraw: Mechanic = {
   name: 'android.withdraw',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.withdraw') {
       return;
     }
 
     const android = getAndroid(world, event.androidId);
     const building = getBuildingAt(world, android.position);
-    if (
-      !building ||
-      building.ownerId !== android.ownerId ||
-      !['depot', 'extractor', 'processor', 'acid-processing-plant'].includes(building.type)
-    ) {
+    const storage = building ? rules.buildings[building.type].storage : null;
+    if (!building || building.ownerId !== android.ownerId || !storage?.withdraw) {
       throw new Error('Android must be on an owned storage-capable building to withdraw');
     }
 
@@ -24,7 +21,7 @@ const androidMechanicsWithdraw: Mechanic = {
       throw new Error('Depot does not have requested materials');
     }
 
-    addToAndroidCargo(android, event.resources);
+    addToAndroidCargo(android, event.resources, rules.android.cargoCapacity);
     building.storage = subtractMaterials(building.storage, event.resources);
   },
 };

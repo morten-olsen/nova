@@ -8,7 +8,7 @@ Work in the order below. The rules come first because the engine is the contract
 
 Two of these steps are enforced by types, and the rest are not. Knowing which is which is most of the value of this document.
 
-`buildingCosts` and `buildingTicks` are `Record<BuildingType, …>`, so adding a type to the schema **breaks the build** until both are filled in. Everything else — the behaviour mechanic, the model, the asset URL, the score entry, the storage lists — is either optional or keyed by a `Partial` map, so a half-added building type compiles cleanly and simply does nothing. Walk the whole list.
+The two rules tables — `rules.buildings` and `rules.scoring.buildings` — are exhaustive `Record<BuildingType, …>`s, so adding a type to the schema **breaks the build** until both are filled in. That is most of the wiring: cost, ticks, health, storage, sight, extraction, conversion, charging, capacity and score are all rules, and the mechanics read them generically. What the compiler will _not_ catch is a genuinely new effect (a mechanic to implement), the 3D piece, and the asset URL. Walk the whole list.
 
 ## 1. Declare the type
 
@@ -25,40 +25,45 @@ const buildingTypeSchema = z.enum([
 
 `BuildingType` is inferred from this enum, so this one edit is what makes the next step a compile error rather than a silent omission.
 
-## 2. Set cost and construction time
+## 2. Give it rules
 
-`packages/game/src/mechanics/construction/construction.defaults.ts` holds both maps. `tsc` will not pass until the new key exists in each:
+`packages/game/src/rules/rules.buildings.ts` holds the table of building rules, and `tsc` will not pass until the new type has an entry. Cost and construction time are the only required fields; everything else defaults to inert:
 
 ```ts
-const buildingCosts: Record<BuildingType, MaterialBundle> = {
-  // …
-  radar: { metal: 14, electronics: 10, polymer: 2 },
-};
-
-const buildingTicks: Record<BuildingType, number> = {
-  // …
-  radar: 7,
-};
+radar: buildingRulesSchema({
+  cost: { metal: 14, electronics: 10, polymer: 2 },
+  ticks: 7,
+  sight: { range: 5, shape: 'circular' },
+}),
 ```
+
+`packages/game/src/rules/rules.scoring.ts` is the second exhaustive table: give the type a label and its points, or `points: 0` if it deliberately earns no readiness (see step 4).
+
+Everything a mechanic reads about a building type is in this entry, so most buildings need no code at all beyond it:
+
+| Field             | Effect                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| `cost`, `ticks`   | What starting and finishing it takes                                                 |
+| `health`          | How much salvage it absorbs                                                          |
+| `charge`          | Battery an `android.charge` restores here; `0` means it is not a charger             |
+| `androidCapacity` | Active Androids it allows its owner, and whether it is a deployment bay              |
+| `sight`           | What it reveals each round while completed                                           |
+| `storage`         | Whether it holds material, and whether Androids may deposit into or withdraw from it |
+| `extraction`      | What it harvests from its own tile's composition each round end                      |
+| `conversion`      | What it refines inside its own storage each round end                                |
+| `cleansAcid`      | Whether it lets its owner's Androids clean adjacent acid                             |
 
 Price the building against its nearest sibling rather than in the abstract. The radar covers roughly twice the ground a scanner does (about 81 tiles against 41), so it costs roughly twice as much and takes almost twice as long to build. A building that is strictly better than an existing one for a similar price makes the existing one dead content.
 
-At this point the building is constructible and does nothing.
+At this point the building is constructible, and does whatever its rules describe.
 
 ## 3. Give it a behaviour
 
 Buildings have no inherent effects; a mechanic has to look for them. There are two routes.
 
-**Extend an existing mechanic** when the new building is a variation on an effect that already exists. The radar took this route: `packages/game/src/mechanics/game/game.reveal-tiles.ts` already granted sight to scanners, so the radar joined its sight table.
+**Reuse an existing effect** when the new building is a variation on one that already exists — which now means filling in a field in step 2 and writing no code. `game.reveal-tiles.ts` grants sight to any completed building whose `sight` rule is not `null`, `game.extract-resources.ts` harvests for any with an `extraction`, and `android.charge.ts` charges at any with a `charge` above zero.
 
-```ts
-const buildingSight: Partial<Record<BuildingType, Sight>> = {
-  scanner: { range: 4, shape: 'stepped' },
-  radar: { range: 5, shape: 'circular' },
-};
-```
-
-Prefer promoting a hardcoded check into a table like this over adding a second `if`. The pre-radar code tested `building.type === 'scanner'` inline; turning that into a map made the third sight source a one-line data change instead of another branch.
+Prefer making an effect rule-driven over adding a second `if`. A mechanic that tests `building.type === 'scanner'` is a mechanic that has to be edited for every future sibling; one that reads `rules.buildings[building.type].sight` never does, and the balance sheet gains a knob.
 
 **Write a new mechanic** when the effect is genuinely new. Add `packages/game/src/mechanics/<area>/<area>.<verb>.ts` following `game.process-resources.ts` as a model, then register it in `packages/game/src/mechanics/game/game.ts` — a mechanic that is not in `createGameMechanics` never runs. Order matters: mechanics are applied in array order against the same event.
 
@@ -76,9 +81,9 @@ A building under construction occupies its tile immediately, so an ungated effec
 
 None of these are required, and none of them will fail to compile if you skip them. Decide about each one explicitly.
 
-- **Score** — `packages/game/src/scoring/scoring.ts`. `buildingScores` is `Partial`, so an absent type scores zero. That is the right answer for infrastructure that enables play rather than constituting colony readiness: scanners, radars, and relay towers all deliberately score nothing. If the building _is_ colony readiness, add a label and points.
-- **Storage** — a building only gets a `storage` bundle if its type is in the list in `construction.start-construction.ts`. If Androids should also put material in or take it out, the matching lists in `android.deposit.ts` and `android.withdraw.ts` are separate and must be updated too. These three lists are independent by design — a processor accepts deposits and allows withdrawals, an extractor only allows withdrawals.
-- **Round-end processing** — see `game.extract-resources.ts` and `game.process-resources.ts` for the pattern of transforming stored material each round.
+- **Score** — `rules.scoring.buildings` in `packages/game/src/rules/rules.scoring.ts`. `points: 0` keeps the type out of the breakdown entirely, which is the right answer for infrastructure that enables play rather than constituting colony readiness: scanners, radars, and relay towers all deliberately score nothing. Give it a label regardless, so a ruleset that wants to score it has something to name it by.
+- **Storage** — the `storage` rule both decides whether the building is created with a storage bundle and whether Androids may deposit into or withdraw from it. `{ deposit: false, withdraw: true }` is the extractor: it fills itself and hands material out.
+- **Round-end processing** — `extraction` and `conversion` cover harvesting from the ground and refining in storage. A round-end effect that is neither needs a new mechanic (step 3).
 
 ## 5. Design and build the piece
 
@@ -139,7 +144,7 @@ Add a case to `packages/game/test/game-engine.test.ts` driving the real `Loop` a
 
 ## 8. Update the documentation
 
-- [RULEBOOK.md](RULEBOOK.md) — add a row to the building table in _§10 Buildings_ with cost, ticks, and function, and describe the mechanic in the section that owns it (the radar's sight rules went in _§14 Visibility and Information_). If the building scores, update _§16_; if it deliberately does not, add it to the list of things that earn no points.
+- [RULEBOOK.md](RULEBOOK.md) — add a row to the building table in _§10 Buildings_ with cost, ticks, and function, and describe the mechanic in the section that owns it (the radar's sight rules went in _§14 Visibility and Information_). If the building scores, update _§16_; if it deliberately does not, add it to the list of things that earn no points. State numbers as the defaults they are, naming the rule they come from.
 - [visual-design.md](visual-design.md) — add a row to the _Gameplay silhouettes_ table.
 - `packages/renderer/assets/previews/README.md` — add the preview to the table.
 - [../README.md](../README.md) — extend the list of what Androids can build.

@@ -1,22 +1,23 @@
 import type { Mechanic } from '../mechanics.base.js';
 
-import { getAndroid, launchAndroid, requireOperatingCharger } from './android.helpers.js';
+import { getAndroid, launchAndroid, requireDeploymentBay } from './android.helpers.js';
 
 const androidMechanicsLaunch: Mechanic = {
   name: 'android.launch',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.launch') {
       return;
     }
 
     const android = getAndroid(world, event.androidId);
-    const charger = requireOperatingCharger(world, android);
+    const bay = requireDeploymentBay(world, android, rules);
 
     launchAndroid({
       world,
       ownerId: android.ownerId,
       scriptId: event.scriptId,
-      position: charger.position,
+      position: bay.position,
+      rules,
     });
   },
 };
