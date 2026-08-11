@@ -6,11 +6,11 @@ import {
 } from '../../schemas/schemas.resources.js';
 import type { Mechanic } from '../mechanics.base.js';
 
-import { addToAndroidCargo, androidCargoCapacity, getAndroid, getTileAt, materialAmount } from './android.helpers.js';
+import { addToAndroidCargo, getAndroid, getTileAt, materialAmount } from './android.helpers.js';
 
 const androidMechanicsCollect: Mechanic = {
   name: 'android.collect',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.collect') {
       return;
     }
@@ -21,10 +21,11 @@ const androidMechanicsCollect: Mechanic = {
       throw new Error('Android is not on a tile');
     }
 
+    const capacity = rules.android.cargoCapacity;
     const available = normalizeMaterials(tile.scattered);
     const requested = event.resources ? normalizeMaterials(event.resources) : available;
     const collected: MaterialBundle = {};
-    let remainingCapacity = androidCargoCapacity - materialAmount(android.cargo);
+    let remainingCapacity = capacity - materialAmount(android.cargo);
 
     for (const key of materialKeys) {
       const amount = Math.min(available[key] ?? 0, requested[key] ?? 0, remainingCapacity);
@@ -36,7 +37,7 @@ const androidMechanicsCollect: Mechanic = {
       throw new Error('No scattered material available to collect');
     }
 
-    addToAndroidCargo(android, collected);
+    addToAndroidCargo(android, collected, capacity);
     tile.scattered = subtractMaterials(tile.scattered, collected);
   },
 };

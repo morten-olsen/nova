@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { createBaseRuleset, Loop, parseRecording, World, type GameRecording } from '@morten-olsen/nova-game';
+import { createBaseRuleset, Loop, parseRecording, Rules, World, type GameRecording } from '@morten-olsen/nova-game';
 import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
 
 /**
@@ -9,9 +9,15 @@ import { createQuickJsScriptRunner } from '@morten-olsen/nova-script-runner';
  */
 type GameFile = GameRecording;
 
-const createGameFile = (world: World): GameFile => ({
+/**
+ * The rules are stored with the world they generated, because every later
+ * command replays this file: a game created with a retuned ruleset has to be
+ * continued under the same one, or the events would land in a different world.
+ */
+const createGameFile = (world: World, rules: Rules): GameFile => ({
   version: 1,
   initialWorld: structuredClone(world),
+  rules,
   events: [],
 });
 
@@ -26,7 +32,7 @@ const writeGameFile = async (path: string, gameFile: GameFile): Promise<void> =>
 
 const createLoopFromGameFile = (gameFile: GameFile): Loop => {
   return new Loop({
-    ruleset: createBaseRuleset(),
+    ruleset: createBaseRuleset(gameFile.rules),
     initWorld: gameFile.initialWorld,
     events: gameFile.events,
     scriptRunner: createQuickJsScriptRunner(),

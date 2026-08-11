@@ -11,14 +11,15 @@ const turn: AndroidTurn = () => ({ type: 'android.move', direction: 'east' });
 export default turn;
 ```
 
-It runs in a sandbox with four globals:
+It runs in a sandbox with five globals:
 
 - `androidId`: the id of the Android whose turn is running.
 - `world`: a fogged snapshot of the current world. It contains only tiles revealed for this Android's owner, plus the Android's current tile. Androids, buildings, and broadcasts outside those tiles are omitted.
+- `rules`: every number this game is played with — see [Read the rules, do not repeat them](#read-the-rules-do-not-repeat-them).
 - `turn`: the turn now being played, counting from 1.
 - `finalTurn`: the turn the match is scheduled to end on, or `undefined` when it has no scheduled end. Compare it against `turn` to know how much time is left — but check for `undefined` first, because most matches do not set one.
 
-Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (maximum 4,096 characters) for decisions across turns. `recording` is a player-facing log (maximum 16,384 characters) retained on the Android after it is deactivated. Each value replaces the previous value, so read the current Android's value from `world.androids` when appending to a recording. The `memory` and `recording` of every other Android are `[Redacted]`.
+Scripts can persist state by optionally including `memory` and `recording` strings on that action. Both updates happen with the action and do not consume an additional turn. `memory` is a private working state (`rules.android.memoryLimit` characters, 4,096 by default) for decisions across turns. `recording` is a player-facing log (`rules.android.recordingLimit` characters, 16,384 by default) retained on the Android after it is deactivated. Writing past either limit is a refused action, so it fails the turn like any other. Each value replaces the previous value, so read the current Android's value from `world.androids` when appending to a recording. The `memory` and `recording` of every other Android are `[Redacted]`.
 
 ```ts
 const turn: AndroidTurn = () => {
@@ -54,7 +55,7 @@ There is exactly one shape, and no exception for the simple case. An Android tha
 
 Older Androids, written before this, end in a bare action expression. To bring one forward, put its body in a turn function, `return` where it used to end in an expression, and export the function.
 
-Types come from the game. `Action`, `World`, `Tile`, `Android` and the rest are in scope without an import, as are the four globals, because the factory's `tsconfig.json` points at the engine's declarations:
+Types come from the game. `Action`, `World`, `Tile`, `Android`, `Rules` and the rest are in scope without an import, as are the five globals, because the factory's `tsconfig.json` points at the engine's declarations:
 
 ```json
 "types": ["@morten-olsen/nova-game/android"]
@@ -79,6 +80,40 @@ Each turn gets its own interpreter with its own budget, and a turn that exceeds 
 
 The CPU budget is counted in interpreter ticks rather than milliseconds, so a script is cut off at the same point on every machine — which is what lets two peers replay the same match and agree on the outcome. A normal bot is nowhere near any of these; the shipped starter builder finishes a turn without spending a single tick.
 
+## Read the rules, do not repeat them
+
+The `rules` global holds every number the game is being played with: cargo
+capacity, battery costs, hazard damage, build costs and construction times, sight
+ranges, salvage rates, what scores, and the board's `width` and `height`. The
+rulebook states the defaults, but a host can retune any of them, and a game file
+carries whatever it was created with.
+
+So read them:
+
+```ts
+const capacity = rules.android.cargoCapacity;
+const depotCost = rules.buildings.depot.cost;
+const chargePerVisit = rules.buildings.charger.charge;
+const onMap = (p: Position): boolean => p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;
+```
+
+Three things this buys, all of them visible in `bot/starter-builder.ts`:
+
+- **The map's bounds are knowable.** The fog hides what is _on_ a tile, never how
+  big the planet is. `rules.world` gives the edge directly, so nothing has to be
+  inferred from a neighbour that is missing — which is the same thing a tile in
+  the fog looks like.
+- **Costs and capacities stop being magic numbers.** `affordable(rules.buildings.depot.cost)`
+  keeps working when a depot's price changes; `metal >= 6` does not.
+- **Weighing hazards becomes arithmetic.** Acid costs
+  `rules.android.acidDamagePerPoint` per point and radiation
+  `rules.android.radiationDamagePerPoint`, so a route can be scored by what it
+  actually costs this Android rather than by a remembered ratio.
+
+Every value is resolved: nothing in `rules` is optional or absent, so there is no
+default to fill in. Treat it as read-only — writing to it changes nothing outside
+your own turn.
+
 ## Recommended first strategy
 
 Use `bot/starter-builder.ts` as a starting point. Its broad loop is:
@@ -90,16 +125,22 @@ Use `bot/starter-builder.ts` as a starting point. Its broad loop is:
 5. Collect loose material when possible.
 6. Move toward the nearest remaining loose material.
 
+Every quantity it uses comes from `rules`, and the handful of numbers written into
+the file are policy rather than rules — how much battery margin to keep, when to
+top up, how many rounds of log to retain. That split is worth keeping as you edit
+it: if a number describes the game, read it; if it describes your strategy, name
+it and own it.
+
 That is intentionally simple. Improve it by making one observable decision at a time: return cargo to a depot, avoid hazardous tiles, choose a better construction site, or assign Androids specialized roles.
 
 ## Build reliable policies
 
 - Put defensive checks first: missing Android, inactive Android, absent tile, or no valid target should produce `android.wait` rather than an invalid action.
 - Use Manhattan distance (`abs(dx) + abs(dy)`) to select nearby grid targets.
-- Respect cargo capacity (10 units), battery, health, map edges, and one-building-per-tile rules.
+- Respect cargo capacity (`rules.android.cargoCapacity`), battery, health, the map edges (`rules.world.width` and `rules.world.height`), and one-building-per-tile rules.
 - Prefer collecting material into cargo before starting construction. Construction consumes supplied resources.
 - Check the tile's `composition` for acid and radiation before treating it as safe. Loose `scattered` material and ground composition are different resources.
-- A failed action costs the turn and `10` health. A single mistake is survivable, but a policy that fails every round destroys the Android in ten. Do not blindly move beyond the map boundary.
+- A failed action costs the turn and `rules.android.failedTurnHealthPenalty` health. A single mistake is survivable, but a policy that fails every round destroys the Android in ten. Do not blindly move beyond the map boundary.
 - `world.androids` includes deactivated wrecks on tiles you can see. Filter on `active` when you count Androids or pick a target.
 
 ## Evolve, do not overwrite blindly
@@ -113,8 +154,8 @@ An Android standing on one of its owner's completed chargers is at a deployment 
 - `({ type: 'android.launch', scriptId })` launches a sibling on that charger, running any of the owner's scripts in `world.scripts`.
 - `({ type: 'android.dismantle', targetAndroidId })` retires another of the owner's Androids, wherever it stands.
 
-Both are held to the rules a player launch is held to. A launch needs spare capacity — the owner's active Androids must number fewer than their completed chargers — and because the launching Android is itself active, one charger is never enough to launch from. A dismantle can only target the same owner's Androids, and never the Android acting: to self-destruct, omit `targetAndroidId`.
+Both are held to the rules a player launch is held to. A launch needs spare capacity — the owner's active Androids must number fewer than the capacity their completed buildings carry, which is `rules.buildings[type].androidCapacity` summed, one per charger by default — and because the launching Android is itself active, one charger is never enough to launch from. A dismantle can only target the same owner's Androids, and never the Android acting: to self-destruct, omit `targetAndroidId`.
 
-This makes a self-sustaining fleet possible: a script that builds chargers can fill them, and one that recognizes an obsolete generation can retire it. Count capacity from `world.buildings` before launching — a refused launch is a failed turn, which costs the Android that tried its round and `10` health. A newly launched Android takes its first turn in the following round.
+This makes a self-sustaining fleet possible: a script that builds chargers can fill them, and one that recognizes an obsolete generation can retire it. Count capacity from `world.buildings` and `rules.buildings` before launching — a refused launch is a failed turn, which costs the Android that tried its round and `rules.android.failedTurnHealthPenalty` health. A newly launched Android takes its first turn in the following round.
 
 The rulebook is the player-facing contract. When its wording does not answer an implementation question, inspect `node_modules/@morten-olsen/nova-game/src/` to understand the current engine. Do not import those files from a bot: they are reference material, not part of the sandbox API.

@@ -1,12 +1,10 @@
-import { addMaterials } from '../../schemas/schemas.resources.js';
+import { addMaterials, materialKeys, type MaterialBundle } from '../../schemas/schemas.resources.js';
 import type { Mechanic } from '../mechanics.base.js';
 import { getAndroid, getBuildingAt } from '../android/android.helpers.js';
 
-import { buildingCosts } from './construction.defaults.js';
-
 const constructionMechanicsSalvage: Mechanic = {
   name: 'construction.salvage',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.salvage') {
       return;
     }
@@ -21,20 +19,20 @@ const constructionMechanicsSalvage: Mechanic = {
       throw new Error('Initial chargers cannot be salvaged');
     }
 
-    const damage = building.ownerId === android.ownerId ? 25 : 10;
-    building.health -= damage;
+    const own = building.ownerId === android.ownerId;
+    building.health -= own ? rules.salvage.ownDamage : rules.salvage.hostileDamage;
 
     if (building.health > 0) {
       return;
     }
 
-    const returnRate = building.ownerId === android.ownerId ? 0.6 : 0.35;
-    const cost = buildingCosts[building.type];
-    const salvage = {
-      metal: Math.floor((cost.metal ?? 0) * returnRate),
-      electronics: Math.floor((cost.electronics ?? 0) * returnRate),
-      polymer: Math.floor((cost.polymer ?? 0) * returnRate),
-    };
+    const returnRate = own ? rules.salvage.ownReturnRate : rules.salvage.hostileReturnRate;
+    const cost = rules.buildings[building.type].cost;
+    const salvage: MaterialBundle = {};
+    for (const material of materialKeys) {
+      salvage[material] = Math.floor((cost[material] ?? 0) * returnRate);
+    }
+
     const tile = world.tiles.find(
       (candidate) => candidate.position.x === building.position.x && candidate.position.y === building.position.y,
     );

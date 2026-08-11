@@ -22,7 +22,7 @@ const adjacentPosition = (position: Position, direction: Direction): Position =>
 
 const androidMechanicsCleanAcid: Mechanic = {
   name: 'android.clean-acid',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.clean-acid') {
       return;
     }
@@ -31,7 +31,7 @@ const androidMechanicsCleanAcid: Mechanic = {
     const acidPlant = world.buildings.find(
       (building) =>
         building.ownerId === android.ownerId &&
-        building.type === 'acid-processing-plant' &&
+        rules.buildings[building.type].cleansAcid &&
         building.remainingConstruction.ticks === 0,
     );
     if (!acidPlant) {
@@ -48,9 +48,10 @@ const androidMechanicsCleanAcid: Mechanic = {
       throw new Error('Target tile has no acid to clean');
     }
 
-    target.composition.acid = Math.max(0, acid - 1);
-    acidPlant.storage = addMaterials(acidPlant.storage, { acidCanister: 1 });
-    android.battery -= 1;
+    const cleaned = Math.min(acid, rules.android.cleanAcidAmount);
+    target.composition.acid = acid - cleaned;
+    acidPlant.storage = addMaterials(acidPlant.storage, { acidCanister: cleaned });
+    android.battery -= rules.android.cleanAcidBatteryCost;
   },
 };
 

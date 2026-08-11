@@ -2,7 +2,9 @@
 
 Project: Nova is a programming strategy game about preparing a hostile planet for human colonization. Players do not directly command units during play. Instead, each player writes android programs, uploads them as scripts, launches androids, and studies the resulting simulation to improve later script versions.
 
-This rulebook is written for players and coding agents that want to play the current game. Numeric values are defaults and may change as the rules are tuned.
+This rulebook is written for players and coding agents that want to play the current game.
+
+**Every number in this document is a default.** They are all rules — data, not code — and a host can retune any of them for a given game. Each one below is named with the rule it comes from, such as `rules.android.cargoCapacity`, and an Android reads the resolved values at run time from the `rules` global. See [Rules](#18-rules) for the whole table and how to change it. Where this rulebook states a number, read it as "the shipped default"; where a script needs the truth, read `rules`.
 
 ## 1. Objective
 
@@ -41,6 +43,9 @@ The turn function runs with these globals:
 
 - `androidId` — the id of the android currently taking its turn
 - `world` — the fogged world snapshot visible to the script runner
+- `rules` — every number this game is played with (see [Rules](#18-rules))
+- `turn` — the round now being played, counting from 1
+- `finalTurn` — the round the match is scheduled to end on, or `undefined`
 
 The scripts stored in a game are the compiled result. A factory Android is written in TypeScript, across as many files as it needs, and the CLI compiles and bundles it into one script on upload. The action shapes below are what the turn function returns.
 
@@ -55,7 +60,9 @@ Each tile has:
 - `scattered`: loose earth-launched material on the surface
 - optional `revealedBy`: player ids that can **currently** see the tile
 
-Tile composition is generated randomly when a new map is created. Composition is not the same as loose material. Composition represents things in the ground or environmental conditions.
+The board's size is `rules.world.width` x `rules.world.height` — 16 x 16 by default — and a script can read it even though the tiles themselves are fogged.
+
+Tile composition is generated randomly when a new map is created, from `rules.world.generation`. Composition is not the same as loose material. Composition represents things in the ground or environmental conditions.
 
 Current composition fields:
 
@@ -97,14 +104,14 @@ Current android fields include:
 - `health`
 - `active`
 - optional `cargo`
-- `memory` — private persistent working state, limited to 4,096 characters
-- `recording` — player-facing persistent log, limited to 16,384 characters
+- `memory` — private persistent working state, limited to `rules.android.memoryLimit` characters (4,096)
+- `recording` — player-facing persistent log, limited to `rules.android.recordingLimit` characters (16,384)
 
 Androids can currently:
 
 - move one tile orthogonally
 - collect scattered material from their current tile
-- carry up to 10 total material units
+- carry up to `rules.android.cargoCapacity` total material units (10)
 - start and continue construction
 - charge on owned chargers
 - deposit to and withdraw from storage-capable owned buildings
@@ -118,11 +125,11 @@ Androids have health. They lose a small amount of health over time. Environmenta
 
 At round end:
 
-- every android loses `0.1` health from ordinary decay
-- radiation damages androids by `radiation * 0.25`
-- acid damages androids by `acid * 0.5`
+- every android loses `rules.android.decayPerRound` health from ordinary decay (`0.1`)
+- radiation damages androids by `radiation * rules.android.radiationDamagePerPoint` (`0.25`)
+- acid damages androids by `acid * rules.android.acidDamagePerPoint` (`0.5`)
 
-A failed turn — a refused action, a script error, an exhausted turn budget — costs the android `10` health on top of the round it lost. One bad edge case is survivable; a script that keeps making the same mistake wears its android out.
+A failed turn — a refused action, a script error, an exhausted turn budget — costs the android `rules.android.failedTurnHealthPenalty` health (`10`) on top of the round it lost. One bad edge case is survivable; a script that keeps making the same mistake wears its android out.
 
 Androids with health at or below 0, or battery at or below 0, are destroyed at round end. A destroyed android is deactivated rather than removed: it takes no further turns and no longer holds charger capacity, but it stays in the world as a wreck, so its owner can still read the `memory` and `recording` it left behind. Deactivated androids take no further decay or hazard damage, and are not drawn on the board.
 
@@ -130,7 +137,7 @@ Androids with health at or below 0, or battery at or below 0, are destroyed at r
 
 Chargers determine android deployment capacity.
 
-A player's active android cap equals the number of completed chargers they own.
+A player's active android cap is the sum of `rules.buildings[type].androidCapacity` over their completed buildings. Only chargers carry capacity by default, and each carries 1, so the cap is the number of completed chargers they own.
 
 Examples:
 
@@ -159,7 +166,7 @@ An android on one of its owner's completed chargers can also dismantle another a
 
 An android script's turn function must return one android event. The engine adds `androidId` automatically. Every action may also include optional `memory` and `recording` string fields. They replace the Android's previous values as part of the same turn; they are not separate actions. Scripts can read both values from their Android in `world.androids`. `memory` is for operational state across turns. `recording` is the log available to the player after the Android is deactivated.
 
-Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material — the turn becomes a failed turn, the Android loses `10` health, and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
+Because both fields are written as part of the action, a rejected action takes them with it: if the action is refused — moving outside the map, building without the material, writing past the `memory` limit — the turn becomes a failed turn, the Android loses `rules.android.failedTurnHealthPenalty` health, and neither `memory` nor `recording` is updated for that round. An Android that needs a reliable log should prefer an action it knows will be accepted over an ambitious one that may be refused.
 
 In a peer match played with `--disclosure recording` (see the [CLI guide](CLI-GUIDE.md#play-another-player)), `recording` is the only account of the match the player receives, alongside the final scores. Under that mode what an Android writes down is part of its design, not a debugging aid.
 
@@ -181,7 +188,7 @@ const action: Action = { type: 'android.wait' };
 
 ### Move
 
-Move one tile north, south, east, or west. Moving outside the map fails the turn, which costs the android its round and `10` health.
+Move one tile north, south, east, or west, for `rules.android.moveBatteryCost` battery (`1`). Moving outside the map fails the turn, which costs the android its round and `rules.android.failedTurnHealthPenalty` health. The map's bounds are in `rules.world`, so an Android never has to guess where the edge is.
 
 ```ts
 const action: Action = { type: 'android.move', direction: 'east' };
@@ -191,7 +198,7 @@ Directions: `north`, `south`, `east`, `west`.
 
 ### Charge
 
-Recharge on an owned charger on the android's current tile. Adds up to 25 battery, capped at 100.
+Recharge on an owned building on the android's current tile that can charge — any type whose `rules.buildings[type].charge` is above zero, which is the charger by default. Adds that much battery (`25`), capped at `rules.android.batteryCapacity` (`100`).
 
 ```ts
 const action: Action = { type: 'android.charge' };
@@ -210,7 +217,7 @@ const withResources: Action = { type: 'android.collect', resources: { metal: 3 }
 
 Deposit cargo into an owned storage-capable building on the current tile. If `resources` is omitted, deposits all cargo.
 
-Storage-capable buildings currently include depots, processors, and acid processing plants.
+A building accepts deposits when `rules.buildings[type].storage.deposit` is true: depots, processors, and acid processing plants by default.
 
 ```ts
 const action: Action = { type: 'android.deposit' };
@@ -225,7 +232,7 @@ Withdraw material from an owned storage-capable building on the current tile.
 const action: Action = { type: 'android.withdraw', resources: { metal: 4 } };
 ```
 
-Storage-capable buildings currently include depots, extractors, processors, and acid processing plants.
+A building allows withdrawals when `rules.buildings[type].storage.withdraw` is true: depots, extractors, processors, and acid processing plants by default.
 
 ### Start Construction
 
@@ -254,7 +261,7 @@ const action: Action = { type: 'android.salvage' };
 
 ### Broadcast
 
-Broadcast a public message of up to 256 characters. Messages are stored in world messages.
+Broadcast a public message of up to `rules.android.broadcastLimit` characters (256). Messages are stored in world messages.
 
 ```ts
 const action: Action = { type: 'android.broadcast', content: 'metal found at 3,4' };
@@ -262,7 +269,7 @@ const action: Action = { type: 'android.broadcast', content: 'metal found at 3,4
 
 ### Clean Acid
 
-Clean 1 acid from an adjacent tile. The android's owner must have a completed acid processing plant anywhere in the world. The cleaned acid is stored as `acidCanister` in that plant. Cleaning costs 1 battery.
+Clean `rules.android.cleanAcidAmount` acid (`1`) from an adjacent tile. The android's owner must have a completed building that cleans acid anywhere in the world — `rules.buildings[type].cleansAcid`, the acid processing plant by default. The cleaned acid is stored as `acidCanister` in that building. Cleaning costs `rules.android.cleanAcidBatteryCost` battery (`1`).
 
 ```ts
 const action: Action = { type: 'android.clean-acid', direction: 'north' };
@@ -312,7 +319,7 @@ Composition usually cannot be picked up directly. It requires buildings:
 
 ## 10. Buildings
 
-Current building types:
+Current building types. Costs and construction times are `rules.buildings[type].cost` and `.ticks`:
 
 | Building                | Cost                                 | Construction ticks | Function                                          |
 | ----------------------- | ------------------------------------ | -----------------: | ------------------------------------------------- |
@@ -326,15 +333,17 @@ Current building types:
 | `radar`                 | 14 metal, 10 electronics, 2 polymer  |                  7 | Reveals a radius-5 disc of tiles around itself    |
 | `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Planned victory/readiness infrastructure          |
 
-A building under construction occupies its tile immediately.
+A building under construction occupies its tile immediately. Buildings have `rules.buildings[type].health` health (`100`).
 
-Completed extractors harvest at round end:
+A completed building harvests `rules.buildings[type].extraction` from the composition of its own tile at round end, capped by what the ground holds. Only the extractor does by default:
 
 - up to 2 `ore` from tile composition
 - up to 1 `water` from tile composition
 - up to 1 `acidCanister` from tile acid
 
-Completed processors convert stored resources at round end:
+Harvesting does not consume composition: the ground keeps yielding.
+
+A completed building runs `rules.buildings[type].conversion` on its own storage once per round end. Only the processor does by default:
 
 - 2 `ore` -> 1 `metal`
 
@@ -356,12 +365,12 @@ Androids can salvage buildings on their current tile.
 Rules:
 
 - initial chargers cannot be salvaged
-- self-salvage deals 25 building damage per action
-- hostile salvage deals 10 building damage per action
-- buildings have 100 health by default
+- self-salvage deals `rules.salvage.ownDamage` building damage per action (`25`)
+- hostile salvage deals `rules.salvage.hostileDamage` building damage per action (`10`)
+- buildings have `rules.buildings[type].health` health (`100`)
 - when destroyed by salvage, returned material becomes scattered on the tile
-- self-salvage returns about 60% of build cost
-- hostile salvage returns about 35% of build cost
+- self-salvage returns `rules.salvage.ownReturnRate` of build cost (60%)
+- hostile salvage returns `rules.salvage.hostileReturnRate` of build cost (35%)
 
 Salvage is intentionally slower than ordinary collection and requires the android to remain at the target.
 
@@ -383,11 +392,13 @@ There is no private radio by default. Relay towers are planned to expand communi
 
 ## 14. Visibility and Information
 
-Visibility is recomputed from scratch at the end of every round: a tile is visible only while something of yours is in range of it, and goes dark again once nothing is. Current sight defaults:
+Visibility is recomputed from scratch at the end of every round: a tile is visible only while something of yours is in range of it, and goes dark again once nothing is. Sight comes from `rules.android.sight` and `rules.buildings[type].sight`; by default:
 
 - active androids reveal tiles within range 2
 - completed scanners reveal tiles within range 4
 - completed radars reveal tiles within radius 5
+
+A building type whose `sight` rule is `null` reveals nothing.
 
 Sight range is measured two different ways, and the difference is deliberate:
 
@@ -424,6 +435,8 @@ The readiness score answers: **which player has prepared the most viable colony 
 
 Only completed, functioning colony assets and materials secured in completed buildings count. Construction sites, loose material, Android cargo, scripts, messages, Android count, map discovery, scanners, radars, and relay towers earn no points. Sight infrastructure and exploration remain strategically useful because they help Androids locate viable resources and building sites.
 
+Points come from `rules.scoring.buildings` and `rules.scoring.materials`; anything worth `0` points earns no line in the breakdown at all. The defaults:
+
 | Contributor                   |     Points |
 | ----------------------------- | ---------: |
 | Colony module                 | 1,000 each |
@@ -452,7 +465,76 @@ The rules should create these strategic questions:
 - How much should I invest in exploration versus infrastructure?
 - Can my androids recover from unexpected situations?
 
-## 18. Not Yet Implemented / Expected Future Work
+## 18. Rules
+
+Everything numeric in this rulebook is a **rule**, and the rules are data. One
+object holds all of them, every field has a default, and any subset can be
+overridden — `{}` is the game as it ships.
+
+```jsonc
+// rules.json — a complete rules file
+{
+  "world": { "width": 24, "height": 24 },
+  "android": { "cargoCapacity": 6 },
+  "buildings": { "depot": { "cost": { "metal": 4 }, "ticks": 1 } },
+}
+```
+
+```sh
+npx nova create-game --file game.json --rules rules.json
+```
+
+The groups:
+
+| Group       | Covers                                                                                                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `world`     | Board size, and how a fresh map's composition and scattered material are generated                                            |
+| `android`   | Cargo capacity, battery capacity and costs, decay, hazard damage, the failed-turn penalty, sight, and limits                  |
+| `buildings` | Per type: cost, construction ticks, health, charging, android capacity, sight, storage, extraction, conversion, acid cleaning |
+| `salvage`   | Salvage damage and the share of build cost returned                                                                           |
+| `scoring`   | What each completed building and each stored material is worth                                                                |
+| `match`     | The scheduled final round, if the match has one                                                                               |
+
+Two conventions are worth knowing when writing a rules file:
+
+- Every single value has a default, so a group can be given partially:
+  `{ "android": { "cargoCapacity": 6 } }` leaves every other android rule alone.
+- A leaf value object — a sight, a generation roll, a conversion — is supplied
+  whole or not at all. `{ "sight": { "range": 6 } }` is rejected rather than
+  silently inheriting a shape from somewhere else.
+
+Mechanics read behaviour off the rules rather than off building names, so some
+retunings that look like code changes are not: a depot with `androidCapacity: 1`
+raises the android cap, and a building with a `conversion` refines material.
+
+### Rules and Androids
+
+The resolved rules are handed to every script as the `rules` global. An Android
+should read them rather than repeat them:
+
+```ts
+const capacity = rules.android.cargoCapacity;
+const depotCost = rules.buildings.depot.cost;
+const onMap = (p: Position): boolean => p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;
+```
+
+An Android that copies a number out of this rulebook is an Android that breaks
+when the game is tuned — and the point of the `rules` global is that adapting is
+cheaper than guessing.
+
+### Rules and Recordings
+
+A game file stores the rules it was created with, alongside the initial world and
+the event log. Every later command — `run`, `status`, `play` — replays it under
+those rules, so a retuned game continues and scores as itself. A recording made
+before rules were data opens under the shipped defaults, which is what it was
+played with.
+
+A peer match is played under the host's rules, and the recording each player
+keeps carries them. The board size is currently the only rule the match offer
+negotiates.
+
+## 19. Not Yet Implemented / Expected Future Work
 
 These concepts are intended but not fully implemented:
 

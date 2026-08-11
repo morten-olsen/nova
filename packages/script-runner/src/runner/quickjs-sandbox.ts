@@ -8,8 +8,8 @@ type SandboxInput = {
   androidId: string;
   content: string;
   /**
-   * `JSON.stringify({ androidId, world, turn, finalTurn })`, with the world
-   * already fogged for this android.
+   * `JSON.stringify({ androidId, world, rules, turn, finalTurn })`, with the
+   * world already fogged for this android.
    *
    * A string rather than the object because that is what makes the sandbox
    * cheap: one copy into WebAssembly memory and one `JSON.parse` inside the VM,
@@ -43,6 +43,7 @@ const bootstrapSource = `(function () {
   var input = JSON.parse(${inputGlobal});
   globalThis.androidId = input.androidId;
   globalThis.world = input.world;
+  globalThis.rules = input.rules;
   globalThis.turn = input.turn;
   globalThis.finalTurn = input.finalTurn;
   delete globalThis.${inputGlobal};

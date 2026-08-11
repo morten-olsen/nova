@@ -5,7 +5,8 @@ import type { SandboxOutcome } from './quickjs-sandbox.js';
 /**
  * Packs a turn's script globals into the single string the sandbox takes.
  *
- * `world` arrives already fogged by the loop, so it is serialized as-is.
+ * `world` arrives already fogged by the loop, so it is serialized as-is, and
+ * `rules` arrives resolved, so a script never has to fill in a default.
  *
  * `turn` and `finalTurn` are lifted out of the world rather than left for the
  * script to dig for: a bot that wants to change tactics near the end should not
@@ -13,10 +14,11 @@ import type { SandboxOutcome } from './quickjs-sandbox.js';
  * defined-but-undefined global so that reading it is a check rather than a
  * `ReferenceError`.
  */
-const toSandboxInputJson = (options: Pick<ScriptExecuteOptions, 'androidId' | 'world'>): string =>
+const toSandboxInputJson = (options: Pick<ScriptExecuteOptions, 'androidId' | 'world' | 'rules'>): string =>
   JSON.stringify({
     androidId: options.androidId,
     world: options.world,
+    rules: options.rules,
     turn: options.world.round ?? 0,
     finalTurn: options.world.finalRound,
   });

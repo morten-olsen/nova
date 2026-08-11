@@ -1,62 +1,57 @@
+import type { MaterialRoll, ScatteredRules, WorldGenerationRules } from '../../rules/rules.world.js';
 import type { Tile } from '../../schemas/schemas.tile.js';
 import type { Mechanic } from '../mechanics.base.js';
 
-type CreateMapOptions = {
-  width?: number;
-  height?: number;
-  composition?: Tile['composition'];
+/** One roll of a generation rule: nothing, or a whole number in its range. */
+const roll = ({ chance, min, max }: MaterialRoll): number => {
+  if (Math.random() >= chance) {
+    return 0;
+  }
+
+  return min + Math.floor(Math.random() * (Math.max(min, max) - min + 1));
 };
 
-const randomInt = (maxInclusive: number): number => Math.floor(Math.random() * (maxInclusive + 1));
+const randomTileComposition = (generation: WorldGenerationRules): Tile['composition'] => ({
+  ore: roll(generation.ore),
+  water: roll(generation.water),
+  acid: roll(generation.acid),
+  radiation: roll(generation.radiation),
+});
 
-const randomTileComposition = (): Tile['composition'] => {
-  const hasOre = Math.random() < 0.55;
-  const hasWater = Math.random() < 0.18;
-  const hasAcid = Math.random() < 0.12;
-  const hasRadiation = Math.random() < 0.08;
-
-  return {
-    ore: hasOre ? 1 + randomInt(5) : 0,
-    water: hasWater ? 1 + randomInt(3) : 0,
-    acid: hasAcid ? 1 + randomInt(3) : 0,
-    radiation: hasRadiation ? 1 + randomInt(2) : 0,
-  };
-};
-
-const randomScatteredMaterial = (): Tile['scattered'] => {
-  if (Math.random() >= 0.25) {
+const randomScatteredMaterial = (scattered: ScatteredRules): Tile['scattered'] => {
+  // The tile is gated first, so most ground is bare rather than every tile
+  // holding a little of everything.
+  if (Math.random() >= scattered.chance) {
     return { metal: 0 };
   }
 
   return {
-    metal: 1 + randomInt(4),
-    electronics: Math.random() < 0.2 ? 1 : 0,
-    polymer: Math.random() < 0.25 ? 1 + randomInt(1) : 0,
+    metal: roll(scattered.metal),
+    electronics: roll(scattered.electronics),
+    polymer: roll(scattered.polymer),
   };
 };
 
-const createGameMechanicsCreateMap = (options: CreateMapOptions = {}): Mechanic => ({
+const gameMechanicsCreateMap: Mechanic = {
   name: 'game.create-map',
-  setup: ({ world }) => {
+  setup: ({ world, rules }) => {
     if (world.tiles.length > 0) {
       return;
     }
 
-    const width = options.width ?? 16;
-    const height = options.height ?? 16;
+    const { width, height, composition, generation } = rules.world;
 
     for (let y = 0; y < height; y += 1) {
       for (let x = 0; x < width; x += 1) {
         const tile: Tile = {
           position: { x, y },
-          composition: options.composition ? { ...options.composition } : randomTileComposition(),
-          scattered: options.composition ? undefined : randomScatteredMaterial(),
+          composition: composition ? { ...composition } : randomTileComposition(generation),
+          scattered: composition ? undefined : randomScatteredMaterial(generation.scattered),
         };
         world.tiles.push(tile);
       }
     }
   },
-});
+};
 
-export type { CreateMapOptions };
-export { createGameMechanicsCreateMap };
+export { gameMechanicsCreateMap };

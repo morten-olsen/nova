@@ -78,6 +78,17 @@ describe('editor declarations', () => {
   it('types the sandbox globals', () => {
     expect(check('const battery = world.androids[0]?.battery;\nbattery;')).toEqual([]);
     expect(check('const id: string = androidId;\nid;')).toEqual([]);
+    expect(check('const capacity: number = rules.android.cargoCapacity;\ncapacity;')).toEqual([]);
+    expect(check('const cost = rules.buildings.depot.cost.metal;\ncost;')).toEqual([]);
+  });
+
+  it('resolves the rules type rather than widening it to any', () => {
+    // The rules are the whole reason a bot can stop hardcoding the rulebook, so
+    // a `rules` that quietly types as `any` would be worse than no rules at all.
+    expect(check('const width: string = rules.world.width;\nwidth;')[0]).toContain(
+      "Type 'number' is not assignable to type 'string'.",
+    );
+    expect(check('const nothing = rules.android.cargoCapicity;\nnothing;')[0]).toContain('cargoCapicity');
   });
 
   it('holds a script to what the fog can hand it', () => {
@@ -98,7 +109,7 @@ describe('editor declarations', () => {
   });
 
   it('types a turn function written for the bundler', () => {
-    // Not named `turn`: that is one of the four globals, and a single-file
+    // Not named `turn`: that is one of the five globals, and a single-file
     // android is a script, so a top-level `const turn` redeclares it.
     expect(check("const strategy: AndroidTurn = () => ({ type: 'android.wait' });\nstrategy;")).toEqual([]);
   });

@@ -1,3 +1,4 @@
+import type { Rules } from '../../rules/rules.js';
 import type { Position } from '../../schemas/schemas.base.js';
 import {
   addMaterials,
@@ -10,8 +11,6 @@ import {
 import type { Android } from '../../schemas/schemas.android.js';
 import type { Building } from '../../schemas/schemas.building.js';
 import type { World } from '../../schemas/schemas.world.js';
-
-const androidCargoCapacity = 10;
 
 const materialAmount = (materials: Partial<MaterialBundle> | undefined): number => {
   return materialKeys.reduce((total, key) => total + (materials?.[key] ?? 0), 0);
@@ -47,33 +46,43 @@ const takeFromAndroidCargo = (android: Android, resources: Partial<MaterialBundl
   return normalizeMaterials(resources);
 };
 
-/** Chargers that count towards their owner's android capacity. */
-const completedChargersForOwner = (world: World, ownerId: string): Building[] => {
+const isComplete = (building: Building): boolean =>
+  building.remainingConstruction.ticks === 0 && materialAmount(building.remainingConstruction.resources) === 0;
+
+/**
+ * The completed buildings that carry their owner's android capacity.
+ *
+ * Read off `androidCapacity` rather than off the charger type, so a ruleset that
+ * moves deployment capacity onto another building needs no code change.
+ */
+const capacityBuildingsForOwner = (world: World, ownerId: string, rules: Rules): Building[] => {
   return world.buildings.filter(
     (building) =>
-      building.ownerId === ownerId &&
-      building.type === 'charger' &&
-      building.remainingConstruction.ticks === 0 &&
-      materialAmount(building.remainingConstruction.resources) === 0,
+      building.ownerId === ownerId && rules.buildings[building.type].androidCapacity > 0 && isComplete(building),
   );
 };
 
+const androidCapacityForOwner = (world: World, ownerId: string, rules: Rules): number =>
+  capacityBuildingsForOwner(world, ownerId, rules).reduce(
+    (total, building) => total + rules.buildings[building.type].androidCapacity,
+    0,
+  );
+
 /**
- * The charger an android has to stand on to operate its owner's deployment bay —
+ * The building an android has to stand on to operate its owner's deployment bay —
  * launching a new android or dismantling one of its siblings.
  */
-const requireOperatingCharger = (world: World, android: Android): Building => {
-  const charger = getBuildingAt(world, android.position);
+const requireDeploymentBay = (world: World, android: Android, rules: Rules): Building => {
+  const bay = getBuildingAt(world, android.position);
   if (
-    !charger ||
-    charger.ownerId !== android.ownerId ||
-    charger.type !== 'charger' ||
-    !completedChargersForOwner(world, android.ownerId).some((candidate) => candidate.id === charger.id)
+    !bay ||
+    bay.ownerId !== android.ownerId ||
+    !capacityBuildingsForOwner(world, android.ownerId, rules).some((candidate) => candidate.id === bay.id)
   ) {
     throw new Error('Android must be on an owned completed charger');
   }
 
-  return charger;
+  return bay;
 };
 
 /**
@@ -96,7 +105,8 @@ type LaunchAndroidOptions = {
   world: World;
   ownerId: string;
   scriptId: string;
-  /** Defaults to the owner's first completed charger. */
+  rules: Rules;
+  /** Defaults to the owner's first capacity-carrying building. */
   position?: Position;
 };
 
@@ -107,27 +117,28 @@ type LaunchAndroidOptions = {
  * launching a sibling is held to the same capacity limit as its player.
  */
 const launchAndroid = (options: LaunchAndroidOptions): Android => {
-  const { world, ownerId, scriptId, position } = options;
+  const { world, ownerId, scriptId, position, rules } = options;
 
   const script = world.scripts.find((candidate) => candidate.id === scriptId && candidate.ownerId === ownerId);
   if (!script) {
     throw new Error(`Unknown script for owner: ${scriptId}`);
   }
 
-  const chargers = completedChargersForOwner(world, ownerId);
+  const capacity = androidCapacityForOwner(world, ownerId, rules);
   const activeAndroids = world.androids.filter((android) => android.ownerId === ownerId && android.active).length;
-  if (activeAndroids >= chargers.length) {
+  if (activeAndroids >= capacity) {
     throw new Error(`Android capacity reached for owner: ${ownerId}`);
   }
 
-  const spawnPosition = position ?? chargers[0]?.position ?? world.tiles[0]?.position ?? { x: 0, y: 0 };
+  const bays = capacityBuildingsForOwner(world, ownerId, rules);
+  const spawnPosition = position ?? bays[0]?.position ?? world.tiles[0]?.position ?? { x: 0, y: 0 };
   const android: Android = {
     id: nextAndroidId(world),
     ownerId,
     scriptId,
     position: { ...spawnPosition },
-    battery: 100,
-    health: 100,
+    battery: rules.android.startingBattery,
+    health: rules.android.startingHealth,
     active: true,
     cargo: { metal: 0, electronics: 0, polymer: 0 },
     memory: '',
@@ -137,9 +148,9 @@ const launchAndroid = (options: LaunchAndroidOptions): Android => {
   return android;
 };
 
-const addToAndroidCargo = (android: Android, resources: Partial<MaterialBundle>): void => {
+const addToAndroidCargo = (android: Android, resources: Partial<MaterialBundle>, capacity: number): void => {
   android.cargo = normalizeMaterials(android.cargo);
-  if (materialAmount(android.cargo) + materialAmount(resources) > androidCargoCapacity) {
+  if (materialAmount(android.cargo) + materialAmount(resources) > capacity) {
     throw new Error('Android cargo capacity exceeded');
   }
 
@@ -148,15 +159,16 @@ const addToAndroidCargo = (android: Android, resources: Partial<MaterialBundle>)
 
 export {
   addToAndroidCargo,
-  androidCargoCapacity,
-  completedChargersForOwner,
+  androidCapacityForOwner,
+  capacityBuildingsForOwner,
   getAndroid,
   getBuildingAt,
   getTileAt,
+  isComplete,
   launchAndroid,
   materialAmount,
   nextAndroidId,
-  requireOperatingCharger,
+  requireDeploymentBay,
   samePosition,
   takeFromAndroidCargo,
 };

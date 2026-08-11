@@ -41,7 +41,12 @@ const runSandbox = async (options: SandboxOptions): Promise<SandboxResult> => {
     await loop.run();
   }
 
-  const recording: GameRecording = { version: 1, initialWorld: loop.initialWorld, events: loop.events };
+  const recording: GameRecording = {
+    version: 1,
+    initialWorld: loop.initialWorld,
+    rules: ruleset.rules,
+    events: loop.events,
+  };
 
   // Counted by walking the event stream rather than by position in the failure
   // list, so a script that survives round 1 and dies in round 4 reports round 4.

@@ -1,4 +1,4 @@
-import { createTimeline, usesFogOfWar, type TimelineFrame } from '@morten-olsen/nova-game';
+import { createTimeline, usesFogOfWar, type Rules, type TimelineFrame } from '@morten-olsen/nova-game';
 import type { TabletopRenderer, TileClickEvent, TilePosition } from '@morten-olsen/nova-renderer';
 import {
   CameraControls,
@@ -37,6 +37,8 @@ type ReplayScreenProps = {
   onTileClick: (event: TileClickEvent) => void;
   onTogglePlayback: () => void;
   recordingName: string;
+  /** The rules the recording was played under, which is what the scoreboard scores by. */
+  rules: Rules;
   selection: Selection | undefined;
   speed: number;
 };
@@ -83,6 +85,7 @@ const ReplayScreen = ({
   onTileClick,
   onTogglePlayback,
   recordingName,
+  rules,
   selection,
   speed,
 }: ReplayScreenProps): React.ReactNode => {
@@ -105,7 +108,7 @@ const ReplayScreen = ({
 
       <div className="pointer-events-none absolute inset-x-0 top-20 bottom-24 flex items-start justify-between gap-4 px-3">
         <div className="pointer-events-auto">
-          <Scoreboard world={frame.world} />
+          <Scoreboard rules={rules} world={frame.world} />
         </div>
         <div className="pointer-events-auto flex items-start gap-2">
           <CameraControls
@@ -272,6 +275,7 @@ const VisualizerPage = (): React.ReactNode => {
       isPlaying={isPlaying}
       maxFrame={maxFrame}
       recordingName={embeddedRecording.name}
+      rules={embeddedRecording.recording.rules}
       selection={selection}
       speed={speed}
       onFrameChange={handleFrameChange}

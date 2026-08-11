@@ -8,23 +8,28 @@
  *   3. bank cargo into a depot        7. walk toward the nearest material
  *   4. collect what it is standing on 8. explore, turning at the map edge
  *
- * Two rules worth internalising before editing this:
+ * Three rules worth internalising before editing this:
  *
  *   - Only material inside a completed building scores. Loose material and
  *     cargo are worth nothing, so this bot banks what it digs.
  *   - `tile.scattered` is loose material you can collect. `tile.composition` is
  *     what is in the ground — ore, water, acid, radiation — and it can never be
  *     collected directly. It needs an extractor.
+ *   - Not one number below is written down twice. Cargo capacity, build costs,
+ *     the board's size, what a charge is worth and what a hazard costs all come
+ *     from the `rules` global, so this bot plays the game it was handed rather
+ *     than the game it was written against. Copy a number out of the rulebook
+ *     into a bot and you have written a bot that breaks when the game is tuned.
  *
  * An android is a module that default-exports its turn function. That function
  * is called once per round and returns that round's action, so every decision
  * below is a `return`. Splitting part of it into `bot/lib/` and importing that
  * back needs no other change: the CLI follows the imports and bundles them in.
  *
- * The types — `AndroidTurn`, `Action`, `Tile`, and the `world` and `androidId`
- * globals — come with the game; nothing here imports them. The CLI compiles this
- * file before uploading it, so a mistyped action is a compiler error rather than
- * a lost turn. Run `npm run check` to see them all at once.
+ * The types — `AndroidTurn`, `Action`, `Tile`, and the `world`, `androidId` and
+ * `rules` globals — come with the game; nothing here imports them. The CLI
+ * compiles this file before uploading it, so a mistyped action is a compiler
+ * error rather than a lost turn. Run `npm run check` to see them all at once.
  */
 type Memory = {
   dir?: Direction;
@@ -32,15 +37,18 @@ type Memory = {
   depot?: Position;
 };
 
+/** Steps of battery kept in hand on top of the trip home. A policy, not a rule. */
+const SAFETY_STEPS = 8;
+/** Top up when a charger is underfoot and the battery is below this share of full. */
+const TOP_UP_AT = 0.6;
+/** Rounds of log kept: the last few are the ones that explain a stall. */
+const LOG_LINES = 40;
+
 const takeTurn: AndroidTurn = () => {
   const self = world.androids.find((a) => a.id === androidId);
   if (!self || !self.active) {
     return { type: 'android.wait' } satisfies Action;
   }
-
-  const CARGO_CAP = 10;
-  const DEPOT_COST = 6;
-  const CHARGER_COST = 10;
 
   const key = (p: Position): string => p.x + ',' + p.y;
   const here = self.position;
@@ -51,12 +59,17 @@ const takeTurn: AndroidTurn = () => {
   const complete = (b: Building | undefined): boolean => !!b && b.remainingConstruction.ticks === 0;
   const steps = (a: Position, b: Position): number => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
-  const MATERIALS = ['metal', 'electronics', 'polymer', 'ore', 'water', 'acidCanister'] as const;
+  // The materials the game currently has, taken from the scoring table rather
+  // than listed here, so a new material is counted the day it is added.
+  const MATERIALS = Object.keys(rules.scoring.materials) as (keyof MaterialBundle)[];
   const total = (bundle: MaterialBundle | undefined): number =>
     MATERIALS.reduce((sum, k) => sum + (bundle?.[k] ?? 0), 0);
   const cargo = self.cargo ?? {};
   const carrying = total(cargo);
-  const metal = cargo.metal ?? 0;
+  const capacity = rules.android.cargoCapacity;
+  const affordable = (cost: MaterialBundle): boolean => MATERIALS.every((k) => (cargo[k] ?? 0) >= (cost[k] ?? 0));
+  const depotCost = rules.buildings.depot.cost;
+  const chargerCost = rules.buildings.charger.cost;
 
   /*
    * Remembering is not optional. Visibility is recomputed every round, so a tile
@@ -72,9 +85,12 @@ const takeTurn: AndroidTurn = () => {
   }
   mem.dir = mem.dir ?? 'east';
 
-  // Re-pin landmarks whenever they are actually in view.
-  const seenCharger = world.buildings.find((b) => mine(b) && b.type === 'charger' && complete(b));
-  const seenDepot = world.buildings.find((b) => mine(b) && b.type === 'depot' && complete(b));
+  // Re-pin landmarks whenever they are actually in view. A charger is whatever
+  // building can actually charge us, which is a rule rather than a type name.
+  const charges = (b: Building): boolean => rules.buildings[b.type].charge > 0;
+  const stores = (b: Building): boolean => rules.buildings[b.type].storage?.deposit === true;
+  const seenCharger = world.buildings.find((b) => mine(b) && charges(b) && complete(b));
+  const seenDepot = world.buildings.find((b) => mine(b) && stores(b) && complete(b));
   if (seenCharger) {
     mem.charger = seenCharger.position;
   }
@@ -84,11 +100,11 @@ const takeTurn: AndroidTurn = () => {
 
   const log = (line: string): string => {
     const previous = (self.recording || '').split('\n').filter(Boolean);
-    // Bounded: recording is capped at 16k, and the last 40 rounds are the
-    // interesting ones when working out why a bot stalled.
+    // Bounded: the recording is capped at `rules.android.recordingLimit`, and the
+    // last few rounds are the interesting ones when working out why a bot stalled.
     return previous
       .concat('r' + (world.round ?? 0) + ' ' + line)
-      .slice(-40)
+      .slice(-LOG_LINES)
       .join('\n');
   };
   const act = (action: Action, note: string): Action => ({
@@ -98,12 +114,11 @@ const takeTurn: AndroidTurn = () => {
   });
 
   /*
-   * The most important safety rule: moving off the map fails the turn and
-   * deactivates the android permanently.
+   * The most important safety rule: moving off the map fails the turn, which
+   * costs the round and `rules.android.failedTurnHealthPenalty` health.
    *
-   * The map bounds are not readable — the world is fogged. But an android
-   * reveals everything within 2 steps of itself, so a neighbouring tile that is
-   * still missing from `world.tiles` cannot exist. Absent neighbour means edge.
+   * The board's size is in the rules, so the edge can simply be computed. The
+   * fog hides what is *on* a tile, never how big the planet is.
    */
   const DIRS: Record<Direction, Position> = {
     north: { x: 0, y: -1 },
@@ -112,12 +127,21 @@ const takeTurn: AndroidTurn = () => {
     west: { x: -1, y: 0 },
   };
   const stepTo = (dir: Direction): Position => ({ x: here.x + DIRS[dir].x, y: here.y + DIRS[dir].y });
-  const onMap = (dir: Direction): boolean => Boolean(tileAt(stepTo(dir)));
-  // Acid costs 0.5 health per point per round and radiation 0.25, so acid is
-  // weighted double when choosing between two otherwise equal steps.
+  const onMap = (dir: Direction): boolean => {
+    const p = stepTo(dir);
+    return p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;
+  };
+  // Hazards are weighted by what they actually cost this android per round, so
+  // a ruleset where radiation bites harder than acid reverses the preference.
   const hazard = (dir: Direction): number => {
     const t = tileAt(stepTo(dir));
-    return t ? (t.composition.acid ?? 0) * 2 + (t.composition.radiation ?? 0) : 0;
+    if (!t) {
+      return 0;
+    }
+    return (
+      (t.composition.acid ?? 0) * rules.android.acidDamagePerPoint +
+      (t.composition.radiation ?? 0) * rules.android.radiationDamagePerPoint
+    );
   };
 
   const towards = (target: Position): Direction | undefined => {
@@ -145,10 +169,11 @@ const takeTurn: AndroidTurn = () => {
     return act({ type: 'android.continue-construction' }, 'building ' + siteHere.type);
   }
 
-  // 2. Battery. Moving costs 1 and a charge gives 25, so head back with enough
-  //    margin to arrive: an android that reaches 0 battery is destroyed.
+  // 2. Battery. Head back with enough margin to arrive: an android that reaches
+  //    0 battery is destroyed, and every step costs `moveBatteryCost`.
   const charger = mem.charger;
-  if (charger && self.battery <= steps(here, charger) + 8) {
+  const homeCost = (target: Position): number => (steps(here, target) + SAFETY_STEPS) * rules.android.moveBatteryCost;
+  if (charger && self.battery <= homeCost(charger)) {
     if (key(here) === key(charger)) {
       return act({ type: 'android.charge' }, 'charging at ' + self.battery);
     }
@@ -157,39 +182,36 @@ const takeTurn: AndroidTurn = () => {
       return move(dir, 'returning to charge at ' + self.battery);
     }
   }
-  if (charger && key(here) === key(charger) && self.battery < 60) {
+  if (charger && key(here) === key(charger) && self.battery < rules.android.batteryCapacity * TOP_UP_AT) {
     return act({ type: 'android.charge' }, 'topping up at ' + self.battery);
   }
 
   // 3. Bank cargo. Stored material is the only material that scores.
-  if (mine(siteHere) && complete(siteHere) && siteHere?.type === 'depot' && carrying > 0) {
+  if (siteHere && mine(siteHere) && complete(siteHere) && stores(siteHere) && carrying > 0) {
     return act({ type: 'android.deposit' }, 'deposited ' + carrying);
   }
 
   // 4. Collect what we are standing on.
   const standingOn = tileAt(here);
-  if (standingOn && total(standingOn.scattered) > 0 && carrying < CARGO_CAP) {
+  if (standingOn && total(standingOn.scattered) > 0 && carrying < capacity) {
     return act({ type: 'android.collect' }, 'collecting');
   }
 
   // 5. Build. A depot first — cheapest points on the board, and it turns every
   //    later haul into score. Then chargers, which raise the android cap.
   const freeHere = !siteHere;
-  if (freeHere && !mem.depot && metal >= DEPOT_COST) {
-    return act(
-      { type: 'android.start-construction', buildingType: 'depot', resources: { metal: DEPOT_COST } },
-      'starting depot',
-    );
+  if (freeHere && !mem.depot && affordable(depotCost)) {
+    return act({ type: 'android.start-construction', buildingType: 'depot', resources: depotCost }, 'starting depot');
   }
-  if (freeHere && mem.depot && metal >= CHARGER_COST) {
+  if (freeHere && mem.depot && affordable(chargerCost)) {
     return act(
-      { type: 'android.start-construction', buildingType: 'charger', resources: { metal: CHARGER_COST } },
+      { type: 'android.start-construction', buildingType: 'charger', resources: chargerCost },
       'starting charger',
     );
   }
 
   // 6. Full hands and somewhere to put them.
-  if (carrying >= CARGO_CAP && mem.depot) {
+  if (carrying >= capacity && mem.depot) {
     const dir = towards(mem.depot);
     if (dir) {
       return move(dir, 'hauling ' + carrying + ' to depot');
@@ -200,7 +222,7 @@ const takeTurn: AndroidTurn = () => {
   const loose = world.tiles
     .filter((t) => total(t.scattered) > 0)
     .sort((a, b) => steps(here, a.position) - steps(here, b.position))[0];
-  if (loose && carrying < CARGO_CAP) {
+  if (loose && carrying < capacity) {
     const dir = towards(loose.position);
     if (dir) {
       return move(dir, 'heading to material at ' + key(loose.position));

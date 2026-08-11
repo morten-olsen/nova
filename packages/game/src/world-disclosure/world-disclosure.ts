@@ -42,7 +42,7 @@ const redactEventForPlayer = (event: Event, world: World, playerId: string): Eve
  * player's script source or Android memory/recording.
  */
 const projectRecordingForPlayer = (recording: GameRecording, playerId: string): GameRecording => {
-  const ruleset = createBaseRuleset();
+  const ruleset = createBaseRuleset(recording.rules);
   const initialWorld = ruleset.buildWorld(structuredClone(recording.initialWorld));
   let world = initialWorld;
   const events = recording.events.map((event) => {
@@ -54,6 +54,9 @@ const projectRecordingForPlayer = (recording: GameRecording, playerId: string): 
   return {
     version: recording.version,
     initialWorld: projectWorldForPlayer(initialWorld, playerId),
+    // Never redacted: both players agreed to these numbers before the first
+    // turn, and a replay scored under any other set is not the match they played.
+    rules: recording.rules,
     events,
   };
 };

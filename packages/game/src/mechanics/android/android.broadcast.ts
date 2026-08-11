@@ -4,12 +4,16 @@ import { getAndroid } from './android.helpers.js';
 
 const androidMechanicsBroadcast: Mechanic = {
   name: 'android.broadcast',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.broadcast') {
       return;
     }
 
     const android = getAndroid(world, event.androidId);
+    if (event.content.length > rules.android.broadcastLimit) {
+      throw new Error(`A broadcast is limited to ${rules.android.broadcastLimit} characters`);
+    }
+
     world.messages ??= [];
     world.messages.push({
       id: `message-${world.messages.length + 1}`,

@@ -1,13 +1,13 @@
-import { calculateColonyScores, createBaseRuleset, Loop, type ScriptRunner, type World } from '@morten-olsen/nova-game';
+import { calculateColonyScores, Loop, type Ruleset, type ScriptRunner, type World } from '@morten-olsen/nova-game';
 
 import { guestPlayerId, hostPlayerId, type FinalScore } from './match-protocol.js';
 
 type MatchWorldOptions = {
   guestName: string;
-  height: number;
   hostName: string;
+  /** The same ruleset the match is then played with, so the world and the play agree. */
+  ruleset: Ruleset;
   scriptRunner: ScriptRunner;
-  width: number;
 };
 
 /**
@@ -19,7 +19,7 @@ type MatchWorldOptions = {
  */
 const createMatchWorld = (options: MatchWorldOptions): World =>
   new Loop({
-    ruleset: createBaseRuleset({ world: { width: options.width, height: options.height } }),
+    ruleset: options.ruleset,
     scriptRunner: options.scriptRunner,
     initWorld: {
       tiles: [],
@@ -35,8 +35,8 @@ const createMatchWorld = (options: MatchWorldOptions): World =>
     },
   }).world;
 
-const finalScoresOf = (world: World): FinalScore[] =>
-  calculateColonyScores(world).map((score) => ({
+const finalScoresOf = (world: World, ruleset: Ruleset): FinalScore[] =>
+  calculateColonyScores(world, ruleset.rules).map((score) => ({
     playerId: score.playerId,
     playerName: score.playerName,
     total: score.total,

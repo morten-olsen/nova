@@ -38,7 +38,7 @@ const uniquePositions = (positions: Position[]): Position[] => {
 
 const gameMechanicsPlaceCharger: Mechanic = {
   name: 'game.place-charger',
-  setup: ({ world }) => {
+  setup: ({ world, rules }) => {
     const players = world.players ?? [];
     const { width, height } = getWorldSize(world);
     const candidatePositions = uniquePositions([...starterPositions(width, height), ...mapPositions(width, height)]);
@@ -63,7 +63,7 @@ const gameMechanicsPlaceCharger: Mechanic = {
         ownerId: player.id,
         type: 'charger',
         position,
-        health: 100,
+        health: rules.buildings.charger.health,
         initial: true,
         remainingConstruction: {
           ticks: 0,

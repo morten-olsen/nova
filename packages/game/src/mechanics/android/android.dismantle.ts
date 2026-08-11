@@ -1,10 +1,10 @@
 import type { Mechanic } from '../mechanics.base.js';
 
-import { getAndroid, requireOperatingCharger } from './android.helpers.js';
+import { getAndroid, requireDeploymentBay } from './android.helpers.js';
 
 const androidMechanicsDismantle: Mechanic = {
   name: 'android.dismantle',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.dismantle') {
       return;
     }
@@ -20,7 +20,7 @@ const androidMechanicsDismantle: Mechanic = {
       throw new Error('Android cannot target itself; dismantle without a targetAndroidId to self-destruct');
     }
 
-    requireOperatingCharger(world, android);
+    requireDeploymentBay(world, android, rules);
 
     const target = world.androids.find(
       (candidate) =>

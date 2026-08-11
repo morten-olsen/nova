@@ -4,7 +4,7 @@ import { getAndroid, getTileAt } from './android.helpers.js';
 
 const androidMechanicsMove: Mechanic = {
   name: 'android.move',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'android.move') {
       return;
     }
@@ -30,7 +30,7 @@ const androidMechanicsMove: Mechanic = {
     }
 
     android.position = position;
-    android.battery -= 1;
+    android.battery -= rules.android.moveBatteryCost;
   },
 };
 

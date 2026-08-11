@@ -2,7 +2,7 @@ import type { Mechanic } from '../mechanics.base.js';
 
 const gameMechanicsDamageAcid: Mechanic = {
   name: 'game.damage-acid',
-  apply: ({ world, event }) => {
+  apply: ({ world, event, rules }) => {
     if (event.type !== 'game.round-end') {
       return;
     }
@@ -18,7 +18,7 @@ const gameMechanicsDamageAcid: Mechanic = {
       );
       const acid = tile?.composition.acid ?? 0;
       if (acid > 0) {
-        android.health -= acid * 0.5;
+        android.health -= acid * rules.android.acidDamagePerPoint;
       }
     }
   },

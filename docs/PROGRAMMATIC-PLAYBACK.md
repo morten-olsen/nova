@@ -97,7 +97,10 @@ ruleset:
 ```ts
 import { createBaseRuleset } from '@morten-olsen/nova-game';
 
-const ruleset = createBaseRuleset();
+// The recording's own rules, not the defaults: a game tuned with `--rules` has
+// to be replayed under the numbers it was played with, or the events land in a
+// different world.
+const ruleset = createBaseRuleset(recording.rules);
 let world = structuredClone(recording.initialWorld);
 const frames = [world];
 

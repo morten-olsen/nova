@@ -19,10 +19,9 @@ const worldSchema = z.object({
    * The round the match is scheduled to end on, counted the same way as
    * {@link round}.
    *
-   * No ruleset sets this yet — it is carried so that scripts can already ask
-   * "how long do I have left?" through the `finalTurn` global, and so that a
-   * future timed ruleset can start populating it without a recording format
-   * change. Absent means the match has no scheduled end.
+   * Written at setup from `rules.match.finalRound`, and absent when that rule is
+   * `null` — which is how most matches are played. It lives in the world rather
+   * than only in the rules because scripts read it as the `finalTurn` global.
    */
   finalRound: z.number().optional(),
 });

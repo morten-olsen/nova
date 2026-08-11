@@ -1,4 +1,5 @@
 import type { Event } from '../events/events.js';
+import { rulesForWorld } from '../rules/rules.js';
 import { Ruleset } from '../ruleset/ruleset.js';
 import type { World } from '../schemas/schemas.world.js';
 import type { ScriptRunner } from '../script-runner/script-runner.js';
@@ -59,6 +60,11 @@ class Loop {
     return structuredClone(this.#events);
   }
 
+  /** The rules this loop plays under, for a host that has to store or report them. */
+  public get rules() {
+    return this.#options.ruleset.rules;
+  }
+
   public applyEvents = (events: Event[]) => {
     const { ruleset } = this.#options;
     this.#world = ruleset.applyEvents(this.#world, events);
@@ -95,6 +101,9 @@ class Loop {
           androidId,
           content: script.content,
           world: projectWorldForAndroid(world, androidId),
+          // Measured against the unfogged world, so a script reads the real
+          // board size rather than the size its rules were generated with.
+          rules: rulesForWorld(ruleset.rules, world),
         });
         applyEvent(event);
       } catch (err) {

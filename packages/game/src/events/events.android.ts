@@ -1,13 +1,19 @@
 import { z } from 'zod';
 
 import { directionSchema, idSchema } from '../schemas/schemas.base.js';
-import { androidMemoryLimit, androidRecordingLimit } from '../schemas/schemas.android.js';
 import { buildingResourcesSchema, buildingTypeSchema } from '../schemas/schemas.building.js';
 
+/**
+ * The fields every android action carries.
+ *
+ * The length of `memory`, `recording` and a broadcast's `content` is a rule
+ * rather than a schema constraint, so those ceilings are checked by the
+ * mechanics that apply them — see `android.update-state` and `android.broadcast`.
+ */
 const androidSchema = z.object({
   androidId: idSchema,
-  memory: z.string().max(androidMemoryLimit).optional(),
-  recording: z.string().max(androidRecordingLimit).optional(),
+  memory: z.string().optional(),
+  recording: z.string().optional(),
 });
 
 const androidWaitEventSchema = androidSchema.extend({
@@ -92,7 +98,7 @@ type AndroidLaunchEvent = z.infer<typeof androidLaunchEventSchema>;
 
 const androidBroadcastEventSchema = androidSchema.extend({
   type: z.literal('android.broadcast'),
-  content: z.string().max(256),
+  content: z.string(),
 });
 
 type AndroidBroadcastEvent = z.infer<typeof androidBroadcastEventSchema>;

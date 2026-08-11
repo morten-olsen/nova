@@ -1,3 +1,4 @@
+import type { Rules } from '../../rules/rules.js';
 import type { Position } from '../../schemas/schemas.base.js';
 import type { World } from '../../schemas/schemas.world.js';
 
@@ -12,7 +13,7 @@ const ensureWorldCollections = (world: World): void => {
   world.round ??= 0;
 };
 
-const ensurePlayer = (world: World, ownerId: string): void => {
+const ensurePlayer = (world: World, ownerId: string, rules: Rules): void => {
   ensureWorldCollections(world);
 
   const players = world.players ?? [];
@@ -32,7 +33,7 @@ const ensurePlayer = (world: World, ownerId: string): void => {
     ownerId,
     type: 'charger',
     position: { ...firstOpenTilePosition(world) },
-    health: 100,
+    health: rules.buildings.charger.health,
     initial: true,
     remainingConstruction: { ticks: 0, resources: { metal: 0 } },
   });

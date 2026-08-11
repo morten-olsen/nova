@@ -12,6 +12,31 @@ npx nova create-game --file game.json --width 8 --height 8
 
 `nova init --file game.json` is kept as a compatibility alias. Use `nova init` without `--file` only to create a new Android factory.
 
+### Change the rules
+
+Every number in the game is a rule, and `--rules` takes a JSON file holding any
+subset of them. Everything left out keeps its default, so this is a complete
+rules file:
+
+```jsonc
+// rules.json
+{
+  "android": { "cargoCapacity": 4 },
+  "buildings": { "depot": { "cost": { "metal": 4 }, "ticks": 1 } },
+}
+```
+
+```sh
+npx nova create-game --file game.json --rules rules.json
+```
+
+The resolved rules are stored in `game.json`, so `run`, `status` and `play` all
+continue and score the game under the same numbers, and an Android reads them at
+run time from the `rules` global. `--width` and `--height` are the same two rules
+on the command line, and win over a `world` block in the file when given.
+
+See [the rules](RULEBOOK.md#18-rules) for the groups and what each covers.
+
 ## Upload and launch an Android
 
 Upload a script under a player id. The command prints its script id.
@@ -39,7 +64,7 @@ npx nova play --file game.json
 
 Run short batches while developing. `status` reports active Androids, their location and battery, scripts, buildings, the event count, and a per-player colony-readiness score with its contributors. Readiness only counts completed infrastructure and material secured in completed buildings; exploration, scanners, radars, relay towers, loose material, scripts, and Androids have no direct score. The full event history and world recording are in `game.json`; it is useful evidence when diagnosing behavior, but it should not be edited by hand.
 
-`play` shows the same live readiness ranking and breakdown for the selected replay frame. See [the colony-readiness rules](RULEBOOK.md#16-colony-readiness-score) for the point values.
+`play` shows the same live readiness ranking and breakdown for the selected replay frame, scored under the recording's own rules. See [the colony-readiness rules](RULEBOOK.md#16-colony-readiness-score) for the default point values.
 
 ## Play another player
 
@@ -68,6 +93,11 @@ host's machine. Only host a match with someone you are willing to run code from.
 Both players start with one Android and one initial charger, placed in opposite
 corners. Each Android sees only what its own sight reaches, exactly as in a
 single-player game.
+
+A match is played under the host's rules, and the recording each player keeps
+carries them, so a replay is scored as the match was. The board size is currently
+the only rule the offer negotiates — `--rules` applies to `create-game`, not to
+`host`.
 
 ### Disclosure
 
@@ -110,7 +140,7 @@ Run `npx nova update` from the factory root to pin all Nova packages to the vers
 
 ```text
 nova init [factory-folder]
-nova create-game --file game.json [--width 16 --height 16]
+nova create-game --file game.json [--width 16 --height 16] [--rules rules.json]
 nova update
 nova status --file game.json
 nova upload-script --file game.json --owner player-1 --name name --script bot/file.ts

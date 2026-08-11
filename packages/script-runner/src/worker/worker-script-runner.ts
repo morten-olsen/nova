@@ -134,14 +134,14 @@ const createWorkerScriptRunner = (options: WorkerScriptRunnerOptions = {}): Work
     },
 
     // `world` arrives already fogged by the loop, so it can be serialized as-is.
-    execute: ({ androidId, content, world }: ScriptExecuteOptions) =>
+    execute: ({ androidId, content, world, rules }: ScriptExecuteOptions) =>
       startTurn(androidId, (id) => {
         getWorker().postMessage({
           type: 'run',
           id,
           androidId,
           content,
-          inputJson: toSandboxInputJson({ androidId, world }),
+          inputJson: toSandboxInputJson({ androidId, world, rules }),
           limits,
         } satisfies ScriptWorkerRequest);
       }),

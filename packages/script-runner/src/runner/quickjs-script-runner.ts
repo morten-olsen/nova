@@ -30,7 +30,7 @@ const createQuickJsScriptRunner = (options: QuickJsScriptRunnerOptions = {}): Sc
   void warmUpQuickJs();
 
   return {
-    execute: async ({ androidId, content, world }: ScriptExecuteOptions) => {
+    execute: async ({ androidId, content, world, rules }: ScriptExecuteOptions) => {
       // Asked for per turn rather than held from construction: this is a cached
       // promise, and re-reading it is what lets a runner pick up a replacement
       // module after one has been aborted.
@@ -38,7 +38,7 @@ const createQuickJsScriptRunner = (options: QuickJsScriptRunnerOptions = {}): Sc
       const outcome = runInSandbox(module, {
         androidId,
         content,
-        inputJson: toSandboxInputJson({ androidId, world }),
+        inputJson: toSandboxInputJson({ androidId, world, rules }),
         limits,
       });
       return toAndroidEventFromOutcome({ androidId, outcome });

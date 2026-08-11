@@ -9,7 +9,7 @@
           "y": 0
         },
         "composition": {
-          "ore": 0,
+          "ore": 2,
           "acid": 0,
           "water": 0,
           "radiation": 0
@@ -24,15 +24,13 @@
           "y": 0
         },
         "composition": {
-          "ore": 2,
+          "ore": 4,
           "acid": 0,
           "water": 0,
           "radiation": 0
         },
         "scattered": {
-          "metal": 5,
-          "electronics": 0,
-          "polymer": 0
+          "metal": 0
         }
       },
       {
@@ -41,8 +39,8 @@
           "y": 0
         },
         "composition": {
-          "ore": 0,
-          "acid": 4,
+          "ore": 2,
+          "acid": 0,
           "water": 0,
           "radiation": 0
         },
@@ -56,7 +54,7 @@
           "y": 0
         },
         "composition": {
-          "ore": 0,
+          "ore": 5,
           "acid": 0,
           "water": 0,
           "radiation": 0
@@ -71,15 +69,13 @@
           "y": 0
         },
         "composition": {
-          "ore": 4,
+          "ore": 3,
           "acid": 0,
           "water": 0,
           "radiation": 0
         },
         "scattered": {
-          "metal": 2,
-          "electronics": 1,
-          "polymer": 0
+          "metal": 0
         }
       },
       {
@@ -88,10 +84,10 @@
           "y": 0
         },
         "composition": {
-          "ore": 1,
+          "ore": 5,
           "acid": 0,
-          "water": 0,
-          "radiation": 3
+          "water": 3,
+          "radiation": 0
         },
         "scattered": {
           "metal": 0
@@ -104,8 +100,8 @@
         },
         "composition": {
           "ore": 0,
-          "acid": 1,
-          "water": 3,
+          "acid": 0,
+          "water": 0,
           "radiation": 0
         },
         "scattered": {
@@ -118,90 +114,9 @@
           "y": 1
         },
         "composition": {
-          "ore": 0,
-          "acid": 0,
-          "water": 0,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 5,
-          "electronics": 0,
-          "polymer": 0
-        }
-      },
-      {
-        "position": {
-          "x": 2,
-          "y": 1
-        },
-        "composition": {
           "ore": 2,
           "acid": 0,
           "water": 0,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 5,
-          "electronics": 0,
-          "polymer": 1
-        }
-      },
-      {
-        "position": {
-          "x": 3,
-          "y": 1
-        },
-        "composition": {
-          "ore": 0,
-          "acid": 0,
-          "water": 0,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 0
-        }
-      },
-      {
-        "position": {
-          "x": 4,
-          "y": 1
-        },
-        "composition": {
-          "ore": 4,
-          "acid": 0,
-          "water": 3,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 0
-        }
-      },
-      {
-        "position": {
-          "x": 5,
-          "y": 1
-        },
-        "composition": {
-          "ore": 4,
-          "acid": 0,
-          "water": 0,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 5,
-          "electronics": 0,
-          "polymer": 0
-        }
-      },
-      {
-        "position": {
-          "x": 0,
-          "y": 2
-        },
-        "composition": {
-          "ore": 0,
-          "acid": 0,
-          "water": 2,
           "radiation": 0
         },
         "scattered": {
@@ -212,11 +127,88 @@
       },
       {
         "position": {
+          "x": 2,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 3,
+          "y": 1
+        },
+        "composition": {
+          "ore": 1,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 5,
+          "y": 1
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 4,
+          "water": 1,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 2
+        },
+        "composition": {
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 4,
+          "electronics": 0,
+          "polymer": 0
+        }
+      },
+      {
+        "position": {
           "x": 1,
           "y": 2
         },
         "composition": {
-          "ore": 2,
+          "ore": 1,
           "acid": 0,
           "water": 0,
           "radiation": 0
@@ -237,7 +229,7 @@
           "radiation": 0
         },
         "scattered": {
-          "metal": 1,
+          "metal": 4,
           "electronics": 0,
           "polymer": 0
         }
@@ -245,6 +237,21 @@
       {
         "position": {
           "x": 3,
+          "y": 2
+        },
+        "composition": {
+          "ore": 6,
+          "acid": 0,
+          "water": 0,
+          "radiation": 0
+        },
+        "scattered": {
+          "metal": 0
+        }
+      },
+      {
+        "position": {
+          "x": 4,
           "y": 2
         },
         "composition": {
@@ -259,13 +266,13 @@
       },
       {
         "position": {
-          "x": 4,
+          "x": 5,
           "y": 2
         },
         "composition": {
-          "ore": 2,
-          "acid": 2,
-          "water": 2,
+          "ore": 0,
+          "acid": 0,
+          "water": 0,
           "radiation": 0
         },
         "scattered": {
@@ -274,31 +281,14 @@
       },
       {
         "position": {
-          "x": 5,
-          "y": 2
-        },
-        "composition": {
-          "ore": 6,
-          "acid": 2,
-          "water": 2,
-          "radiation": 0
-        },
-        "scattered": {
-          "metal": 5,
-          "electronics": 0,
-          "polymer": 0
-        }
-      },
-      {
-        "position": {
           "x": 0,
           "y": 3
         },
         "composition": {
-          "ore": 2,
+          "ore": 3,
           "acid": 0,
           "water": 0,
-          "radiation": 1
+          "radiation": 0
         },
         "scattered": {
           "metal": 0
@@ -310,13 +300,15 @@
           "y": 3
         },
         "composition": {
-          "ore": 2,
+          "ore": 0,
           "acid": 0,
           "water": 0,
           "radiation": 0
         },
         "scattered": {
-          "metal": 0
+          "metal": 4,
+          "electronics": 0,
+          "polymer": 0
         }
       },
       {
@@ -326,9 +318,9 @@
         },
         "composition": {
           "ore": 0,
-          "acid": 0,
+          "acid": 3,
           "water": 0,
-          "radiation": 1
+          "radiation": 0
         },
         "scattered": {
           "metal": 0
@@ -341,7 +333,7 @@
         },
         "composition": {
           "ore": 0,
-          "acid": 0,
+          "acid": 1,
           "water": 0,
           "radiation": 0
         },
@@ -355,15 +347,13 @@
           "y": 3
         },
         "composition": {
-          "ore": 2,
+          "ore": 3,
           "acid": 0,
           "water": 0,
-          "radiation": 2
+          "radiation": 0
         },
         "scattered": {
-          "metal": 1,
-          "electronics": 0,
-          "polymer": 2
+          "metal": 0
         }
       },
       {
@@ -375,7 +365,7 @@
           "ore": 0,
           "acid": 0,
           "water": 0,
-          "radiation": 3
+          "radiation": 2
         },
         "scattered": {
           "metal": 0
@@ -387,10 +377,10 @@
           "y": 4
         },
         "composition": {
-          "ore": 3,
+          "ore": 0,
           "acid": 0,
-          "water": 0,
-          "radiation": 3
+          "water": 2,
+          "radiation": 0
         },
         "scattered": {
           "metal": 0
@@ -420,12 +410,10 @@
           "ore": 0,
           "acid": 0,
           "water": 0,
-          "radiation": 1
+          "radiation": 0
         },
         "scattered": {
-          "metal": 1,
-          "electronics": 0,
-          "polymer": 0
+          "metal": 0
         }
       },
       {
@@ -449,7 +437,7 @@
           "y": 4
         },
         "composition": {
-          "ore": 0,
+          "ore": 6,
           "acid": 0,
           "water": 0,
           "radiation": 0
@@ -470,7 +458,9 @@
           "radiation": 0
         },
         "scattered": {
-          "metal": 0
+          "metal": 3,
+          "electronics": 0,
+          "polymer": 1
         }
       },
       {
@@ -479,13 +469,15 @@
           "y": 5
         },
         "composition": {
-          "ore": 3,
-          "acid": 1,
-          "water": 2,
-          "radiation": 0
+          "ore": 5,
+          "acid": 3,
+          "water": 1,
+          "radiation": 2
         },
         "scattered": {
-          "metal": 0
+          "metal": 2,
+          "electronics": 0,
+          "polymer": 0
         }
       },
       {
@@ -494,9 +486,9 @@
           "y": 5
         },
         "composition": {
-          "ore": 5,
+          "ore": 3,
           "acid": 0,
-          "water": 0,
+          "water": 2,
           "radiation": 0
         },
         "scattered": {
@@ -539,7 +531,7 @@
           "y": 5
         },
         "composition": {
-          "ore": 0,
+          "ore": 4,
           "acid": 0,
           "water": 0,
           "radiation": 0
@@ -554,9 +546,9 @@
           "y": 5
         },
         "composition": {
-          "ore": 0,
-          "acid": 0,
-          "water": 3,
+          "ore": 2,
+          "acid": 2,
+          "water": 0,
           "radiation": 0
         },
         "scattered": {
@@ -570,12 +562,322 @@
     "messages": [],
     "round": 0
   },
+  "rules": {
+    "world": {
+      "width": 6,
+      "height": 6,
+      "composition": null,
+      "generation": {
+        "ore": {
+          "chance": 0.55,
+          "min": 1,
+          "max": 6
+        },
+        "water": {
+          "chance": 0.18,
+          "min": 1,
+          "max": 4
+        },
+        "acid": {
+          "chance": 0.12,
+          "min": 1,
+          "max": 4
+        },
+        "radiation": {
+          "chance": 0.08,
+          "min": 1,
+          "max": 3
+        },
+        "scattered": {
+          "chance": 0.25,
+          "metal": {
+            "chance": 1,
+            "min": 1,
+            "max": 5
+          },
+          "electronics": {
+            "chance": 0.2,
+            "min": 1,
+            "max": 1
+          },
+          "polymer": {
+            "chance": 0.25,
+            "min": 1,
+            "max": 2
+          }
+        }
+      }
+    },
+    "android": {
+      "cargoCapacity": 10,
+      "batteryCapacity": 100,
+      "startingBattery": 100,
+      "startingHealth": 100,
+      "moveBatteryCost": 1,
+      "cleanAcidBatteryCost": 1,
+      "cleanAcidAmount": 1,
+      "decayPerRound": 0.1,
+      "radiationDamagePerPoint": 0.25,
+      "acidDamagePerPoint": 0.5,
+      "failedTurnHealthPenalty": 10,
+      "sight": {
+        "range": 2,
+        "shape": "stepped"
+      },
+      "memoryLimit": 4096,
+      "recordingLimit": 16384,
+      "broadcastLimit": 256
+    },
+    "buildings": {
+      "charger": {
+        "cost": {
+          "metal": 10
+        },
+        "ticks": 2,
+        "health": 100,
+        "charge": 25,
+        "androidCapacity": 1,
+        "sight": null,
+        "storage": null,
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "relay-tower": {
+        "cost": {
+          "metal": 8,
+          "electronics": 4
+        },
+        "ticks": 3,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": null,
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "depot": {
+        "cost": {
+          "metal": 6
+        },
+        "ticks": 2,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": {
+          "deposit": true,
+          "withdraw": true
+        },
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "extractor": {
+        "cost": {
+          "metal": 12,
+          "electronics": 2
+        },
+        "ticks": 5,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": {
+          "deposit": false,
+          "withdraw": true
+        },
+        "extraction": {
+          "ore": 2,
+          "water": 1,
+          "acidCanister": 1
+        },
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "processor": {
+        "cost": {
+          "metal": 15,
+          "electronics": 4,
+          "polymer": 2
+        },
+        "ticks": 6,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": {
+          "deposit": true,
+          "withdraw": true
+        },
+        "extraction": null,
+        "conversion": {
+          "input": {
+            "ore": 2
+          },
+          "output": {
+            "metal": 1
+          }
+        },
+        "cleansAcid": false
+      },
+      "acid-processing-plant": {
+        "cost": {
+          "metal": 12,
+          "electronics": 3,
+          "polymer": 2
+        },
+        "ticks": 5,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": {
+          "deposit": true,
+          "withdraw": true
+        },
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": true
+      },
+      "scanner": {
+        "cost": {
+          "metal": 8,
+          "electronics": 6
+        },
+        "ticks": 4,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": {
+          "range": 4,
+          "shape": "stepped"
+        },
+        "storage": null,
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "radar": {
+        "cost": {
+          "metal": 14,
+          "electronics": 10,
+          "polymer": 2
+        },
+        "ticks": 7,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": {
+          "range": 5,
+          "shape": "circular"
+        },
+        "storage": null,
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      },
+      "colony-module": {
+        "cost": {
+          "metal": 50,
+          "electronics": 20,
+          "polymer": 20
+        },
+        "ticks": 12,
+        "health": 100,
+        "charge": 0,
+        "androidCapacity": 0,
+        "sight": null,
+        "storage": null,
+        "extraction": null,
+        "conversion": null,
+        "cleansAcid": false
+      }
+    },
+    "salvage": {
+      "ownDamage": 25,
+      "hostileDamage": 10,
+      "ownReturnRate": 0.6,
+      "hostileReturnRate": 0.35
+    },
+    "scoring": {
+      "buildings": {
+        "charger": {
+          "points": 25,
+          "label": "Power and Android capacity"
+        },
+        "relay-tower": {
+          "points": 0,
+          "label": "Communication relays"
+        },
+        "depot": {
+          "points": 40,
+          "label": "Secured storage"
+        },
+        "extractor": {
+          "points": 80,
+          "label": "Resource extraction"
+        },
+        "processor": {
+          "points": 100,
+          "label": "Material processing"
+        },
+        "acid-processing-plant": {
+          "points": 120,
+          "label": "Environmental protection"
+        },
+        "scanner": {
+          "points": 0,
+          "label": "Survey coverage"
+        },
+        "radar": {
+          "points": 0,
+          "label": "Radar coverage"
+        },
+        "colony-module": {
+          "points": 1000,
+          "label": "Colony modules"
+        }
+      },
+      "materials": {
+        "metal": {
+          "points": 2,
+          "label": "Stored metal"
+        },
+        "electronics": {
+          "points": 3,
+          "label": "Stored electronics"
+        },
+        "polymer": {
+          "points": 3,
+          "label": "Stored polymer"
+        },
+        "ore": {
+          "points": 1,
+          "label": "Stored ore"
+        },
+        "water": {
+          "points": 2,
+          "label": "Stored water"
+        },
+        "acidCanister": {
+          "points": 2,
+          "label": "Stored acid canisters"
+        }
+      }
+    },
+    "match": {
+      "finalRound": null
+    }
+  },
   "events": [
     {
       "type": "user.upload-android-script",
       "ownerId": "player-1",
       "name": "starter-builder",
-      "content": "/* eslint-disable complexity */\n/* global androidId, world */\n(() => {\n  const android = world.androids.find((candidate) => candidate.id === androidId);\n\n  if (!android || !android.active) {\n    return { type: 'android.wait' };\n  }\n\n  const amount = (materials = {}) => {\n    return (\n      (materials.metal ?? 0) +\n      (materials.electronics ?? 0) +\n      (materials.polymer ?? 0) +\n      (materials.ore ?? 0) +\n      (materials.water ?? 0) +\n      (materials.acidCanister ?? 0)\n    );\n  };\n\n  const cargo = android.cargo ?? {};\n  const cargoAmount = amount(cargo);\n  const tile = world.tiles.find(\n    (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,\n  );\n  const building = world.buildings.find(\n    (candidate) => candidate.position.x === android.position.x && candidate.position.y === android.position.y,\n  );\n\n  if (building?.ownerId === android.ownerId && building.remainingConstruction.ticks > 0) {\n    return { type: 'android.continue-construction' };\n  }\n\n  if (!building && (cargo.metal ?? 0) >= 10) {\n    return { type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } };\n  }\n\n  const hasDepot = world.buildings.some(\n    (candidate) => candidate.ownerId === android.ownerId && candidate.type === 'depot',\n  );\n  if (!building && !hasDepot && (cargo.metal ?? 0) >= 6) {\n    return { type: 'android.start-construction', buildingType: 'depot', resources: { metal: 6 } };\n  }\n\n  if (building?.ownerId === android.ownerId && building.type === 'charger' && android.battery < 90) {\n    return { type: 'android.charge' };\n  }\n\n  if (tile && amount(tile.scattered) > 0 && cargoAmount < 10) {\n    return { type: 'android.collect' };\n  }\n\n  const openScatteredTiles = world.tiles\n    .filter((candidate) => amount(candidate.scattered) > 0)\n    .filter((candidate) => {\n      return !world.buildings.some(\n        (buildingCandidate) =>\n          buildingCandidate.position.x === candidate.position.x &&\n          buildingCandidate.position.y === candidate.position.y,\n      );\n    })\n    .sort((left, right) => {\n      const leftDistance =\n        Math.abs(left.position.x - android.position.x) + Math.abs(left.position.y - android.position.y);\n      const rightDistance =\n        Math.abs(right.position.x - android.position.x) + Math.abs(right.position.y - android.position.y);\n      return leftDistance - rightDistance;\n    });\n\n  const target = openScatteredTiles[0];\n  if (!target) {\n    return { type: 'android.broadcast', content: 'No scattered material targets remain.' };\n  }\n\n  if (android.position.x < target.position.x) {\n    return { type: 'android.move', direction: 'east' };\n  }\n\n  if (android.position.x > target.position.x) {\n    return { type: 'android.move', direction: 'west' };\n  }\n\n  if (android.position.y < target.position.y) {\n    return { type: 'android.move', direction: 'south' };\n  }\n\n  if (android.position.y > target.position.y) {\n    return { type: 'android.move', direction: 'north' };\n  }\n\n  return { type: 'android.wait' };\n})();\n"
+      "content": "(function () {\n  \"use strict\";\n  var __novaModule = { exports: {} };\n  (function (module, exports) {\n\"use strict\";\nvar __defProp = Object.defineProperty;\nvar __getOwnPropDesc = Object.getOwnPropertyDescriptor;\nvar __getOwnPropNames = Object.getOwnPropertyNames;\nvar __hasOwnProp = Object.prototype.hasOwnProperty;\nvar __export = (target, all) => {\n  for (var name in all)\n    __defProp(target, name, { get: all[name], enumerable: true });\n};\nvar __copyProps = (to, from, except, desc) => {\n  if (from && typeof from === \"object\" || typeof from === \"function\") {\n    for (let key of __getOwnPropNames(from))\n      if (!__hasOwnProp.call(to, key) && key !== except)\n        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });\n  }\n  return to;\n};\nvar __toCommonJS = (mod) => __copyProps(__defProp({}, \"__esModule\", { value: true }), mod);\n\n// docs/examples/starter-builder.ts\nvar starter_builder_exports = {};\n__export(starter_builder_exports, {\n  default: () => starter_builder_default\n});\nmodule.exports = __toCommonJS(starter_builder_exports);\nvar SAFETY_STEPS = 8;\nvar TOP_UP_AT = 0.6;\nvar LOG_LINES = 40;\nvar takeTurn = () => {\n  const self = world.androids.find((a) => a.id === androidId);\n  if (!self || !self.active) {\n    return { type: \"android.wait\" };\n  }\n  const key = (p) => p.x + \",\" + p.y;\n  const here = self.position;\n  const tiles = new Map(world.tiles.map((t) => [key(t.position), t]));\n  const tileAt = (p) => tiles.get(key(p));\n  const mine = (b) => !!b && b.ownerId === self.ownerId;\n  const buildingAt = (p) => world.buildings.find((b) => key(b.position) === key(p));\n  const complete = (b) => !!b && b.remainingConstruction.ticks === 0;\n  const steps = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);\n  const MATERIALS = Object.keys(rules.scoring.materials);\n  const total = (bundle) => MATERIALS.reduce((sum, k) => sum + (bundle?.[k] ?? 0), 0);\n  const cargo = self.cargo ?? {};\n  const carrying = total(cargo);\n  const capacity = rules.android.cargoCapacity;\n  const affordable = (cost) => MATERIALS.every((k) => (cargo[k] ?? 0) >= (cost[k] ?? 0));\n  const depotCost = rules.buildings.depot.cost;\n  const chargerCost = rules.buildings.charger.cost;\n  let mem = {};\n  try {\n    mem = JSON.parse(self.memory || \"{}\");\n  } catch {\n    mem = {};\n  }\n  mem.dir = mem.dir ?? \"east\";\n  const charges = (b) => rules.buildings[b.type].charge > 0;\n  const stores = (b) => rules.buildings[b.type].storage?.deposit === true;\n  const seenCharger = world.buildings.find((b) => mine(b) && charges(b) && complete(b));\n  const seenDepot = world.buildings.find((b) => mine(b) && stores(b) && complete(b));\n  if (seenCharger) {\n    mem.charger = seenCharger.position;\n  }\n  if (seenDepot) {\n    mem.depot = seenDepot.position;\n  }\n  const log = (line) => {\n    const previous = (self.recording || \"\").split(\"\\n\").filter(Boolean);\n    return previous.concat(\"r\" + (world.round ?? 0) + \" \" + line).slice(-LOG_LINES).join(\"\\n\");\n  };\n  const act = (action, note) => ({\n    ...action,\n    memory: JSON.stringify(mem),\n    recording: log(note)\n  });\n  const DIRS = {\n    north: { x: 0, y: -1 },\n    south: { x: 0, y: 1 },\n    east: { x: 1, y: 0 },\n    west: { x: -1, y: 0 }\n  };\n  const stepTo = (dir) => ({ x: here.x + DIRS[dir].x, y: here.y + DIRS[dir].y });\n  const onMap = (dir) => {\n    const p = stepTo(dir);\n    return p.x >= 0 && p.y >= 0 && p.x < rules.world.width && p.y < rules.world.height;\n  };\n  const hazard = (dir) => {\n    const t = tileAt(stepTo(dir));\n    if (!t) {\n      return 0;\n    }\n    return (t.composition.acid ?? 0) * rules.android.acidDamagePerPoint + (t.composition.radiation ?? 0) * rules.android.radiationDamagePerPoint;\n  };\n  const towards = (target) => {\n    const options = [];\n    if (target.x > here.x) {\n      options.push(\"east\");\n    }\n    if (target.x < here.x) {\n      options.push(\"west\");\n    }\n    if (target.y > here.y) {\n      options.push(\"south\");\n    }\n    if (target.y < here.y) {\n      options.push(\"north\");\n    }\n    return options.filter(onMap).sort((a, b) => hazard(a) - hazard(b))[0];\n  };\n  const move = (dir, note) => act({ type: \"android.move\", direction: dir }, note);\n  const siteHere = buildingAt(here);\n  if (siteHere && mine(siteHere) && siteHere.remainingConstruction.ticks > 0) {\n    return act({ type: \"android.continue-construction\" }, \"building \" + siteHere.type);\n  }\n  const charger = mem.charger;\n  const homeCost = (target) => (steps(here, target) + SAFETY_STEPS) * rules.android.moveBatteryCost;\n  if (charger && self.battery <= homeCost(charger)) {\n    if (key(here) === key(charger)) {\n      return act({ type: \"android.charge\" }, \"charging at \" + self.battery);\n    }\n    const dir = towards(charger);\n    if (dir) {\n      return move(dir, \"returning to charge at \" + self.battery);\n    }\n  }\n  if (charger && key(here) === key(charger) && self.battery < rules.android.batteryCapacity * TOP_UP_AT) {\n    return act({ type: \"android.charge\" }, \"topping up at \" + self.battery);\n  }\n  if (siteHere && mine(siteHere) && complete(siteHere) && stores(siteHere) && carrying > 0) {\n    return act({ type: \"android.deposit\" }, \"deposited \" + carrying);\n  }\n  const standingOn = tileAt(here);\n  if (standingOn && total(standingOn.scattered) > 0 && carrying < capacity) {\n    return act({ type: \"android.collect\" }, \"collecting\");\n  }\n  const freeHere = !siteHere;\n  if (freeHere && !mem.depot && affordable(depotCost)) {\n    return act({ type: \"android.start-construction\", buildingType: \"depot\", resources: depotCost }, \"starting depot\");\n  }\n  if (freeHere && mem.depot && affordable(chargerCost)) {\n    return act(\n      { type: \"android.start-construction\", buildingType: \"charger\", resources: chargerCost },\n      \"starting charger\"\n    );\n  }\n  if (carrying >= capacity && mem.depot) {\n    const dir = towards(mem.depot);\n    if (dir) {\n      return move(dir, \"hauling \" + carrying + \" to depot\");\n    }\n  }\n  const loose = world.tiles.filter((t) => total(t.scattered) > 0).sort((a, b) => steps(here, a.position) - steps(here, b.position))[0];\n  if (loose && carrying < capacity) {\n    const dir = towards(loose.position);\n    if (dir) {\n      return move(dir, \"heading to material at \" + key(loose.position));\n    }\n  }\n  const preferred = [mem.dir].concat([\"east\", \"south\", \"west\", \"north\"]).filter(onMap).sort((a, b) => hazard(a) - hazard(b));\n  const next = preferred[0];\n  if (next) {\n    mem.dir = next;\n    return move(next, \"exploring \" + next);\n  }\n  return act({ type: \"android.wait\" }, \"no safe move\");\n};\nvar starter_builder_default = takeTurn;\n\n  })(__novaModule, __novaModule.exports);\n  var __novaTurn = __novaModule.exports.default;\n  if (typeof __novaTurn !== \"function\") {\n    throw new Error(\"An android that exports anything must default-export the function that returns each turn's action.\");\n  }\n  return __novaTurn();\n})();\n"
     },
     {
       "type": "user.launch-android",
@@ -587,6 +889,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east",
       "type": "android.move",
       "direction": "east"
     },
@@ -598,16 +902,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.collect"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1",
       "type": "android.move",
       "direction": "south"
     },
@@ -619,6 +915,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting",
       "type": "android.collect"
     },
     {
@@ -629,42 +927,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.start-construction",
-      "buildingType": "charger",
-      "resources": {
-        "metal": 10
-      }
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
-      "type": "android.continue-construction"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
-      "type": "android.continue-construction"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2",
       "type": "android.move",
-      "direction": "east"
+      "direction": "west"
     },
     {
       "type": "game.round-end"
@@ -674,16 +940,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.collect"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2",
       "type": "android.move",
       "direction": "south"
     },
@@ -695,6 +953,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting",
       "type": "android.collect"
     },
     {
@@ -705,6 +965,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot",
       "type": "android.start-construction",
       "buildingType": "depot",
       "resources": {
@@ -719,6 +981,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot",
       "type": "android.continue-construction"
     },
     {
@@ -729,6 +993,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot",
       "type": "android.continue-construction"
     },
     {
@@ -739,6 +1005,58 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1",
+      "type": "android.deposit"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3",
       "type": "android.move",
       "direction": "west"
     },
@@ -750,6 +1068,46 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting",
+      "type": "android.collect"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south",
+      "type": "android.move",
+      "direction": "south"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5",
       "type": "android.move",
       "direction": "west"
     },
@@ -761,38 +1119,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.collect"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
-      "type": "android.move",
-      "direction": "east"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
-      "type": "android.move",
-      "direction": "east"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5",
       "type": "android.move",
       "direction": "south"
     },
@@ -804,17 +1132,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.move",
-      "direction": "south"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting",
       "type": "android.collect"
     },
     {
@@ -825,6 +1144,48 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger",
+      "type": "android.start-construction",
+      "buildingType": "charger",
+      "resources": {
+        "metal": 10
+      }
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"south\",\"charger\":{\"x\":0,\"y\":0},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger",
+      "type": "android.continue-construction"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east",
       "type": "android.move",
       "direction": "east"
     },
@@ -836,6 +1197,8 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east",
       "type": "android.move",
       "direction": "east"
     },
@@ -847,6 +1210,34 @@
     },
     {
       "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east",
+      "type": "android.move",
+      "direction": "east"
+    },
+    {
+      "type": "game.round-end"
+    },
+    {
+      "type": "game.round-start"
+    },
+    {
+      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4",
       "type": "android.move",
       "direction": "north"
     },
@@ -858,16 +1249,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.collect"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4",
       "type": "android.move",
       "direction": "east"
     },
@@ -879,17 +1262,8 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.move",
-      "direction": "north"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
+      "memory": "{\"dir\":\"east\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting",
       "type": "android.collect"
     },
     {
@@ -900,7 +1274,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.wait"
+      "memory": "{\"dir\":\"west\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting\nr31 exploring west",
+      "type": "android.move",
+      "direction": "west"
     },
     {
       "type": "game.round-end"
@@ -910,7 +1287,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.wait"
+      "memory": "{\"dir\":\"west\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting\nr31 exploring west\nr32 exploring west",
+      "type": "android.move",
+      "direction": "west"
     },
     {
       "type": "game.round-end"
@@ -920,7 +1300,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.wait"
+      "memory": "{\"dir\":\"west\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting\nr31 exploring west\nr32 exploring west\nr33 exploring west",
+      "type": "android.move",
+      "direction": "west"
     },
     {
       "type": "game.round-end"
@@ -930,7 +1313,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.wait"
+      "memory": "{\"dir\":\"west\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting\nr31 exploring west\nr32 exploring west\nr33 exploring west\nr34 exploring west",
+      "type": "android.move",
+      "direction": "west"
     },
     {
       "type": "game.round-end"
@@ -940,17 +1326,10 @@
     },
     {
       "androidId": "android-1",
-      "type": "android.wait"
-    },
-    {
-      "type": "game.round-end"
-    },
-    {
-      "type": "game.round-start"
-    },
-    {
-      "androidId": "android-1",
-      "type": "android.wait"
+      "memory": "{\"dir\":\"west\",\"charger\":{\"x\":0,\"y\":5},\"depot\":{\"x\":0,\"y\":2}}",
+      "recording": "r1 exploring east\nr2 heading to material at 1,1\nr3 collecting\nr4 heading to material at 0,2\nr5 heading to material at 0,2\nr6 collecting\nr7 starting depot\nr8 building depot\nr9 building depot\nr10 deposited 1\nr11 heading to material at 2,2\nr12 heading to material at 2,2\nr13 collecting\nr14 heading to material at 1,3\nr15 heading to material at 1,3\nr16 collecting\nr17 exploring south\nr18 heading to material at 0,5\nr19 heading to material at 0,5\nr20 collecting\nr21 starting charger\nr22 building charger\nr23 building charger\nr24 exploring east\nr25 exploring east\nr26 exploring east\nr27 exploring east\nr28 heading to material at 5,4\nr29 heading to material at 5,4\nr30 collecting\nr31 exploring west\nr32 exploring west\nr33 exploring west\nr34 exploring west\nr35 exploring west",
+      "type": "android.move",
+      "direction": "west"
     },
     {
       "type": "game.round-end"
