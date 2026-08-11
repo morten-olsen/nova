@@ -1,5 +1,6 @@
 import type { Direction, Position } from '../../schemas/schemas.base.js';
 import { addMaterials } from '../../schemas/schemas.resources.js';
+import { isBuildingComplete } from '../../utils/utils.building.js';
 import type { Mechanic } from '../mechanics.base.js';
 
 import { getAndroid, getTileAt } from './android.helpers.js';
@@ -32,7 +33,7 @@ const androidMechanicsCleanAcid: Mechanic = {
       (building) =>
         building.ownerId === android.ownerId &&
         rules.buildings[building.type].cleansAcid &&
-        building.remainingConstruction.ticks === 0,
+        isBuildingComplete(building),
     );
     if (!acidPlant) {
       throw new Error('Android owner needs a completed acid processing plant to clean acid');

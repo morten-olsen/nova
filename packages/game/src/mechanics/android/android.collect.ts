@@ -1,4 +1,5 @@
 import {
+  materialAmount,
   materialKeys,
   normalizeMaterials,
   subtractMaterials,
@@ -6,7 +7,7 @@ import {
 } from '../../schemas/schemas.resources.js';
 import type { Mechanic } from '../mechanics.base.js';
 
-import { addToAndroidCargo, getAndroid, getTileAt, materialAmount } from './android.helpers.js';
+import { addToAndroidCargo, getAndroid, getTileAt } from './android.helpers.js';
 
 const androidMechanicsCollect: Mechanic = {
   name: 'android.collect',

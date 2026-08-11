@@ -40,10 +40,10 @@ describe('rules', () => {
     const rules = resolveRules({});
 
     expect(rules).toEqual(defaultRules);
-    expect(rules.world).toEqual(expect.objectContaining({ width: 16, height: 16, composition: null }));
-    expect(rules.android.cargoCapacity).toBe(10);
+    expect(rules.world).toEqual(expect.objectContaining({ width: 12, height: 12, composition: null }));
+    expect(rules.android.cargoCapacity).toBe(12);
     expect(rules.buildings.charger).toEqual(
-      expect.objectContaining({ cost: { metal: 10 }, ticks: 2, charge: 25, androidCapacity: 1 }),
+      expect.objectContaining({ cost: { metal: 8 }, ticks: 2, charge: 25, androidCapacity: 2 }),
     );
     expect(rules.buildings.radar.sight).toEqual({ range: 5, shape: 'circular' });
     expect(rules.scoring.buildings['colony-module'].points).toBe(1_000);

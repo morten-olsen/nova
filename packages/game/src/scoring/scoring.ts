@@ -5,6 +5,7 @@ import type { ScoreRules } from '../rules/rules.scoring.js';
 import type { Building } from '../schemas/schemas.building.js';
 import { materialKeys } from '../schemas/schemas.resources.js';
 import type { World } from '../schemas/schemas.world.js';
+import { isBuildingComplete } from '../utils/utils.building.js';
 
 const scoreContributorSchema = z.object({
   id: z.string(),
@@ -24,9 +25,12 @@ const playerScoreSchema = z.object({
 
 type PlayerScore = z.infer<typeof playerScoreSchema>;
 
-const isComplete = (building: Building): boolean => building.remainingConstruction.ticks === 0;
-
-const addContributor = (contributors: Map<string, ScoreContributor>, score: ScoreRules, quantity: number): void => {
+const addContributor = (
+  contributors: Map<string, ScoreContributor>,
+  score: ScoreRules,
+  quantity: number,
+  points: number,
+): void => {
   // A rule worth no points earns no row: that is how the sight and
   // communication buildings stay named but unscored.
   if (quantity <= 0 || score.points === 0) {
@@ -36,7 +40,7 @@ const addContributor = (contributors: Map<string, ScoreContributor>, score: Scor
   const existing = contributors.get(score.label);
   if (existing) {
     existing.quantity += quantity;
-    existing.points += quantity * score.points;
+    existing.points += points;
     return;
   }
 
@@ -44,9 +48,18 @@ const addContributor = (contributors: Map<string, ScoreContributor>, score: Scor
     id: score.label.toLowerCase().replaceAll(' ', '-'),
     label: score.label,
     quantity,
-    points: quantity * score.points,
+    points,
   });
 };
+
+/**
+ * What the next building of a type is worth to a player who already has some.
+ *
+ * `diminishing` is applied per building rather than to the row, so the
+ * breakdown's quantity stays the honest count and only its points bend.
+ */
+const buildingAward = (score: ScoreRules, alreadyCounted: number): number =>
+  Math.round(score.points * score.diminishing ** alreadyCounted);
 
 const playerIds = (world: World): string[] => {
   const ids = new Set(world.players?.map((player) => player.id));
@@ -76,15 +89,20 @@ const calculateColonyScores = (world: World, rules: Rules = defaultRules): Playe
   return playerIds(world)
     .map((playerId) => {
       const contributors = new Map<string, ScoreContributor>();
+      const counted = new Map<Building['type'], number>();
       for (const building of world.buildings) {
-        if (building.ownerId !== playerId || !isComplete(building)) {
+        if (building.ownerId !== playerId || !isBuildingComplete(building)) {
           continue;
         }
 
-        addContributor(contributors, buildingScores[building.type], 1);
+        const score = buildingScores[building.type];
+        const alreadyCounted = counted.get(building.type) ?? 0;
+        counted.set(building.type, alreadyCounted + 1);
+        addContributor(contributors, score, 1, buildingAward(score, alreadyCounted));
 
         for (const material of materialKeys) {
-          addContributor(contributors, materialScores[material], building.storage?.[material] ?? 0);
+          const stored = building.storage?.[material] ?? 0;
+          addContributor(contributors, materialScores[material], stored, stored * materialScores[material].points);
         }
       }
 

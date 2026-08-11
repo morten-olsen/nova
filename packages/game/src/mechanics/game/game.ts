@@ -10,6 +10,7 @@ import { gameMechanicsDestroyAndroids } from './game.destroy-androids.js';
 import { gameMechanicsExtractResources } from './game.extract-resources.js';
 import { gameMechanicsPlaceCharger } from './game.place-charger.js';
 import { gameMechanicsProcessResources } from './game.process-resources.js';
+import { gameMechanicsReplaceLostAndroids } from './game.replace-lost-androids.js';
 import { gameMechanicsRevealTiles } from './game.reveal-tiles.js';
 import { gameMechanicsScheduleMatch } from './game.schedule-match.js';
 
@@ -24,6 +25,9 @@ const createGameMechanics = () => [
   gameMechanicsPlaceCharger,
   gameMechanicsScheduleMatch,
   gameMechanicsAdvanceRound,
+  // Before any turn is taken, so a player who lost their last Android last round
+  // has one to take a turn with this round.
+  gameMechanicsReplaceLostAndroids,
   ...userMechanics,
   ...androidMechanics,
   ...constructionMechanics,

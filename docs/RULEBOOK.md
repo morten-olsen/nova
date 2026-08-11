@@ -86,7 +86,7 @@ Each tile has:
 - `scattered`: loose earth-launched material on the surface
 - optional `revealedBy`: player ids that can **currently** see the tile
 
-The board's size is `rules.world.width` x `rules.world.height` — 16 x 16 by default — and a script can read it even though the tiles themselves are fogged.
+The board's size is `rules.world.width` x `rules.world.height` — 12 x 12 by default — and a script can read it even though the tiles themselves are fogged.
 
 Tile composition is generated randomly when a new map is created, from `rules.world.generation`. Composition is not the same as loose material. Composition represents things in the ground or environmental conditions.
 
@@ -105,6 +105,12 @@ Current scattered material fields:
 - `ore`
 - `water`
 - `acidCanister`
+
+What a fresh map actually scatters is narrower than that, and deliberately: metal and
+electronics, and nothing else. **Polymer is never scattered** — Earth sent none, and the
+only polymer on the planet is polymer a colony made, out of an acid processing plant.
+The rest of the fields exist because material can reach the ground other ways: salvage
+returns it, and a hand-authored scenario can put anything anywhere.
 
 Scattered material can be collected directly by androids. Composition cannot be collected directly; it requires buildings or special mechanics.
 
@@ -137,11 +143,12 @@ Androids can currently:
 
 - move one tile orthogonally
 - collect scattered material from their current tile
-- carry up to `rules.android.cargoCapacity` total material units (10)
+- carry up to `rules.android.cargoCapacity` total material units (12)
 - start and continue construction
 - charge on owned chargers
 - deposit to and withdraw from storage-capable owned buildings
 - salvage buildings
+- repair an owned damaged building
 - broadcast public messages
 - clean acid from adjacent tiles if their owner has an acid processing plant
 - launch another android of the same owner while standing on an owned completed charger
@@ -151,9 +158,11 @@ Androids have health. They lose a small amount of health over time. Environmenta
 
 At round end:
 
-- every android loses `rules.android.decayPerRound` health from ordinary decay (`0.1`)
-- radiation damages androids by `radiation * rules.android.radiationDamagePerPoint` (`0.25`)
-- acid damages androids by `acid * rules.android.acidDamagePerPoint` (`0.5`)
+- every android loses `rules.android.decayPerRound` health from ordinary decay (`0.15`)
+- radiation damages androids by `radiation * rules.android.radiationDamagePerPoint` (`0.75`)
+- acid damages androids by `acid * rules.android.acidDamagePerPoint` (`1.5`)
+
+Hazards are not scenery. Four points of acid is six health a round, so a route across the flats is a decision with a cost, and a tile nobody can cross is a wall an Android can use.
 
 A failed turn — a refused action, a script error, an exhausted turn budget — costs the android `rules.android.failedTurnHealthPenalty` health (`10`) on top of the round it lost. One bad edge case is survivable; a script that keeps making the same mistake wears its android out.
 
@@ -163,12 +172,16 @@ Androids with health at or below 0, or battery at or below 0, are destroyed at r
 
 Chargers determine android deployment capacity.
 
-A player's active android cap is the sum of `rules.buildings[type].androidCapacity` over their completed buildings. Only chargers carry capacity by default, and each carries 1, so the cap is the number of completed chargers they own.
+A player's active android cap is the sum of `rules.buildings[type].androidCapacity` over their completed buildings. Only chargers carry capacity by default, and each carries 2.
 
 Examples:
 
-- 1 charger allows 1 active android
-- 3 chargers allow 3 active androids
+- 1 charger allows 2 active androids
+- 3 chargers allow 6 active androids
+
+The starting charger therefore allows a second android from the first turn, and an
+android standing on it can launch that sibling itself. Doubling the hands before
+doing anything else is a real opening — and so is deciding not to.
 
 A player always has at least their initial charger. Initial chargers are placed on non-overlapping tiles when the world is set up.
 
@@ -176,7 +189,7 @@ If a non-initial charger is destroyed or salvaged, the player's deployment cap i
 
 Launching is currently immediate if capacity is available. Launch delay is planned but not implemented yet.
 
-A player is not the only one who can spend that capacity. An android standing on one of its owner's completed chargers can launch a sibling itself with `android.launch`, and it is held to the same cap: the launch is refused unless the owner's active android count is below their completed charger count. Because the launching android is itself active, a player with a single charger can never have their android launch another.
+A player is not the only one who can spend that capacity. An android standing on one of its owner's completed chargers can launch a sibling itself with `android.launch`, and it is held to the same cap: the launch is refused unless the owner's active android count is below their completed charger count. Because the launching android is itself active, a player at their cap cannot launch another until something frees capacity — a dismantle, a wreck, or another charger.
 
 ## 7. Scripts, Launching, and Dismantling
 
@@ -238,7 +251,7 @@ Directions: `north`, `south`, `east`, `west`.
 
 ### Charge
 
-Recharge on an owned building on the android's current tile that can charge — any type whose `rules.buildings[type].charge` is above zero, which is the charger by default. Adds that much battery (`25`), capped at `rules.android.batteryCapacity` (`100`).
+Recharge on an owned **completed** building on the android's current tile that can charge — any type whose `rules.buildings[type].charge` is above zero, which is the charger by default. Adds that much battery (`25`), capped at `rules.android.batteryCapacity` (`100`).
 
 ```ts
 const action: Action = { type: 'android.charge' };
@@ -255,9 +268,9 @@ const withResources: Action = { type: 'android.collect', resources: { metal: 3 }
 
 ### Deposit
 
-Deposit cargo into an owned storage-capable building on the current tile. If `resources` is omitted, deposits all cargo.
+Deposit cargo into an owned, completed, storage-capable building on the current tile. If `resources` is omitted, deposits all cargo.
 
-A building accepts deposits when `rules.buildings[type].storage.deposit` is true: depots, processors, and acid processing plants by default.
+A building accepts deposits when `rules.buildings[type].storage.deposit` is true: depots, processors, and acid processing plants by default. A construction site is not storage: nothing a building does — charging, storing, extracting, converting, seeing, carrying android capacity, or scoring — happens until it is finished.
 
 ```ts
 const action: Action = { type: 'android.deposit' };
@@ -266,7 +279,7 @@ const withResources: Action = { type: 'android.deposit', resources: { ore: 2 } }
 
 ### Withdraw
 
-Withdraw material from an owned storage-capable building on the current tile.
+Withdraw material from an owned, completed, storage-capable building on the current tile.
 
 ```ts
 const action: Action = { type: 'android.withdraw', resources: { metal: 4 } };
@@ -277,6 +290,8 @@ A building allows withdrawals when `rules.buildings[type].storage.withdraw` is t
 ### Start Construction
 
 Start a building on the current tile. The tile must not already contain a building. Supplied resources can come from android cargo. Current compatibility also allows using loose/current-tile material in some cases, but scripts should prefer collecting material into cargo first.
+
+Only material the building's cost actually names is accepted, and never more of it than the cost asks for — a depot takes six metal, not eight, and not ten ore. Supplying nothing is allowed: the site is placed unpaid and the material can be delivered later with `android.continue-construction`.
 
 ```ts
 const action: Action = { type: 'android.start-construction', buildingType: 'charger', resources: { metal: 10 } };
@@ -354,38 +369,52 @@ Tiles may contain natural composition such as ore, water, acid, and radiation.
 Composition usually cannot be picked up directly. It requires buildings:
 
 - extractors harvest natural tile composition into building storage
-- processors convert raw resources into construction-grade material
-- acid processing plants enable cleanup of hazardous acid
+- processors refine ore into metal, and metal and water into electronics
+- acid processing plants enable cleanup of hazardous acid, and refine the canisters into polymer
+
+Earth scattered a fixed amount of metal and electronics and it does not grow back.
+Polymer it sent none of at all. Everything past what is lying on the ground comes out
+of the ground and through a refinery, which is what makes the middle of the game a
+supply chain rather than a scavenger hunt.
+
+That is also what stands between a player and a colony module. Its 20 electronics are
+more than a whole board scatters, and its 20 polymer cannot be found at any price — so
+the module is only ever built by a colony that runs a processor _and_ has cleaned up
+enough of the planet to have canisters to refine. Neither refinery costs polymer, for
+the obvious reason: the first one could never be built.
 
 ## 10. Buildings
 
 Current building types. Costs and construction times are `rules.buildings[type].cost` and `.ticks`:
 
-| Building                | Cost                                 | Construction ticks | Function                                          |
-| ----------------------- | ------------------------------------ | -----------------: | ------------------------------------------------- |
-| `charger`               | 10 metal                             |                  2 | Increases android capacity by 1; charges androids |
-| `depot`                 | 6 metal                              |                  2 | Stores material                                   |
-| `extractor`             | 12 metal, 2 electronics              |                  5 | Harvests tile composition into storage            |
-| `processor`             | 15 metal, 4 electronics, 2 polymer   |                  6 | Converts 2 ore into 1 metal at round end          |
-| `acid-processing-plant` | 12 metal, 3 electronics, 2 polymer   |                  5 | Enables androids to clean adjacent acid           |
-| `relay-tower`           | 8 metal, 4 electronics               |                  3 | Planned communication infrastructure              |
-| `scanner`               | 8 metal, 6 electronics               |                  4 | Reveals nearby tiles at longer range              |
-| `radar`                 | 14 metal, 10 electronics, 2 polymer  |                  7 | Reveals a radius-5 disc of tiles around itself    |
-| `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Scores 1,000 readiness; victory condition planned |
+| Building                | Cost                                 | Construction ticks | Function                                              |
+| ----------------------- | ------------------------------------ | -----------------: | ----------------------------------------------------- |
+| `charger`               | 8 metal                              |                  2 | Increases android capacity by 2; charges androids     |
+| `depot`                 | 6 metal                              |                  2 | Stores material                                       |
+| `extractor`             | 10 metal, 2 electronics              |                  3 | Harvests tile composition into storage                |
+| `processor`             | 15 metal, 3 electronics              |                  4 | Refines ore into metal, and metal into electronics    |
+| `acid-processing-plant` | 12 metal, 2 electronics              |                  4 | Enables acid cleaning; refines canisters into polymer |
+| `relay-tower`           | 8 metal, 4 electronics               |                  3 | Planned communication infrastructure                  |
+| `scanner`               | 8 metal, 6 electronics               |                  4 | Reveals nearby tiles at longer range                  |
+| `radar`                 | 14 metal, 10 electronics, 2 polymer  |                  7 | Reveals a radius-5 disc of tiles around itself        |
+| `colony-module`         | 50 metal, 20 electronics, 20 polymer |                 12 | Scores 1,000 readiness; victory condition planned     |
 
 A building under construction occupies its tile immediately. Buildings have `rules.buildings[type].health` health (`100`).
 
 A completed building harvests `rules.buildings[type].extraction` from the composition of its own tile at round end, capped by what the ground holds. Only the extractor does by default:
 
-- up to 2 `ore` from tile composition
-- up to 1 `water` from tile composition
+- up to 3 `ore` from tile composition
+- up to 2 `water` from tile composition
 - up to 1 `acidCanister` from tile acid
 
 Harvesting does not consume composition: the ground keeps yielding.
 
-A completed building runs `rules.buildings[type].conversion` on its own storage once per round end. Only the processor does by default:
+A completed building runs `rules.buildings[type].conversion` on its own storage once per round end. A building may hold several recipes, and they run in the order listed, each once, against the storage as the previous one left it — so one building can feed itself. By default:
 
-- 2 `ore` -> 1 `metal`
+- the processor: 2 `ore` -> 1 `metal`, then 1 `metal` + 1 `water` -> 1 `electronics`
+- the acid processing plant: 1 `acidCanister` + 1 `water` -> 1 `polymer`
+
+This is the only source of electronics and polymer beyond what Earth scattered, and both cost more than they yield in raw material. A colony that wants the parts a colony module is made of has to build the industry that makes them, and keep it fed.
 
 ## 11. Acid and Environmental Preparation
 
@@ -405,14 +434,25 @@ Androids can salvage buildings on their current tile.
 Rules:
 
 - initial chargers cannot be salvaged
+- a building whose `rules.buildings[type].salvageableByOthers` is false cannot be salvaged by another player at all — the depot, by default
 - self-salvage deals `rules.salvage.ownDamage` building damage per action (`25`)
-- hostile salvage deals `rules.salvage.hostileDamage` building damage per action (`10`)
+- hostile salvage deals `rules.salvage.hostileDamage` building damage per action (`15`)
 - buildings have `rules.buildings[type].health` health (`100`)
 - when destroyed by salvage, returned material becomes scattered on the tile
-- self-salvage returns `rules.salvage.ownReturnRate` of build cost (60%)
-- hostile salvage returns `rules.salvage.hostileReturnRate` of build cost (35%)
+- self-salvage returns `rules.salvage.ownReturnRate` (60%) of the material actually invested in the building
+- hostile salvage returns `rules.salvage.hostileReturnRate` (35%) of the same
+
+The return is a share of what went into the building, not of what its type costs, so an unpaid construction site is worth nothing to take apart. Anything **stored** inside a building is different: it spills onto the tile in full, for whoever is standing there. Bringing down a full depot is a robbery, not an erasure — and a stockpile left in a building nobody is guarding is a stockpile within reach.
 
 Salvage is intentionally slower than ordinary collection and requires the android to remain at the target.
+
+Depots are the exception, and the reason is the whole point of hauling: material that reached a depot is material that is safe. A rival can contest the ground, the chargers, the extractors and the refineries, but not the stockpile already banked. A player can still salvage their own depot — the stored material spills onto the tile, and moving it is then their problem.
+
+### 12.1 Repair
+
+An android standing on one of its owner's completed buildings can repair it, restoring `rules.salvage.repairAmount` health (`10`) for `rules.salvage.repairCost` (1 metal) out of its cargo. Health never exceeds the building's own maximum, and a building that is not damaged cannot be repaired.
+
+Repair is what makes a raid a contest. Hostile salvage takes `rules.salvage.hostileDamage` (`15`) off a building per action against a repair's `10`, so one defender roughly cancels one attacker: holding ground is possible, never free, and two raiders beat one defender. Buildings under construction are continued, not repaired.
 
 ## 13. Communication
 
@@ -432,9 +472,9 @@ There is no private radio by default. Relay towers are planned to expand communi
 
 ## 14. Visibility and Information
 
-Visibility is recomputed from scratch at the end of every round: a tile is visible only while something of yours is in range of it, and goes dark again once nothing is. Sight comes from `rules.android.sight` and `rules.buildings[type].sight`; by default:
+Visibility is recomputed from scratch at the start and the end of every round: a tile is visible only while something of yours is in range of it, and goes dark again once nothing is. Recomputing at the start is what gives a newly launched Android a lit first turn instead of a view of the single tile it is standing on. Sight comes from `rules.android.sight` and `rules.buildings[type].sight`; by default:
 
-- active androids reveal tiles within range 2
+- active androids reveal tiles within range 3
 - completed scanners reveal tiles within range 4
 - completed radars reveal tiles within radius 5
 
@@ -477,18 +517,18 @@ Only completed, functioning colony assets and materials secured in completed bui
 
 Points come from `rules.scoring.buildings` and `rules.scoring.materials`; anything worth `0` points earns no line in the breakdown at all. The defaults:
 
-| Contributor                   |     Points |
-| ----------------------------- | ---------: |
-| Colony module                 | 1,000 each |
-| Acid-processing plant         |   120 each |
-| Processor                     |   100 each |
-| Extractor                     |    80 each |
-| Depot                         |    40 each |
-| Charger                       |    25 each |
-| Stored metal                  | 2 per unit |
-| Stored electronics or polymer | 3 per unit |
-| Stored ore                    | 1 per unit |
-| Stored water or acid canister | 2 per unit |
+| Contributor                   |                         Points |
+| ----------------------------- | -----------------------------: |
+| Colony module                 |                     1,000 each |
+| Acid-processing plant         |                       120 each |
+| Processor                     |                       100 each |
+| Extractor                     |                        80 each |
+| Depot                         |                        40 each |
+| Charger                       | 25, then 80% of the one before |
+| Stored metal                  |                     2 per unit |
+| Stored electronics or polymer |                     3 per unit |
+| Stored ore                    |                     1 per unit |
+| Stored water or acid canister |                     2 per unit |
 
 Stored materials count only when they are in a completed building owned by that player. The algorithm deliberately measures present readiness, not historical achievement: an asset that is salvaged or a stockpile that is spent stops contributing.
 
@@ -526,15 +566,15 @@ npx nova create-game --file game.json --rules rules.json
 
 The groups:
 
-| Group       | Covers                                                                                                                        |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `world`     | Board size, and how a fresh map's composition and scattered material are generated                                            |
-| `android`   | Cargo capacity, battery capacity and costs, decay, hazard damage, the failed-turn penalty, sight, and limits                  |
-| `buildings` | Per type: cost, construction ticks, health, charging, android capacity, sight, storage, extraction, conversion, acid cleaning |
-| `salvage`   | Salvage damage and the share of build cost returned                                                                           |
-| `scoring`   | What each completed building and each stored material is worth                                                                |
-| `script`    | What one Android turn may spend: CPU ticks, wall clock, and heap                                                              |
-| `match`     | The round the humans are expected to arrive on, if the game has one                                                           |
+| Group       | Covers                                                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `world`     | Board size, and how a fresh map's composition and scattered material are generated                                                          |
+| `android`   | Cargo capacity, battery capacity and costs, decay, hazard damage, the failed-turn penalty, sight, and limits                                |
+| `buildings` | Per type: cost, ticks, health, charging, android capacity, sight, storage, extraction, conversions, acid cleaning, hostile-salvage immunity |
+| `salvage`   | Salvage damage, the share of invested material returned, and what a repair restores and costs                                               |
+| `scoring`   | What each building and stored material is worth, and how fast a type's value diminishes                                                     |
+| `script`    | What one Android turn may spend: CPU ticks, wall clock, and heap                                                                            |
+| `match`     | The round the humans are expected to arrive on, and whether lost androids are replaced                                                      |
 
 Two conventions are worth knowing when writing a rules file:
 

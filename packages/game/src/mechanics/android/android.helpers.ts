@@ -3,18 +3,15 @@ import type { Position } from '../../schemas/schemas.base.js';
 import {
   addMaterials,
   hasMaterials,
-  materialKeys,
+  materialAmount,
   normalizeMaterials,
   subtractMaterials,
   type MaterialBundle,
 } from '../../schemas/schemas.resources.js';
+import { isBuildingComplete } from '../../utils/utils.building.js';
 import type { Android } from '../../schemas/schemas.android.js';
 import type { Building } from '../../schemas/schemas.building.js';
 import type { World } from '../../schemas/schemas.world.js';
-
-const materialAmount = (materials: Partial<MaterialBundle> | undefined): number => {
-  return materialKeys.reduce((total, key) => total + (materials?.[key] ?? 0), 0);
-};
 
 const samePosition = (left: Position, right: Position): boolean => left.x === right.x && left.y === right.y;
 
@@ -46,9 +43,6 @@ const takeFromAndroidCargo = (android: Android, resources: Partial<MaterialBundl
   return normalizeMaterials(resources);
 };
 
-const isComplete = (building: Building): boolean =>
-  building.remainingConstruction.ticks === 0 && materialAmount(building.remainingConstruction.resources) === 0;
-
 /**
  * The completed buildings that carry their owner's android capacity.
  *
@@ -58,7 +52,9 @@ const isComplete = (building: Building): boolean =>
 const capacityBuildingsForOwner = (world: World, ownerId: string, rules: Rules): Building[] => {
   return world.buildings.filter(
     (building) =>
-      building.ownerId === ownerId && rules.buildings[building.type].androidCapacity > 0 && isComplete(building),
+      building.ownerId === ownerId &&
+      rules.buildings[building.type].androidCapacity > 0 &&
+      isBuildingComplete(building),
   );
 };
 
@@ -164,9 +160,7 @@ export {
   getAndroid,
   getBuildingAt,
   getTileAt,
-  isComplete,
   launchAndroid,
-  materialAmount,
   nextAndroidId,
   requireDeploymentBay,
   samePosition,

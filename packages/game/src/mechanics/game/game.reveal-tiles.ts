@@ -1,6 +1,7 @@
 import type { SightRules } from '../../rules/rules.sight.js';
 import type { Position } from '../../schemas/schemas.base.js';
 import type { World } from '../../schemas/schemas.world.js';
+import { isBuildingComplete } from '../../utils/utils.building.js';
 import type { Mechanic } from '../mechanics.base.js';
 
 /** See {@link SightRules} for why the two shapes are measured differently. */
@@ -31,7 +32,12 @@ const revealTiles = (world: World, ownerId: string, position: Position, sight: S
 const gameMechanicsRevealTiles: Mechanic = {
   name: 'game.reveal-tiles',
   apply: ({ world, event, rules }) => {
-    if (event.type !== 'game.round-end') {
+    // Both ends of the round. The end is what makes visibility current for a
+    // renderer or a `status` reading the world afterwards; the start is what an
+    // android's first turn needs, because until it ran, an android launched
+    // between rounds could see the tile it stood on and nothing else — every
+    // freshly launched android opened its eyes blind.
+    if (event.type !== 'game.round-start' && event.type !== 'game.round-end') {
       return;
     }
 
@@ -51,7 +57,7 @@ const gameMechanicsRevealTiles: Mechanic = {
 
     for (const building of world.buildings) {
       const { sight } = rules.buildings[building.type];
-      if (sight && building.remainingConstruction.ticks === 0) {
+      if (sight && isBuildingComplete(building)) {
         revealTiles(world, building.ownerId, building.position, sight);
       }
     }

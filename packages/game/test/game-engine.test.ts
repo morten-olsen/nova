@@ -266,7 +266,12 @@ describe('game engine', () => {
         id: 'android-1',
         position: { x: 1, y: 0 },
         battery: 99,
-        health: expect.closeTo(88.8, 5),
+        health: expect.closeTo(
+          100 -
+            defaultRules.android.failedTurnHealthPenalty -
+            2 * (defaultRules.android.decayPerRound + defaultRules.android.acidDamagePerPoint),
+          5,
+        ),
         active: true,
       }),
     ]);
@@ -389,9 +394,12 @@ describe('game engine', () => {
       await loop.run();
     }
 
-    expect(loop.world.androids).toEqual([expect.objectContaining({ id: 'android-1', active: false, health: 0 })]);
-    // Only the rounds it survived cost it a turn.
-    expect(loop.events.filter((event) => event.type === 'game.android-failed-turn')).toHaveLength(10);
+    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ id: 'android-1', active: false, health: 0 }));
+    // And a replacement arrives, because losing an android is a setback rather
+    // than an elimination — it inherits the same broken script and the same fate.
+    expect(loop.world.androids.length).toBeGreaterThan(1);
+    expect(loop.world.androids[1]).toEqual(expect.objectContaining({ ownerId: 'player-1' }));
+    expect(loop.events.filter((event) => event.type === 'game.android-failed-turn').length).toBeGreaterThanOrEqual(10);
   });
 
   /** The wreck is the only place a player can read what their android logged. */
@@ -433,7 +441,10 @@ describe('game engine', () => {
         id: 'android-1',
         active: false,
         battery: 0,
-        health: expect.closeTo(97.9, 5),
+        health: expect.closeTo(
+          100 - (defaultRules.android.decayPerRound + 4 * defaultRules.android.acidDamagePerPoint),
+          5,
+        ),
         recording: 'last transmission',
       }),
     ]);
@@ -514,7 +525,7 @@ describe('game engine', () => {
         ownerId: 'player-1',
         type: 'charger',
         position: { x: 1, y: 0 },
-        remainingConstruction: { ticks: 2, resources: { metal: 6 } },
+        remainingConstruction: { ticks: 2, resources: { metal: (defaultRules.buildings.charger.cost.metal ?? 0) - 4 } },
       }),
     ]);
   });
@@ -548,7 +559,14 @@ describe('game engine', () => {
 
     await loop.run();
 
-    expect(loop.world.androids[0]).toEqual(expect.objectContaining({ health: 97.9 }));
+    expect(loop.world.androids[0]).toEqual(
+      expect.objectContaining({
+        health: expect.closeTo(
+          100 - (defaultRules.android.decayPerRound + 4 * defaultRules.android.acidDamagePerPoint),
+          5,
+        ),
+      }),
+    );
   });
 
   it('allows androids to clean adjacent acid when their owner has an acid processing plant', async () => {
@@ -662,7 +680,7 @@ describe('game engine', () => {
         ownerId: 'player-1',
         scriptId: 'wait-script',
         position: { x: 0, y: 0 },
-        health: 99.9,
+        health: expect.closeTo(100 - defaultRules.android.decayPerRound, 5),
         active: true,
       }),
     ]);
@@ -671,9 +689,11 @@ describe('game engine', () => {
   });
 
   it('refuses an android launch that would exceed its owner charger capacity', async () => {
+    // One charger's worth of capacity, spelled out rather than assumed: what is
+    // being tested is that the cap is enforced, not what the cap happens to be.
     const loop = new Loop({
       scriptRunner: createTestScriptRunner(),
-      ruleset: createBaseRuleset(),
+      ruleset: createBaseRuleset({ buildings: { charger: { androidCapacity: 1 } } }),
       initWorld: createLaunchWorld([{ x: 0, y: 0 }]),
     });
 
@@ -681,7 +701,14 @@ describe('game engine', () => {
 
     expect(loop.events.map((event) => event.type)).toContain('game.android-failed-turn');
     expect(loop.world.androids).toEqual([
-      expect.objectContaining({ id: 'android-1', active: true, health: expect.closeTo(89.9, 5) }),
+      expect.objectContaining({
+        id: 'android-1',
+        active: true,
+        health: expect.closeTo(
+          100 - defaultRules.android.failedTurnHealthPenalty - defaultRules.android.decayPerRound,
+          5,
+        ),
+      }),
     ]);
   });
 

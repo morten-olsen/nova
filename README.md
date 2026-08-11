@@ -140,9 +140,13 @@ The interesting questions arrive with the second phase and never leave: where th
 
 Nova is early, local-first, and actively evolving. Today's ruleset already supports a full automation loop: exploring a randomized tile world, collecting scattered material under cargo and battery limits, building chargers, depots, extractors, processors, scanners, radars, acid processing plants and colony modules, extracting from tile composition, processing ore into metal, broadcasting public messages, salvaging buildings including hostile ones, taking damage from acid and radiation, and cleaning adjacent acid once a plant is up.
 
+Fog of war is live and competitive: sight is recomputed every round from what a player's androids, scanners and radars can currently see, a script is handed only that projection, and another player's script source, android `memory` and `recording` are redacted from it and from a shared replay. Androids manage their own fleet — an android on one of its owner's completed chargers can launch a sibling or retire one — and each keeps a private `memory` across turns plus a `recording` its player can read afterwards. A match can carry an arrival date, which scripts read as `finalTurn` and pace themselves against.
+
 Around that: a TypeScript simulation engine, event-based recordings, a CLI for creating and inspecting games, a browser replay viewer and IDE, example scripts and sample recordings, and peer-to-peer two-player matches with host-chosen disclosure.
 
-Readiness scoring is live: `nova status` and the replay viewer report it per player with a contributor breakdown, and a completed colony module is worth 1,000 — more than everything else on the board put together. What it does not do yet is end anything. The fleet-arrival endgame that turns a readiness score into a winner is still to come, along with restricted competitive fog-of-war, matches beyond two players, and direct combat or defensive systems. The relay tower is the one piece you can build today that has no mechanic behind it.
+Readiness scoring is live: `nova status` and the replay viewer report it per player with a contributor breakdown, and a completed colony module is worth 1,000 — more than everything else on the board put together. What it does not do yet is end anything: the arrival date is a deadline androids can read, not a mechanic, so the fleet-arrival endgame that turns a readiness score into a winner is still to come. So are matches beyond two players, launch delay, and direct combat or defensive systems. The relay tower is the one piece you can build today that has no mechanic behind it.
+
+The ruleset is being balanced rather than extended right now, and the shipped defaults are known to lean one way: a 16x16 board holds far more material than one android can process, so android-turns rather than material are what a colony runs short of, and the buildings that make a colony an industry cost more electronics than a default map scatters. Expect the default numbers to move.
 
 Every cost, construction time and yield is a rule rather than a constant, and a game created with `--rules` hands your android the numbers it is actually playing under — so a program that reads them keeps working when the game is tuned.
 
@@ -156,6 +160,7 @@ Player and builder documents ship into every factory and are also rendered on [t
 
 For working on Nova itself:
 
+- [Balance notes](./docs/BALANCE.md) — what was measured, and why each default is what it is
 - [Visual design language](./docs/visual-design.md)
 - [Adding a building](./docs/ADDING-BUILDINGS.md)
 - [Programmatic playback](./docs/PROGRAMMATIC-PLAYBACK.md)

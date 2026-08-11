@@ -13,14 +13,34 @@ import type { MaterialBundle } from '../schemas/schemas.resources.js';
 const scoreRulesSchema = z.object({
   points: z.number(),
   label: z.string(),
+  /**
+   * What each further one of these is worth, as a share of the one before.
+   *
+   * `1` — the default — is a flat rate: ten depots score ten depots. Below one,
+   * a type is worth having and not worth hoarding, which is the difference
+   * between infrastructure and a stack of counters. The cheapest building on the
+   * board used to be the best points in the game by a factor of three, so the
+   * whole of a good colony was a field of depots nobody would ever store
+   * anything in.
+   *
+   * At `0.7` a depot scores 40, 28, 20, 14: the first is the obvious build, the
+   * fifth is not a plan.
+   *
+   * Worth applying to *every* cheap building rather than to whichever one is
+   * currently the problem. Capping depots alone simply moved the sprawl onto
+   * chargers — a starter bot promptly built five of them and took 125 of its 169
+   * points that way — because a flat rate on anything cheap is an invitation to
+   * build nothing else.
+   */
+  diminishing: z.number().min(0).max(1).default(1),
 });
 
 type ScoreRules = z.infer<typeof scoreRulesSchema>;
 
 const buildingScoreRulesSchema = z.object({
-  charger: scoreRulesSchema.prefault({ points: 25, label: 'Power and Android capacity' }),
+  charger: scoreRulesSchema.prefault({ points: 25, label: 'Power and Android capacity', diminishing: 0.8 }),
   'relay-tower': scoreRulesSchema.prefault({ points: 0, label: 'Communication relays' }),
-  depot: scoreRulesSchema.prefault({ points: 40, label: 'Secured storage' }),
+  depot: scoreRulesSchema.prefault({ points: 40, label: 'Secured storage', diminishing: 0.7 }),
   extractor: scoreRulesSchema.prefault({ points: 80, label: 'Resource extraction' }),
   processor: scoreRulesSchema.prefault({ points: 100, label: 'Material processing' }),
   'acid-processing-plant': scoreRulesSchema.prefault({ points: 120, label: 'Environmental protection' }),
